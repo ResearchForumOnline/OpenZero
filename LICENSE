@@ -1,0 +1,13 @@
+OpenZero Community Source License
+
+Copyright (c) 2026 Shaf Brady / TalkToAI.
+
+Permission is granted to view, fork, clone, run, study, and modify this repository for personal use, research, education, internal business evaluation, and contributions back to the OpenZero project.
+
+You may not sell, rebrand, sublicense, offer as a hosted managed service, package into a commercial product, or represent OpenZero as your own standalone product without written permission from the copyright holder.
+
+Production credentials, private hosted services, private Hive HQ infrastructure, model weights, generated keys, runtime vault files, and deployment secrets are not licensed by this repository.
+
+Any redistribution must preserve this license, copyright notice, and visible attribution to OpenZero, TalkToAI, and the original author.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. Operators are responsible for reviewing scripts before running them and for securing machines, credentials, networks, and data under their control.

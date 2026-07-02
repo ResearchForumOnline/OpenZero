@@ -1,0 +1,69 @@
+OPENZERO 5.4 OFFLINE RELEASE GUIDE
+
+WHAT THIS IS
+The offline release path is for operators who want a machine that can keep running OpenZero after it is physically disconnected from the internet.
+
+The large air-gap bundle is built from one connected Linux OpenZero node and usually lands around 15 GB to 25 GB once Gemma model weights are inside it.
+
+WHAT THE BUNDLE CARRIES
+- OpenZero source code
+- Python wheelhouse for the runtime dependencies
+- Moltbot node_modules
+- A local Node.js runtime archive
+- A PM2 package tarball
+- An Ollama binary
+- The local Ollama model store from the builder node
+- The bundled Chrome .deb when available
+
+ZEROTHINK / OPENZERO API NOTE
+OpenZero can create a local OpenAI-compatible API key from the Super Panel. Paste that key into ZeroThink Neural Vault as the OpenZero Machine API Key when you want ZeroThink to use your own node instead of the shared 5-message OpenZero trial.
+
+The API bridge uses the local Ollama model store in this bundle. It does not turn the offline node into a hosted GLM 5.2 provider and it does not relay Groq, Serper, Telegram, terminal tools, or cloud keys.
+
+BUILD THE OFFLINE BUNDLE
+Run these commands on one connected Linux node that already has OpenZero working:
+
+cd ~/openzero
+chmod +x build_offline_release.sh
+./build_offline_release.sh
+
+OPTIONAL: include offline voice wheels too
+
+cd ~/openzero
+./build_offline_release.sh --with-voice
+
+WHAT YOU GET
+The builder writes these files into ~/openzero/dist:
+
+- openzero_offline_release.tar.gz
+- openzero_offline_release.tar.gz.sha256
+- timestamped copies for archive/history
+
+MOVE IT TO AN AIR-GAPPED MACHINE
+Copy openzero_offline_release.tar.gz to the offline target by USB, LAN drop, or whatever secure method you trust.
+
+INSTALL ON THE OFFLINE TARGET
+On the offline Linux target:
+
+tar -xzf openzero_offline_release.tar.gz
+cd openzero_offline_release
+chmod +x install_offline.sh
+./install_offline.sh
+
+If you want the optional voice wheel set too:
+
+./install_offline.sh --voice
+
+By default the offline installer treats the extracted folder as the final OpenZero install directory, so it does not duplicate the giant bundle unless you explicitly pass a different --dir path.
+
+IMPORTANT REALITY CHECK
+The offline installer does not fetch internet packages. The target machine still needs a sane Linux base with Python 3, tar, and standard system libraries already present.
+
+PUBLIC DOWNLOAD PATH
+If you want people to download the finished air-gap bundle from your website, upload this file to the OpenZero web root with this exact name:
+
+openzero_offline_release.tar.gz
+
+Then your stable public URL becomes:
+
+https://openzero.talktoai.org/openzero_offline_release.tar.gz

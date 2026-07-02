@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local runtime state
+.env
+.env.*
+!.env.example
+security/
+uploads/
+models/
+*.sqlite
+*.db
+*.log
+*.pid
+
+# Generated keys and credentials
+*.pem
+*.key
+*.crt
+*.p12
+node_private.pem
+openzero_master.key
+id_rsa*
+id_ed25519*
+
+# Release artifacts and local backups
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.deb
+*.iso
+*.torrent
+*.sha256
+*.bak
+*.bak_*
+backups/
+dist/
+build/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

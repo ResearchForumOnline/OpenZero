@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenZero 5.4</title>
+    <style>
+        :root { --acid: #8eff8a; --gold: #d4af37; --bg: #040506; --panel: #0c1112; --text: #e9f2ef; --muted: #8aa19c; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: Consolas, "Courier New", monospace;
+            background:
+                radial-gradient(circle at top right, rgba(142,255,138,0.15), transparent 30%),
+                radial-gradient(circle at bottom left, rgba(212,175,55,0.12), transparent 25%),
+                linear-gradient(180deg, #030405, #091013 45%, #030405);
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+        .hero {
+            max-width: 980px;
+            width: 100%;
+            background: rgba(12, 17, 18, 0.92);
+            border: 1px solid #243033;
+            padding: 42px;
+        }
+        h1 { margin: 0; font-size: 4rem; letter-spacing: -0.08em; }
+        h1 span { color: var(--acid); }
+        p { color: var(--muted); line-height: 1.7; max-width: 760px; }
+        .actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 24px; }
+        a {
+            text-decoration: none;
+            color: var(--acid);
+            border: 1px solid #243033;
+            padding: 14px 18px;
+        }
+        a.gold { color: var(--gold); }
+    </style>
+</head>
+<body>
+    <main class="hero">
+        <h1>OPEN<span>ZERO</span> 5.4</h1>
+        <p>OpenZero is a local-first sovereign operator stack with Hive coordination, optional paid-hive priority, air-gapped friendly routing, self-healing service hooks, and an offline-ready voice layer.</p>
+        <p>If you are new to the system, start with the Super Panel. It exposes the model, Hive, wallet, and voice settings directly so you do not need to hand-edit environment files.</p>
+        <div class="actions">
+            <a href="/">Open Super Panel</a>
+            <a class="gold" href="/manual">Read Manual</a>
+            <a href="https://openzero.talktoai.org/hive-monitor">Hive Monitor</a>
+        </div>
+    </main>
+</body>
+</html>

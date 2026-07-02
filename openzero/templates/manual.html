@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OpenZero // Sovereign Operations Manual</title>
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root { 
+    --neon: #00ff41; 
+    --gold: #d4af37; 
+    --bg: #050505; 
+    --text: #cccccc; 
+    --code-bg: #111111; 
+    --border: #333333; 
+}
+
+body { 
+    background: var(--bg); 
+    color: var(--text); 
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace; 
+    line-height: 1.6; 
+    margin: 0; 
+    padding: 0; 
+}
+
+.scanlines { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); 
+    background-size: 100% 2px; 
+    pointer-events: none; 
+    z-index: 999; 
+}
+
+.container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 40px 20px; 
+    border-left: 1px solid var(--border); 
+    border-right: 1px solid var(--border); 
+    min-height: 100vh; 
+    background: #080808; 
+    position: relative;
+}
+
+header { 
+    border-bottom: 2px solid var(--neon); 
+    padding-bottom: 20px; 
+    margin-bottom: 40px; 
+    text-align: center; 
+}
+
+h1 { 
+    color: #ffffff; 
+    margin: 0; 
+    font-size: 3em; 
+    letter-spacing: 2px; 
+    text-transform: uppercase; 
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    animation: pulse 4s infinite;
+}
+
+@keyframes pulse {
+    0% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.3); }
+    50% { text-shadow: 0 0 25px rgba(0, 255, 65, 0.6); }
+    100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.3); }
+}
+
+.subtitle { 
+    color: var(--gold); 
+    font-weight: bold; 
+    font-size: 1em; 
+    letter-spacing: 1px; 
+    margin-top: 10px; 
+}
+
+h2 { 
+    color: var(--neon); 
+    margin-top: 60px; 
+    border-left: 4px solid var(--neon); 
+    padding-left: 15px; 
+    text-transform: uppercase; 
+    font-size: 1.6em; 
+    background: rgba(0, 255, 65, 0.05); 
+    padding: 12px 15px; 
+}
+
+h3 { 
+    color: var(--gold); 
+    margin-top: 40px; 
+    border-bottom: 1px solid var(--border); 
+    padding-bottom: 8px; 
+    font-size: 1.2em; 
+}
+
+p { 
+    margin-bottom: 20px; 
+    font-size: 1.05em; 
+}
+
+.cmd-box { 
+    background: var(--code-bg); 
+    color: #ffffff; 
+    padding: 25px 20px 20px 20px; 
+    border: 1px solid var(--border); 
+    margin: 20px 0; 
+    white-space: pre-wrap; 
+    font-size: 0.95em; 
+    position: relative; 
+    overflow-x: auto; 
+    box-shadow: inset 0 0 10px #000000; 
+    transition: border-color 0.3s;
+}
+
+.cmd-box:hover {
+    border-color: var(--neon);
+}
+
+.cmd-box::before { 
+    content: "$ TERMINAL >"; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    background: var(--neon); 
+    color: #000000; 
+    font-weight: bold; 
+    font-size: 0.75em; 
+    padding: 4px 8px; 
+}
+
+.copy-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #333;
+    color: var(--neon);
+    border: none;
+    padding: 4px 10px;
+    font-size: 0.75em;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    transition: background 0.2s, color 0.2s;
+}
+
+.copy-btn:hover {
+    background: var(--neon);
+    color: #000;
+}
+
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin: 30px 0; 
+    font-size: 0.95em; 
+    background: #0c0c0c; 
+}
+
+th { 
+    text-align: left; 
+    padding: 15px; 
+    background: #1a1a1a; 
+    color: var(--gold); 
+    border-bottom: 2px solid var(--neon); 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+}
+
+td { 
+    padding: 15px; 
+    border-bottom: 1px solid var(--border); 
+    vertical-align: top; 
+}
+
+code { 
+    color: var(--neon); 
+    background: #000000; 
+    padding: 3px 6px; 
+    border: 1px solid #333333; 
+    border-radius: 3px; 
+    font-size: 0.9em; 
+}
+
+.note { 
+    border: 1px solid var(--gold); 
+    background: rgba(212, 175, 55, 0.05); 
+    padding: 20px; 
+    margin: 25px 0; 
+    color: #ffffff; 
+    font-size: 0.95em; 
+    border-left: 4px solid var(--gold); 
+}
+
+.warning { 
+    border: 1px solid #ff3333; 
+    background: rgba(255, 51, 51, 0.05); 
+    padding: 20px; 
+    margin: 25px 0; 
+    color: #ff9999; 
+    font-size: 0.95em; 
+    border-left: 4px solid #ff3333; 
+}
+
+.highlight-box { 
+    border: 1px solid var(--neon); 
+    background: rgba(0, 255, 65, 0.05); 
+    padding: 25px; 
+    margin: 30px 0; 
+    text-align: center; 
+}
+
+.arsenal-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 25px; 
+    margin-top: 30px; 
+}
+
+.arsenal-item { 
+    background: #111111; 
+    padding: 20px; 
+    border: 1px solid #333333; 
+    transition: transform 0.2s, border-color 0.2s; 
+}
+
+.arsenal-item:hover { 
+    border-color: var(--neon); 
+    transform: translateY(-2px); 
+    box-shadow: 0 5px 15px rgba(0, 255, 65, 0.1);
+}
+
+.arsenal-title { 
+    color: var(--neon); 
+    font-weight: bold; 
+    margin-bottom: 15px; 
+    display: block; 
+    border-bottom: 1px solid #333333; 
+    padding-bottom: 8px; 
+    font-size: 1.1em; 
+}
+
+.arsenal-item code { 
+    display: inline-block; 
+    margin-bottom: 8px; 
+}
+
+.step-list { 
+    list-style: none; 
+    padding: 0; 
+    counter-reset: custom-counter; 
+}
+
+.step-list li { 
+    margin-bottom: 20px; 
+    padding-left: 50px; 
+    position: relative; 
+}
+
+.step-list li::before { 
+    counter-increment: custom-counter; 
+    content: counter(custom-counter); 
+    position: absolute; 
+    left: 0; 
+    top: -2px; 
+    background: var(--neon); 
+    color: #000000; 
+    width: 30px; 
+    height: 30px; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: bold; 
+}
+
+.faq-box { 
+    background: #0a0a0a; 
+    border: 1px solid #333333; 
+    margin-bottom: 15px; 
+    padding: 20px; 
+    cursor: pointer; 
+    transition: all 0.3s; 
+}
+
+.faq-box:hover { 
+    border-color: var(--neon); 
+    background: #111;
+}
+
+.faq-q { 
+    font-weight: bold; 
+    color: var(--neon); 
+    font-size: 1.1em; 
+    margin: 0; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-q::after {
+    content: '+';
+    color: var(--neon);
+    font-size: 1.5em;
+    font-weight: normal;
+}
+
+.faq-box.active .faq-q::after {
+    content: '-';
+}
+
+.faq-a { 
+    color: #aaaaaa; 
+    margin-top: 15px; 
+    display: none; 
+    line-height: 1.6; 
+}
+
+footer { 
+    text-align: center; 
+    margin-top: 100px; 
+    padding-top: 30px; 
+    border-top: 1px solid var(--border); 
+    color: #555555; 
+    font-size: 0.85em; 
+    letter-spacing: 2px; 
+}
+
+.back-link { 
+    display: inline-block; 
+    margin-bottom: 30px; 
+    color: #ffffff; 
+    text-decoration: none; 
+    border: 1px solid #444444; 
+    padding: 10px 20px; 
+    transition: 0.3s; 
+    background: #111111; 
+    text-transform: uppercase; 
+    font-weight: bold; 
+    letter-spacing: 1px; 
+}
+
+.back-link:hover { 
+    background: var(--neon); 
+    color: #000000; 
+    border-color: var(--neon); 
+    box-shadow: 0 0 15px rgba(0,255,65,0.3); 
+}
+
+@media(max-width: 800px) { 
+    .arsenal-grid { grid-template-columns: 1fr; } 
+    h1 { font-size: 2em; } 
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="container">
+<a href="/" class="back-link">← Return to Terminal Root</a>
+
+<header>
+<h1>OPENZERO OPS MANUAL</h1>
+<div class="subtitle">FULL SPECTRUM DOMINANCE // SOVEREIGN AI LATTICE // BUILD 5.4</div>
+</header>
+
+<h2>00 // INTRODUCTION: WHAT IS OPENZERO?</h2>
+<p>If you are new to Artificial Intelligence, you might be used to websites like ChatGPT or Claude. Those are "Cloud AI" systems. They live on someone else's computer, they read your private data, and they restrict what you can ask them. OpenZero is fundamentally different.</p>
+<p><b>OpenZero is a Sovereign AI Agent.</b> An AI Agent is a software system that doesn't just talk to you; it can observe its environment, make plans, and execute tasks autonomously. OpenZero is installed directly onto <i>your</i> hardware. It acts as your digital employee, complete with terminal access to your computer, a web browser (Moltbot) to see the internet, and a direct uplink to your phone via Telegram.</p>
+<div class="note"><strong>OpenZero 5.4 note:</strong> This build adds the OpenZero-only Hive API path, RAM-aware node profiling, paid-hive controls, a configurable P(G) threshold, self-healing watchdog services, optional local voice support using faster-whisper plus Piper-compatible speech output, a true offline release path that can carry the local Gemma model store into an air-gapped machine, an optional Microsoft BitNet 1-bit add-on for lower-power CPU nodes, a compact skills registry for low-CPU agent work, local private learning, Moltbot health checks, and a local OpenAI-compatible API key bridge for ZeroThink.</div>
+
+<h2>01 // DEPLOYMENT & UPDATES</h2>
+<p>Deploying the OpenZero Lattice is designed to be fully automated. The installer downloads the Neural Brain (Python), the Vision System (Node.js/Chrome), and the Process Manager (PM2), linking them all together.</p>
+
+<h3>Fresh Installation</h3>
+<p>To install OpenZero on a new Linux server, simply run this command in your terminal:</p>
+<div class="cmd-box" data-cmd="curl -sL https://openzero.talktoai.org/install | bash">curl -sL https://openzero.talktoai.org/install | bash</div>
+
+<h3>True Offline / Air-Gapped Bundle</h3>
+<p>If you need OpenZero to work on a machine that will not touch the internet after setup, use the offline release path. Build the bundle on one connected Linux OpenZero node, then move the finished archive to the air-gapped target. In practice the archive is usually 15 GB to 25 GB because it carries the OpenZero code, Python wheels, a local Node runtime, PM2, an Ollama runtime, bundled Moltbot dependencies, and the local Gemma model store from the builder node.</p>
+<div class="cmd-box" data-cmd="# On one connected Linux OpenZero node
+cd ~/openzero
+chmod +x build_offline_release.sh
+./build_offline_release.sh"># On one connected Linux OpenZero node
+cd ~/openzero
+chmod +x build_offline_release.sh
+./build_offline_release.sh</div>
+<p>The builder writes <code>dist/openzero_offline_release.tar.gz</code> plus a matching SHA-256 file.</p>
+<div class="cmd-box" data-cmd="# On the air-gapped Linux target
+tar -xzf openzero_offline_release.tar.gz
+cd openzero_offline_release
+chmod +x install_offline.sh
+./install_offline.sh"># On the air-gapped Linux target
+tar -xzf openzero_offline_release.tar.gz
+cd openzero_offline_release
+chmod +x install_offline.sh
+./install_offline.sh</div>
+<div class="note"><b>Operator download routes:</b> <code>/build-offline</code> serves the builder script, <code>/install-offline</code> serves the offline installer, and <code>/offline-guide</code> serves the beginner written guide. The offline installer now treats the extracted folder as the final install directory by default, so it does not waste disk space duplicating a 15 GB to 25 GB bundle unless you explicitly pass a different <code>--dir</code> path. If you upload a finished bundle to the web root using the exact filename <code>openzero_offline_release.tar.gz</code>, the stable public download URL becomes <code>https://openzero.talktoai.org/openzero_offline_release.tar.gz</code>.</div>
+
+<h3>Updating to the Latest Version</h3>
+<p>OpenZero receives constant upgrades. <b>You can safely run the update command at any time.</b> The updater is designed to fetch the newest code, UI patches, Ollama runtime refreshes, and local model repairs without deleting your private <code>.env</code> keys or your chat logs.</p>
+<div class="cmd-box" data-cmd="# Safe in-place updater:
+curl -sL https://openzero.talktoai.org/update.sh | bash"># Safe in-place updater:
+curl -sL https://openzero.talktoai.org/update.sh | bash</div>
+<div class="note"><b>What this now fixes automatically:</b> stale local model selections like old Qwen aliases, outdated Ollama runtimes that block Gemma 4 pulls, broken local brain startup, and missing Gemma fallback lanes on older machines. Re-running the main installer still works too, but the dedicated updater is now the clean operator path.</div>
+<div class="note"><b>New runtime control:</b> the web control panel now has a real <code>STOP</code> control. It does not just hide the spinner; it sends a stop request so Agent Zero halts at the next safe boundary in the operator loop. If Hive backlog is distracting you, use <code>PAUSE HIVE</code> or <code>CLEAR QUEUE</code>; that queue is only unsent lattice events, not your local LLM task list.</div>
+
+<h3>Optional Microsoft BitNet 1-bit Add-On</h3>
+<p>OpenZero keeps <b>Gemma via Ollama</b> as the default local lane. If you want the optional Microsoft <b>BitNet</b> CPU-efficient path for lower-power or older systems, install it as an add-on instead of replacing the whole runtime stack.</p>
+<div class="cmd-box" data-cmd="# Fresh install with BitNet add-on enabled
+curl -sL https://openzero.talktoai.org/install | bash -s -- --bitnet"># Fresh install with BitNet add-on enabled
+curl -sL https://openzero.talktoai.org/install | bash -s -- --bitnet</div>
+<div class="cmd-box" data-cmd="# In-place update and BitNet repair/enable
+curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet"># In-place update and BitNet repair/enable
+curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
+<div class="note"><b>Important:</b> BitNet is a separate runtime from Ollama. OpenZero uses the official Microsoft <code>bitnet.cpp</code> path and the official GGUF weights, with a maximum context window of <code>4096</code>. If you do nothing, OpenZero stays on the default Gemma/Ollama lane.</div>
+
+<div class="highlight-box">
+<h3 style="margin-top:0; color:var(--neon); font-size: 1.4em;">RECOMMENDED OS: LINUX MINT</h3>
+<p>While OpenZero runs perfectly on AlmaLinux, Ubuntu, or Debian cloud servers, <b>Linux Mint</b> is the absolute best environment for this framework. By installing OpenZero on a physical or RDP-accessible Linux Mint machine, you get a full graphical desktop environment while simultaneously running your Sovereign AI Node silently in the background. It is a desktop PC and an autonomous AI Server built into one seamless machine.</p>
+</div>
+
+<h2>01A // HIVE HQ, FEDERATION, & SURVIVAL MODE</h2>
+<p>If you are brand new, think of OpenZero in three layers: <b>your node</b>, <b>your Hive HQ</b>, and <b>optional federation mirrors</b>. Your node is your own machine. Hive HQ is the main coordination hub you point to. Federation mirrors are backup hubs that can keep the network alive if one operator or one database disappears.</p>
+
+<table>
+<tr><th>Setting</th><th>What it means in plain English</th></tr>
+<tr>
+<td><code>HIVE_MIND_ENABLED=true</code></td>
+<td>Your node participates in the Hive and registers itself instead of staying fully private/local-only.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_MODE=standalone</code></td>
+<td>Use one Hive HQ only. This is the simplest mode and best for a first install.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_MODE=federated</code></td>
+<td>Use one Hive HQ plus one or more backup mirror URLs. OpenZero writes to all reachable mirrors and queues failed writes locally for replay later.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_MODE=local</code></td>
+<td>Stay operational with local continuity data only. This is the emergency mode when all remote Hive endpoints are gone.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_URL</code></td>
+<td>Your primary Hive HQ address. Example: <code>https://openzero.talktoai.org/api/hive</code>.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_MIRRORS</code></td>
+<td>Comma-separated backup Hive endpoints. Example: <code>https://hq2.example.org/api/hive,https://hq3.example.org/api/hive</code>.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_LOCAL_SPOOL_ENABLED=true</code></td>
+<td>Keeps a local queue of node events and knowledge updates so they can be replayed when a Hive endpoint comes back.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_SHARE_MODE=manual</code></td>
+<td>Default privacy mode. Your node can register with Hive, but chats stay local unless you press <b>Send Last Chat To Hive</b>.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_SHARE_MODE=auto_safe</code></td>
+<td>Optional public-learning mode. OpenZero still redacts and safety-checks content before public Hive sharing. Risky or private exchanges remain local-only.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_SHARE_MODE=private</code></td>
+<td>Never publish chat knowledge. Use this if the machine handles secrets, wallets, customer chats, or private research.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_LOCAL_LEARNING_ENABLED=true</code></td>
+<td>Lets the node learn privately from useful finished chat replies without publishing them to remote Hive. This is separate from public Hive sharing.</td>
+</tr>
+<tr>
+<td><code>OPENZERO_HIVE_BACKGROUND_PUSH=false</code></td>
+<td>Default hotfix setting. OpenZero does not silently push chat replies in the background.</td>
+</tr>
+</table>
+
+<div class="note"><b>If your main server disappears:</b> OpenZero nodes do not die with it. Operators can stand up a compatible Hive API elsewhere, switch the Hive HQ URL in the panel, add federation mirrors, and replay queued events from each node. In other words: the node remains sovereign, and the network can be re-linked without the original operator.</div>
+<div class="warning"><b>Privacy rule:</b> Hive node status is public coordination data; your chats are private by default. Local learning can still improve the node privately. Only click <b>Send Last Chat To Hive</b> when you intentionally want a filtered answer to become public Hive knowledge for other nodes. Terminal-mode runs are blocked from manual sharing because they can include commands, file paths, secrets, or system output.</div>
+<div class="note"><b>Important:</b> the queue you see in the panel is not a list of pending LLM jobs. It is only a local spool of unsent Hive events. If a Hive HQ goes bad, use <b>Pause Hive</b>, <b>Clear Queue</b>, or <b>Clear Local Events</b> and keep working locally. OpenZero 5.4 also exposes <b>Remote Hive Lookup</b> separately now, so you can keep Hive registration/sync on while forcing live chat to stay local-first.</div>
+
+<h3>Beginner Setup Recommendation</h3>
+<ol class="step-list">
+<li>Install OpenZero using the one-line installer.</li>
+<li>Open <code>http://localhost:1024</code> in your browser.</li>
+<li>In the <b>Decentralized Lattice</b> panel, turn Hive on.</li>
+<li>Leave <b>Hive Network Mode</b> on <code>STANDALONE</code> for your first setup.</li>
+<li>Paste your primary Hive HQ URL.</li>
+<li>Leave <b>Local Continuity Spool</b> enabled so queued events survive outages.</li>
+<li>Leave <b>Chat Sharing To Hive</b> on <code>MANUAL APPROVAL ONLY</code> unless you are deliberately building a public knowledge node.</li>
+<li>When you have trusted backup operators, switch to <code>FEDERATED</code> mode and add mirror URLs.</li>
+</ol>
+
+<h2>02 // MANAGING YOUR AI (PM2 GUIDE)</h2>
+<p>OpenZero runs continuously in the background so it is always ready to receive commands from your web dashboard or Telegram. It uses a professional process manager called <b>PM2</b> to stay alive. If you ever change a setting, or if the AI gets stuck thinking, you do not need to restart your computer. Just use these PM2 commands in your terminal:</p>
+
+<table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr>
+<td><code>pm2 restart all</code></td>
+<td><b>The Master Reset.</b> This fixes 99% of all problems by restarting both the Brain and the Vision systems simultaneously.</td>
+</tr>
+<tr>
+<td><code>pm2 status</code></td>
+<td>Shows a table of your running systems. Use this to check if OpenZero is online and how much CPU/RAM it is consuming.</td>
+</tr>
+<tr>
+<td><code>pm2 logs</code></td>
+<td>Shows a live matrix feed of what the AI is thinking behind the scenes. Excellent for debugging if a command fails.</td>
+</tr>
+<tr>
+<td><code>pm2 restart zero-brain</code></td>
+<td>Restarts <i>only</i> the logic/chat engine.</td>
+</tr>
+<tr>
+<td><code>pm2 restart zero-vision</code></td>
+<td>Restarts <i>only</i> the Moltbot headless browser (useful if website screenshots start failing).</td>
+</tr>
+</table>
+
+<div class="note">
+<b>THE SOVEREIGN JANITOR PROTOCOL:</b> You do not need to worry about the AI's Vision system filling up your hard drive. OpenZero 5.4 includes an automated Janitor Protocol plus a watchdog loop that checks PM2 services, integrity state, and common drift conditions on a repeating schedule.
+</div>
+
+<h2>03 // THE SUPER PANEL (UI GUIDE)</h2>
+<p>When you access OpenZero via <code>http://localhost:1024</code> (or your server's IP address on port 1024), you are greeted by the Super Panel. This is your command center.</p>
+
+<ul>
+<li><b>System Config (Settings):</b> Use the left-side control panel to enter your API keys. Changing models or adding a Telegram token here will automatically reboot the Brain to apply the changes.</li>
+<li><b>Hive HQ & Federation:</b> The panel now lets you choose a Hive network mode, set a primary Hive HQ URL, add backup federation mirrors, and replay queued lattice events after an outage.</li>
+<li><b>File Upload (📁):</b> Click the folder icon next to the chat bar to upload text documents, code files, or logs directly into the AI's memory stream for analysis.</li>
+<li><b>Log Export (TXT):</b> Need to save a conversation? Click the TXT button to instantly download your entire chat history as a clean text file to your local computer.</li>
+<li><b>Hugging Face Injection:</b> OpenZero allows you to download custom, community-trained AI models directly from the internet. Paste a direct GGUF download URL (for example a Hugging Face <code>/resolve/</code> link), choose a model alias, and click "Pull Weights" to inject the new model into your local system. Custom GGUF packages are now tracked in their own inventory so you can delete the stored file and linked Ollama alias cleanly later.</li>
+</ul>
+
+<h2>04 // LOCAL VS. CLOUD NEURAL ENGINES</h2>
+<p>OpenZero operates on a Hybrid Neural Lattice. This means you have the power to choose <i>where</i> the AI's "brain" lives, instantly toggling between them in the System Config menu.</p>
+
+<h3>1. The Local Engine: Gemma 4 Edge (Default)</h3>
+<p>Fresh OpenZero installs now default to the Gemma 4 edge track through Ollama. The normal default is <code>gemma4:e4b</code>, while lower-RAM boxes can use <code>gemma4:e2b</code>. Stronger nodes can move up to <code>gemma4:26b</code> or <code>gemma4:31b</code>. This means the AI processes your questions on your own machine using your own CPU/GPU. <br>
+<b>Benefits:</b> Zero cost, maximum privacy, and air-gapped capability. Sensitive information never leaves your environment.</p>
+
+<div class="note"><b>Important storage detail:</b> native Ollama pulls do <i>not</i> appear in OpenZero's local <code>./models</code> folder. Ollama keeps its own model store. The local <code>./models</code> folder is reserved for custom GGUF files that you download and inject manually.</div>
+
+<div class="note"><b>Important compatibility detail:</b> OpenZero now tries to self-heal this path automatically. If Gemma 4 pulls fail because Ollama is too old, the panel repair path, watchdog, and updater all try to refresh Ollama and repair the local model lane. Gemma 4 remains the preferred default, while <code>gemma3:4b</code> and <code>gemma3:12b</code> remain compatibility fallbacks for older runtimes.</div>
+
+<h3>2. Cloud Acceleration: Groq & GPT-OSS</h3>
+<p>For highly complex math, deep coding problems, or massive context windows, you can enter a <b>Groq API Key</b> in the settings. Groq uses specialized supercomputer chips called LPUs to process AI responses at lightning speed. <br>
+<b>The Groq Compound Model:</b> We highly recommend the <code>groq/compound-large</code> model for OpenZero. It is engineered specifically for autonomous agent workflows and recursive, multi-step planning.</p>
+
+<h3>3. ZeroThink Bridge: Local OpenAI-Compatible API</h3>
+<p>OpenZero can now create a local API key for ZeroThink. In the Super Panel, use <b>OpenZero API Key -> Create / Rotate</b>. The key is shown once, then stored as a hash. Paste it into <b>ZeroThink Studio -> Neural Vault -> OpenZero Machine API Key</b>.</p>
+<div class="cmd-box" data-cmd="curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
+  -H 'Authorization: Bearer oz_your_key_here' \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;model&quot;:&quot;gemma4:e4b&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Say OpenZero API OK&quot;}]}';">curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
+  -H 'Authorization: Bearer oz_your_key_here' \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"gemma4:e4b","messages":[{"role":"user","content":"Say OpenZero API OK"}]}'</div>
+<div class="warning"><b>Security boundary:</b> this endpoint is for local/self-hosted Ollama models only. It does not relay Groq, Serper, Telegram, Hive, terminal tools, or cloud provider keys. Keep the OpenZero panel/API behind your firewall, VPN, or trusted network. ZeroThink web does not accept arbitrary browser-supplied OpenZero URLs; production bridges must be registered server-side.</div>
+
+<h2>05 // AUTONOMOUS AGENT CAPABILITIES</h2>
+<p>Agent Zero isn't just a chatbot; it is a digital entity with tools. By simply typing natural language, the AI will autonomously deploy specialized XML tags to take action in the real world.</p>
+
+<table>
+<tr><th>Capability</th><th>How it Works</th></tr>
+<tr>
+<td><b>Terminal Sovereignty</b></td>
+<td>The AI has direct Bash access. If you type "check my active ports", the AI will secretly write <code>&lt;bash&gt;netstat -tulnp&lt;/bash&gt;</code>, the system will execute it on your server, and the AI will read the results back to you.</td>
+</tr>
+<tr>
+<td><b>Structured File & Code Ops</b></td>
+<td>Agent Zero now has a stronger local operator lane for code and project work. It can read files with line ranges, write or append files, replace text, build directory trees, search source trees, create folders, and remove paths with explicit local operator actions before it falls back to raw shell.</td>
+</tr>
+<tr>
+<td><b>Archive Operations</b></td>
+<td>OpenZero can inspect ZIP archives, create new bundles, or extract them into a target folder. This makes it easier to unpack model bundles, backup project folders, or ship artifacts without forcing the operator to type archive commands manually.</td>
+</tr>
+<tr>
+<td><b>OSINT (Digital Recon)</b></td>
+<td>OpenZero acts as a cyber-investigator. If you command it to "run recon on John Doe", it will deploy an <code>&lt;osint&gt;</code> tag. The system uses advanced "Google Dorking" parameters to bypass search noise and pull raw footprints from LinkedIn, Twitter, and exposed PDF files directly into the chat.</td>
+</tr>
+<tr>
+<td><b>Satellite & Moltbot Vision</b></td>
+<td>OpenZero has eyes. Moltbot is a hidden Google Chrome browser living inside the server. If you command the AI to "go to talktoai.org", Moltbot will silently load the page, take a screenshot, display it in your sidebar, and read the text. You can even type "show me satellite imagery of Nottingham, UK", and the AI will lock the coordinates and pull the visual feed.</td>
+</tr>
+<tr>
+<td><b>Web Fetch & Search</b></td>
+<td>Besides Moltbot browsing, OpenZero can now pull a webpage into readable text directly or run a Serper-backed web search from inside the agent loop. This is useful when you want the node to read docs, fetch a release page, or gather search results quickly without a full visual browser pass.</td>
+</tr>
+<tr>
+<td><b>Remote Node Ops</b></td>
+<td>When SSH tooling is present, Agent Zero can execute key-based SSH commands and SCP transfers against other boxes. That gives OpenZero a clean remote-ops lane for fleet work without forcing every task through a raw one-line Bash answer.</td>
+</tr>
+</table>
+
+<div class="note"><b>Operator upgrade:</b> In current builds, OpenZero hides raw operator tool payloads from the main stream whenever possible. You mainly see the useful result, not the internal tool grammar. That makes the autonomous loop feel much closer to a real operator instead of a demo chatbot printing its own internals.</div>
+
+<div class="warning">
+<b>SECURITY WARNING:</b> Terminal Sovereignty means the AI executes commands with the exact permissions of the user who installed it. If you installed OpenZero as the `root` user, the AI has <b>absolute control</b> over your operating system. Exercise extreme caution when instructing the AI to delete files, format drives, or modify system states.
+</div>
+
+<h2>06 // TELEGRAM UPLINK (MOBILE ACCESS)</h2>
+<p>You can securely talk to your OpenZero node from anywhere in the world using your smartphone via Telegram. When you message your bot, the text routes directly to your home server, OpenZero processes it, and texts you back.</p>
+
+<h3>How to connect your OpenZero Node to Telegram:</h3>
+<ol class="step-list">
+<li><b>Open Telegram:</b> Search for the verified user named <b>@BotFather</b> (it has a blue checkmark).</li>
+<li><b>Create the Bot:</b> Type <code>/newbot</code> and hit send.</li>
+<li><b>Name Your Bot:</b> BotFather will ask for a name (e.g., "Shaf's Sovereign Node").</li>
+<li><b>Set a Username:</b> Provide a unique username that ends in "bot" (e.g., <code>openzero_alpha_bot</code>).</li>
+<li><b>Copy the Token:</b> BotFather will congratulate you and provide a long string of text called an HTTP API Token (e.g., <i>123456789:ABCdefGhIJKlmNoP...</i>). Copy this token.</li>
+<li><b>Inject into the Lattice:</b> Open your OpenZero Super Panel at <code>http://localhost:1024</code>, use the left-side control panel, paste the token into the Telegram field, and hit Save. Your personal bot is now online and listening to your commands.</li>
+</ol>
+
+<h2>07 // THE TERMINAL ARSENAL</h2>
+<p>A tactical list of commands you can type directly into the Agent's chat box to manage your Linux infrastructure. Remember, you can prefix any standard Linux command with the word <code>run</code> to force the AI to execute it.</p>
+
+<div class="arsenal-grid">
+<div class="arsenal-item">
+<span class="arsenal-title">NETWORK RECON</span>
+<code>run curl ifconfig.me</code> (Check Public IP)<br>
+<code>run netstat -tulnp</code> (View Active Ports)<br>
+<code>run ping -c 4 google.com</code> (Check Latency)<br>
+<code>run ss -tupln</code> (Socket Statistics)
+</div>
+
+<div class="arsenal-item">
+<span class="arsenal-title">SYSTEM HEALTH</span>
+<code>run htop -b -n 1</code> (CPU/RAM Snapshot)<br>
+<code>run df -h</code> (Check Disk Space)<br>
+<code>run free -m</code> (View Memory Blocks)<br>
+<code>run uptime</code> (System Load Average)
+</div>
+
+<div class="arsenal-item">
+<span class="arsenal-title">DEVOPS & DOCKER</span>
+<code>run docker ps -a</code> (List All Containers)<br>
+<code>run docker logs [id]</code> (View Container Logs)<br>
+<code>run systemctl status nginx</code> (Service Check)<br>
+<code>run git pull</code> (Update Code Repositories)
+</div>
+
+<div class="arsenal-item">
+<span class="arsenal-title">FILE OPERATIONS</span>
+<code>run tail -n 50 app.log</code> (Read System Logs)<br>
+<code>run zip -r backup.zip .</code> (Create Data Archive)<br>
+<code>run chmod +x script.sh</code> (Make File Executable)<br>
+<code>run ls -la</code> (List Directory Contents)
+</div>
+</div>
+
+<h2>08 // ZEROMINT OS DEPLOYMENT</h2>
+<p>If you downloaded the <b>ZeroMint OS ISO</b>, you possess a complete, bootable operating system with OpenZero permanently baked into its core. To deploy this to physical hardware:</p>
+
+<div class="highlight-box" style="border-color: var(--neon); box-shadow: 0 0 20px rgba(0,255,65,0.1); padding: 30px;">
+<h3 style="margin-top:0; color:var(--neon); letter-spacing: 2px;">🔑 DEFAULT OS & AGENT CREDENTIALS</h3>
+<p style="color: #ccc; margin-bottom: 20px;">Use these exact credentials to log into the ZeroMint desktop after booting:</p>
+<div style="font-size: 1.3em; margin: 15px 0;">
+USERNAME: <code style="font-size: 1.2em; padding: 5px 15px;">zero</code><br><br>
+PASSWORD: <code style="font-size: 1.2em; padding: 5px 15px;">1234ZERO</code>
+</div>
+<p style="color: #ff3333; font-size: 0.95em; margin-top: 25px;"><b>SECURITY OVERRIDE PROTOCOL:</b> If you change the default password using the standard Linux `passwd` command, the AI agent will lose root access and fail system tasks. You <b>MUST</b> change your password using the internal Agent Sync utility:</p>
+<div class="cmd-box" data-cmd="cd ~/openzero && ./zero_passwd.sh">cd ~/openzero && ./zero_passwd.sh</div>
+<p style="color: #888; font-size: 0.85em; margin-top: 10px;">This script securely changes your Linux Desktop password AND injects it into the Agent's memory so it retains Terminal Sovereignty.</p>
+</div>
+
+<ol class="step-list">
+<li>Download <b>Rufus</b> (Windows) or <b>BalenaEtcher</b> (Mac/Linux).</li>
+<li>Insert a USB Flash Drive (8GB minimum).</li>
+<li>Select the `ZeroMint_OS_v1.0.iso` file and flash it to the USB drive.</li>
+<li>Plug the USB into your target computer, boot into the BIOS menu, and select "Boot from USB".</li>
+<li>Log in using the default credentials above.</li>
+<li>Once logged in, simply double-click the <b>"Ignite OpenZero"</b> icon on the desktop to initialize your Sovereign Lattice.</li>
+</ol>
+
+<h2>09 // ADVANCED NEURAL WEIGHTS (HUGGING FACE)</h2>
+<p>The Super Panel allows you to dynamically download new "brains" for your AI using GGUF files. GGUF is a specialized file format that compresses massive neural networks so they can run efficiently on standard consumer hardware.</p>
+<p>If you want the official Google local path, use the built-in Gemma 4 install buttons first. Use Hugging Face injection only when you have a direct GGUF file link and want a custom model alias inside OpenZero.</p>
+<p>When browsing Hugging Face (like <code>huggingface.co/shafire</code>), you will often see different "Quantization" levels like Q4, Q6, or Q8. These represent the compression ratio:</p>
+<ul>
+<li><b>Q4_K_M:</b> The gold standard. Excellent balance of high speed and strong logic reasoning. Recommended for nodes with 8GB to 16GB of RAM.</li>
+<li><b>Q8_0:</b> Minimal compression. Slower, but mathematically flawless. Use this if your server has 32GB+ of RAM.</li>
+</ul>
+
+<h2>10 // SECURITY & FIREWALL PROTOCOLS</h2>
+<p>Operating a Sovereign Node requires vigilance. If you open your server to the world, bad actors will attempt to scan it. We highly recommend configuring the Uncomplicated Firewall (UFW) to lock down your node.</p>
+<div class="cmd-box" data-cmd="# 1. Enable the firewall
+sudo ufw enable
+
+# 2. Allow SSH (so you don't lock yourself out)
+sudo ufw allow 22/tcp
+
+# 3. Allow OpenZero UI (Port 1024)
+sudo ufw allow 1024/tcp
+
+# 4. Check the firewall status
+sudo ufw status"># 1. Enable the firewall
+sudo ufw enable
+
+# 2. Allow SSH (so you don't lock yourself out)
+sudo ufw allow 22/tcp
+
+# 3. Allow OpenZero UI (Port 1024)
+sudo ufw allow 1024/tcp
+
+# 4. Check the firewall status
+sudo ufw status</div>
+
+<h2>11 // TROUBLESHOOTING & FAQ</h2>
+
+<div class="faq-box">
+<p class="faq-q">Q: Why does the AI say "[ERROR] Local Brain Offline"?</p>
+<div class="faq-a">A: This usually means the selected local runtime is not ready. If you are on the default Gemma lane, restart Ollama with <code>sudo systemctl restart ollama</code>, then wait 30 seconds and verify with <code>curl http://127.0.0.1:11434/api/tags</code>. If you intentionally selected BitNet, use the panel controls for <b>Install BitNet</b> or <b>Repair BitNet</b>, or rerun <code>curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</code>.</div>
+</div>
+
+<div class="faq-box">
+<p class="faq-q">Q: Moltbot Vision isn't loading website screenshots.</p>
+<div class="faq-a">A: The headless Chrome browser requires a graphical buffer. If you are on a pure headless cloud VPS, run <code>pm2 restart zero-vision</code> to reset the buffer. Also ensure your server has at least 2GB of free RAM, as Chrome will crash if memory runs out.</div>
+</div>
+
+<div class="faq-box">
+<p class="faq-q">Q: I changed my API key but the AI is still using the old one.</p>
+<div class="faq-a">A: Changes in the UI are saved to the <code>.env</code> file, but Python loads these variables into memory at startup. You must restart the brain to flush the memory. Run <code>pm2 restart zero-brain</code>.</div>
+</div>
+
+<div class="faq-box">
+<p class="faq-q">Q: Why did ZeroThink stop after 5 OpenZero messages?</p>
+<div class="faq-a">A: When enabled, ZeroThink's shared OpenZero gateway is a small Pro trial, not unlimited shared compute. After 5 shared messages, create an OpenZero API key on your own node from the Super Panel, copy it once, and paste it into ZeroThink Neural Vault as the <b>OpenZero Machine API Key</b> through a server-side registered gateway. This keeps your local CPU bill and privacy on your own machine instead of burning the shared TalkToAI/OpenZero server.</div>
+</div>
+
+<div class="faq-box">
+<p class="faq-q">Q: Can OpenZero run with no internet at all after I prepare it?</p>
+<div class="faq-a">A: Yes. Build the offline release on one connected Linux OpenZero node, move <code>openzero_offline_release.tar.gz</code> to the target machine, extract it, and run <code>./install_offline.sh</code>. That path carries the code, bundled dependencies, Ollama runtime, and Gemma model store from the builder node so the target can stay air-gapped after deployment.</div>
+</div>
+
+<div class="faq-box">
+<p class="faq-q">Q: Can OpenZero really hack satellites?</p>
+<div class="faq-a">A: No. OpenZero uses OSINT (Open Source Intelligence) APIs and coordinates plotting via Google Maps and Moltbot visual extraction. It does not breach encrypted military hardware.</div>
+</div>
+
+<footer>
+        OPENZERO OPS // OPENZERO.TALKTOAI.ORG // 2026 // LOCAL-FIRST SAFETY CONTROLS
+</footer>
+</div>
+
+<script>
+// FAQ Accordion Logic
+document.querySelectorAll('.faq-box').forEach(box => {
+    box.addEventListener('click', () => {
+        const answer = box.querySelector('.faq-a');
+        const isExpanded = answer.style.display === 'block';
+        
+        // Close all others
+        document.querySelectorAll('.faq-a').forEach(a => a.style.display = 'none');
+        document.querySelectorAll('.faq-box').forEach(b => b.classList.remove('active'));
+        
+        // Toggle current
+        if (!isExpanded) {
+            answer.style.display = 'block';
+            box.classList.add('active');
+        }
+    });
+});
+
+// Copy to Clipboard Logic for Command Boxes
+document.querySelectorAll('.cmd-box').forEach(box => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.innerText = 'COPY';
+    
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const textToCopy = box.getAttribute('data-cmd') || box.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            btn.innerText = 'COPIED!';
+            btn.style.color = '#fff';
+            setTimeout(() => {
+                btn.innerText = 'COPY';
+                btn.style.color = 'var(--neon)';
+            }, 2000);
+        });
+    });
+    
+    box.appendChild(btn);
+});
+</script>
+</body>
+</html>

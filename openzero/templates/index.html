@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPENZERO // SUPER PANEL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.min.js"></script>
+    
+    <style>
+        :root { --neon: #00ff41; --green: #00ff41; --gold: #d4af37; --cyan: #00ffff; --bg: #050505; --panel: #0a0a0a; --text: #e0e0e0; --border: #222; --danger: #ff3333; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar { width: min(480px, 36vw); min-width: 420px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+        .header-brand { padding: 25px; border-bottom: 1px solid var(--border); text-align: center; }
+        .header-brand h1 { color: #fff; margin: 0; font-size: 2em; letter-spacing: -2px; }
+        .header-brand h1 span { color: var(--neon); }
+
+        .telemetry { padding: 20px; border-bottom: 1px dashed var(--border); background: #000; }
+        .telemetry-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9em; }
+        .val { color: var(--neon); font-weight: bold; }
+
+        .config-panel { padding: 20px; }
+        .config-box { margin-bottom: 20px; background: #000; border: 1px solid var(--border); padding: 15px; }
+        .config-box h3 { color: var(--gold); margin: 0 0 15px 0; font-size: 1em; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .settings-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; position: sticky; top: 0; z-index: 5; background: var(--panel); padding-bottom: 12px; margin-bottom: 8px; }
+        .settings-tab { min-height: 42px; background: #060606; color: #888; border: 1px solid #2a2a2a; padding: 10px 6px; font-family: inherit; font-size: 0.78em; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .settings-tab:hover { color: var(--cyan); border-color: var(--cyan); }
+        .settings-tab.active { color: #000; background: var(--neon); border-color: var(--neon); box-shadow: 0 0 15px rgba(0,255,65,0.18); }
+        .settings-page { display: none; }
+        .settings-page.active { display: block; }
+        .status-ribbon { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+        .status-card { background:linear-gradient(180deg, rgba(0,255,65,0.06), rgba(255,255,255,0.01)); border:1px solid #1d3a24; padding:12px; min-height:70px; }
+        .status-card b { display:block; color:#fff; font-size:0.8em; margin-bottom:6px; text-transform:uppercase; }
+        .status-card span { color:#9aa09b; font-size:0.74em; line-height:1.35; display:block; }
+        .skill-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+        .skill-card { background:#050505; border:1px solid #263326; padding:12px; border-left:3px solid var(--neon); }
+        .skill-card strong { color:#fff; display:block; margin-bottom:5px; }
+        .skill-card small { color:#888; display:block; line-height:1.45; }
+        .quickbar { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:12px 0; }
+        .quickbar button { min-height:38px; background:#090909; border:1px solid #304030; color:#cfe8cf; cursor:pointer; font-family:inherit; font-weight:bold; font-size:0.74em; text-transform:uppercase; }
+        .quickbar button:hover { border-color:var(--neon); color:var(--neon); }
+        label { display: block; color: #888; font-size: 0.8em; margin-bottom: 5px; text-transform: uppercase; }
+        .hint { color: #666; font-size: 0.76em; line-height: 1.5; margin: -8px 0 14px 0; text-transform: none; }
+        input, select { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 10px; margin-bottom: 15px; font-family: inherit; }
+        input:focus, select:focus { outline: none; border-color: var(--neon); }
+
+        button.action-btn { width: 100%; background: #111; color: var(--neon); border: 1px solid var(--neon); padding: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        button.action-btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 15px rgba(0,255,65,0.3); }
+        
+        button.save-btn { border-color: var(--gold); color: var(--gold); margin-top: 10px; }
+        button.save-btn:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212,175,55,0.3); }
+        
+        button.delete-btn { border-color: var(--danger); color: var(--danger); margin-top: 10px; }
+        button.delete-btn:hover { background: var(--danger); color: #fff; box-shadow: 0 0 15px rgba(255,51,51,0.3); }
+
+        .main-stream { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+        .chat-history { flex-grow: 1; padding: 30px; overflow-y: auto; background: linear-gradient(rgba(0, 255, 65, 0.02) 1px, transparent 1px); background-size: 100% 4px; }
+        .log-panel { height: 150px; background: #000; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px; overflow-y: auto; font-size: 0.8em; color: #888; display: flex; flex-direction: column; }
+        .log-panel span.log-entry { margin-bottom: 4px; font-family: 'Consolas', monospace; }
+        .log-panel span.log-entry.active { color: var(--neon); }
+        .msg-block { margin-bottom: 25px; padding: 20px; border-left: 3px solid #333; background: rgba(255,255,255,0.01); animation: fadeIn 0.3s ease-in; }
+        .msg-block.user { border-left-color: #888; } .msg-block.user .sender { color: #888; }
+        .msg-block.zero { border-left-color: var(--neon); background: rgba(0,255,65,0.03); } .msg-block.zero .sender { color: var(--neon); }
+        .msg-block.system { border-left-color: var(--gold); background: rgba(212,175,55,0.05); } .msg-block.system .sender { color: var(--gold); }
+        .msg-block.terminal { border-left-color: #00ffff; background: rgba(0,255,255,0.03); font-family: 'Consolas', 'Monaco', monospace; text-transform: none; }
+        .msg-block.terminal .sender { color: #00ffff; }
+        .sender { font-weight: bold; margin-bottom: 10px; font-size: 0.9em; letter-spacing: 1px; }
+        .content { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+        pre { background: #000 !important; border: 1px dashed #444; padding: 15px; overflow-x: auto; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+        code { color: var(--neon); }
+
+        .input-area { padding: 20px; background: var(--panel); border-top: 1px solid var(--border); display: flex; gap: 15px; align-items: center; }
+        textarea { flex-grow: 1; background: #000; border: 1px solid #333; color: #fff; padding: 15px; font-family: inherit; font-size: 1em; resize: none; height: 60px; }
+        textarea:focus { outline: none; border-color: var(--neon); }
+        
+        .icon-btn { background: #111; color: #888; border: 1px solid #333; padding: 10px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; font-size: 1.2em; height: 60px; width: 60px; }
+        .icon-btn:hover { color: var(--neon); border-color: var(--neon); background: rgba(0,255,65,0.05); }
+
+        .exec-btn { background: var(--neon); color: #000; border: none; padding: 0 30px; height: 60px; font-weight: bold; font-size: 1.1em; cursor: pointer; }
+        .exec-btn:hover { background: #fff; box-shadow: 0 0 20px rgba(0,255,65,0.5); }
+        .stop-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 0 24px; height: 60px; font-weight: bold; font-size: 1em; cursor: pointer; }
+        .stop-btn:hover { background: var(--danger); color: #fff; box-shadow: 0 0 20px rgba(255,51,51,0.35); }
+        .exec-btn:disabled, .stop-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+        
+        #neural-loop { display: none; padding: 15px; color: var(--neon); font-style: italic; border-left: 3px solid var(--neon); margin: 0 30px 20px 30px; background: rgba(0,255,65,0.1); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        
+        .storage-path { color: #555; font-size: 0.75em; margin-bottom: 12px; font-family: monospace; }
+        .flex-row { display: flex; gap: 10px; }
+        .health-note { color: #9aa09b; font-size: 0.78em; line-height: 1.5; margin: 10px 0 0 0; text-transform: none; }
+        .health-note.warn { color: var(--gold); }
+        .health-note.error { color: #ff8f8f; }
+
+        @media (max-width: 1100px) {
+            body { display: block; height: auto; min-height: 100vh; overflow-x: hidden; overflow-y: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: none; }
+            .main-stream { min-height: 70vh; }
+            .chat-history { padding: 18px; }
+            .config-panel { padding: 14px; }
+            .config-box { padding: 14px; }
+            .settings-nav { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+            .settings-tab { min-height: 40px; font-size: 0.72em; }
+            .status-ribbon, .quickbar { grid-template-columns: 1fr; }
+            .flex-row { flex-direction: column; }
+            .input-area { flex-wrap: wrap; padding: 14px; }
+            textarea { width: 100%; order: 1; min-height: 100px; font-size: 16px; }
+            .icon-btn { width: calc(50% - 8px); }
+            .exec-btn, .stop-btn { width: 100%; order: 2; padding: 0 16px; }
+            input, select { font-size: 16px; }
+            .telemetry { padding: 14px; }
+            .log-panel { height: 120px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="header-brand">
+            <h1>OPEN<span>ZERO</span></h1>
+            <div style="color:#666; font-size:0.8em; margin-top:5px;">SOVEREIGN LATTICE NODE // 5.4 CONTROL PANEL</div>
+        </div>
+
+        <div class="telemetry">
+            <div class="telemetry-row"><span>CPU LOAD:</span> <span class="val" id="sys-cpu">--%</span></div>
+            <div class="telemetry-row"><span>RAM USAGE:</span> <span class="val" id="sys-ram">--%</span></div>
+            <div class="telemetry-row"><span>HIVE LINK:</span> <span class="val" id="sys-hive">--</span></div>
+            <div class="telemetry-row"><span>HIVE MODE:</span> <span class="val" id="sys-hive-mode" style="color:var(--gold)">--</span></div>
+            <div class="telemetry-row"><span>UNSENT EVENTS:</span> <span class="val" id="sys-hive-queue" style="color:var(--cyan)">--</span></div>
+            <div class="telemetry-row"><span>LATTICE CACHE:</span> <span class="val" id="sys-hive-cache" style="color:#9fdcff">--</span></div>
+            <div class="telemetry-row"><span>LOOKUP:</span> <span class="val" id="sys-hive-lookup" style="color:var(--gold)">--</span></div>
+            <div class="telemetry-row"><span>CHAT SHARE:</span> <span class="val" id="sys-hive-share" style="color:var(--gold)">--</span></div>
+            <div class="telemetry-row"><span>ENGINE:</span> <span class="val" id="sys-mode" style="color:var(--gold)">--</span></div>
+            <div class="telemetry-row"><span>NODE_ID:</span> <span class="val" id="sys-id" style="color:#888">--</span></div>
+            <div class="telemetry-row"><span>TIER:</span> <span class="val" id="sys-tier" style="color:var(--gold)">--</span></div>
+            <div class="telemetry-row"><span>MODEL:</span> <span class="val" id="sys-model" style="color:var(--cyan)">--</span></div>
+            <div class="telemetry-row"><span>CONTEXT:</span> <span class="val" id="sys-context" style="color:#aaa">--</span></div>
+        </div>
+
+        <div class="config-panel">
+            <div class="settings-nav" aria-label="OpenZero settings pages">
+                <button type="button" class="settings-tab active" data-settings-page="hive" onclick="showSettingsPage('hive')">Hive</button>
+                <button type="button" class="settings-tab" data-settings-page="models" onclick="showSettingsPage('models')">Models</button>
+                <button type="button" class="settings-tab" data-settings-page="keys" onclick="showSettingsPage('keys')">Keys/API</button>
+                <button type="button" class="settings-tab" data-settings-page="skills" onclick="showSettingsPage('skills')">Skills</button>
+                <button type="button" class="settings-tab" data-settings-page="voice" onclick="showSettingsPage('voice')">Voice</button>
+                <button type="button" class="settings-tab" data-settings-page="economy" onclick="showSettingsPage('economy')">Economy</button>
+                <button type="button" class="settings-tab" data-settings-page="ops" onclick="showSettingsPage('ops')">Ops</button>
+            </div>
+
+            <div class="status-ribbon">
+                <div class="status-card"><b>Agent Tools</b><span id="skill-health">Loading skills...</span></div>
+                <div class="status-card"><b>Moltbot</b><span id="vision-health">Checking browser...</span></div>
+            </div>
+
+            <div class="settings-page active" data-settings-page="hive">
+            <div class="config-box">
+                <h3>DECENTRALIZED LATTICE</h3>
+                <div class="hint">If you know nothing yet, keep Hive for node status only, leave chat sharing on manual approval, and keep Local Continuity enabled. Federation mirrors are backup hubs for trusted operators.</div>
+                <label>Hive Mind Status</label>
+                <select id="cfg_hive">
+                    <option value="true">CONNECTED (ON)</option>
+                    <option value="false">DISCONNECTED (OFF)</option>
+                </select>
+                <label>Hive Network Mode</label>
+                <select id="cfg_hive_mode">
+                    <option value="standalone">STANDALONE (ONE HIVE HQ)</option>
+                    <option value="federated">FEDERATED (HQ + MIRRORS)</option>
+                    <option value="local">LOCAL CONTINUITY ONLY</option>
+                </select>
+                <label>Hive HQ URL</label>
+                <input type="text" id="cfg_hive_url" placeholder="https://openzero.talktoai.org/api/hive">
+                <div class="hint">This is your primary hive coordinator. If your personal Hive HQ vanishes, operators can point this field at a new compatible Hive.</div>
+                <label>Federation Mirrors</label>
+                <input type="text" id="cfg_hive_mirrors" placeholder="https://mirror1/api/hive,https://mirror2/api/hive">
+                <div class="hint">Comma-separated backup Hive endpoints. In federated mode OpenZero writes to all reachable mirrors and queues failed writes locally for replay.</div>
+                <label>Local Continuity Spool</label>
+                <select id="cfg_hive_spool">
+                    <option value="true">ENABLED (SURVIVES OUTAGES)</option>
+                    <option value="false">DISABLED</option>
+                </select>
+                <div class="hint">The Hive queue is not an LLM task list. It is only a local spool of unsent lattice events from this node. If a Hive HQ is slow, gone, or you just want zero interference, pause Hive or clear the queue and keep working locally.</div>
+                <label>Remote Hive Lookup</label>
+                <select id="cfg_hive_lookup">
+                    <option value="false">LOCAL-FIRST (OFF)</option>
+                    <option value="true">ENABLED (ASK REMOTE HIVE)</option>
+                </select>
+                <div class="hint">When this is off, OpenZero still registers and can push/replay Hive events, but live chat stays local-first and does not pause to query remote Hive endpoints. Even when enabled, OpenZero now auto-pauses remote lookup if the local spool backlog grows.</div>
+                <label>Chat Sharing To Hive</label>
+                <select id="cfg_hive_share_mode">
+                    <option value="manual">MANUAL APPROVAL ONLY</option>
+                    <option value="private">NEVER SHARE CHATS</option>
+                    <option value="auto_safe">AUTO-SAFE PUBLIC LEARNING</option>
+                </select>
+                <div class="hint">Safe default: manual. Local learning is private. Auto-safe only publishes redacted, low-risk chat knowledge and still blocks public sharing when the safety filter fires.</div>
+            </div>
+            </div>
+
+            <div class="settings-page" data-settings-page="economy">
+            <div class="config-box">
+                <h3>ECONOMY & PAID HIVE</h3>
+                <label>$OZ Compute Fee</label>
+                <input type="text" id="cfg_fee" placeholder="0.0">
+                <label>P(G) Threshold</label>
+                <input type="text" id="cfg_p_good" placeholder="0.10">
+                <label>$OZ Token CA</label>
+                <input type="text" id="cfg_oz_ca" placeholder="86mnqW1TcHiFVSHHgHDf4htzs4qEGW9nr3Uzz5GjttXk">
+                <label>Paid Hive</label>
+                <select id="cfg_paid_hive">
+                    <option value="false">DISABLED</option>
+                    <option value="true">ENABLED</option>
+                </select>
+                <label>Paid Hive Solana Address</label>
+                <input type="text" id="cfg_paid_address" placeholder="Stored locally on this node">
+                <div class="flex-row">
+                    <div style="flex:1;">
+                        <label>Free Boost</label>
+                        <select id="cfg_paid_free_boost">
+                            <option value="true">ALLOWED</option>
+                            <option value="false">OFF</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label>Stake Multiplier</label>
+                        <input type="text" id="cfg_paid_multiplier" placeholder="1.0">
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <div class="settings-page" data-settings-page="models">
+            <div class="config-box">
+                <h3>MODELS & RUNTIME</h3>
+                
+                <label>Computation Mode</label>
+                <select id="cfg_comp_mode">
+                    <option value="hybrid">HYBRID (AUTO-ROUTING)</option>
+                    <option value="local">LOCAL ONLY (AIR-GAPPED)</option>
+                    <option value="cloud">CLOUD ONLY (GROQ)</option>
+                </select>
+
+                <label>Agent Mode</label>
+                <div class="flex-row" style="margin-bottom: 15px;">
+                    <button id="mode-chat" class="action-btn" onclick="setAgentMode('chat')" style="flex: 1; border-color: var(--neon); background: var(--neon); color: #000; padding: 5px; font-size: 0.8em;">CHAT</button>
+                    <button id="mode-terminal" class="action-btn" onclick="setAgentMode('terminal')" style="flex: 1; border-color: #888; color: #888; padding: 5px; font-size: 0.8em;">TERMINAL</button>
+                </div>
+                <div class="hint">Terminal mode now has a stronger local operator lane: real file reads/writes, directory trees, archive create/extract, web fetch/search, OSINT, and SSH/SCP-style remote ops, with raw tool calls hidden from the main stream unless there is useful text to show.</div>
+
+                <label>Active Model</label>
+                <select id="cfg_model">
+                    <option value="Loading...">Loading...</option>
+                </select>
+                <div class="hint" id="model-store-note">Loading local model stores...</div>
+                <div class="health-note" id="ollama-health-note"></div>
+                <div class="health-note" id="model-health-note"></div>
+                <div class="health-note" id="bitnet-health-note"></div>
+                <div class="flex-row" style="margin-top:10px;">
+                    <button class="action-btn" style="border-color:var(--green); color:var(--green);" onclick="installLocalModel('gemma4:e2b')">INSTALL GEMMA 4 E2B</button>
+                    <button class="action-btn" style="border-color:var(--green); color:var(--green);" onclick="installLocalModel('gemma4:e4b')">INSTALL GEMMA 4 E4B</button>
+                </div>
+                <div class="flex-row" style="margin-top:10px;">
+                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="installLocalModel('gemma4:26b')">INSTALL GEMMA 4 26B</button>
+                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="installLocalModel('gemma3:12b')">INSTALL GEMMA 3 12B</button>
+                </div>
+                <div class="flex-row" style="margin-top:10px;">
+                    <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan);" onclick="upgradeOllama()">UPDATE OLLAMA</button>
+                    <button class="action-btn" style="border-color:var(--neon); color:var(--neon);" onclick="repairLocalBrain()">REPAIR LOCAL BRAIN</button>
+                </div>
+                <div class="flex-row" style="margin-top:10px;">
+                    <button class="action-btn" style="border-color:#9effd6; color:#9effd6;" onclick="installBitnet()">INSTALL BITNET</button>
+                    <button class="action-btn" style="border-color:#7ad3ff; color:#7ad3ff;" onclick="repairBitnet()">REPAIR BITNET</button>
+                </div>
+                <div class="flex-row" style="margin-top:10px;">
+                    <button class="action-btn delete-btn" onclick="removeBitnet()">REMOVE BITNET</button>
+                    <button class="action-btn" style="border-color:#7fbfff; color:#7fbfff;" onclick="installLocalModel('gemma3:4b')">INSTALL GEMMA 3 4B</button>
+                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="refreshModelInventory()">REFRESH MODELS</button>
+                </div>
+                <div class="hint">Gemma via Ollama remains the default lane. Microsoft BitNet is an optional 1-bit CPU add-on for lower-power or older systems and has its own runtime separate from Ollama.</div>
+
+                <label>GGUF Download URL</label>
+                <input type="text" id="hf_url" placeholder="https://huggingface.co/.../resolve/main/model.gguf">
+                <label>Model Alias For Local GGUF</label>
+                <input type="text" id="hf_model_name" placeholder="example-14b-q4">
+                <label>Optional Local Filename</label>
+                <input type="text" id="hf_file_name" placeholder="Leave blank to use the URL filename">
+                <div class="hint">Paste a direct GGUF URL, not just the model card page. Native Ollama pulls like Gemma 4 already install as local quantized weights and are the recommended CPU-first lane. BitNet is its own optional runtime add-on. The <code>./models</code> folder is only for custom GGUF overrides when you want to bring your own weights.</div>
+                <label>Custom GGUF Package Inventory</label>
+                <select id="cfg_custom_model">
+                    <option value="">No custom GGUF packages detected</option>
+                </select>
+                <div class="hint" id="custom-model-note">Custom Hugging Face GGUF packages will appear here once they are pulled into the local models folder.</div>
+                
+                <div class="flex-row">
+                    <button class="action-btn save-btn" onclick="saveAllSettings()">SAVE SETTINGS</button>
+                    <button class="action-btn delete-btn" onclick="deleteActiveModel()">DELETE ACTIVE MODEL</button>
+                </div>
+                <div style="margin-top:10px;">
+                    <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan);" onclick="pullWeights()">PULL WEIGHTS</button>
+                </div>
+                <div style="margin-top:10px;">
+                    <button class="action-btn delete-btn" onclick="deleteCustomModel()">DELETE GGUF PACKAGE</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="settings-page" data-settings-page="skills">
+            <div class="config-box">
+                <h3>AGENT SKILLS & AUTOMATION</h3>
+                <div class="hint">OpenZero keeps a compact skill registry in the prompt so low-grade CPUs do not waste context on a huge manual. Use these shortcuts to seed the chat with the right tool instruction.</div>
+                <div class="quickbar">
+                    <button onclick="quickPrompt('Search the web for the latest information about ')">Web Research</button>
+                    <button onclick="quickPrompt('Use Moltbot to open and inspect this page: ')">Moltbot Browse</button>
+                    <button onclick="quickPrompt('Check these files and summarize what matters: ')">File Audit</button>
+                    <button onclick="quickPrompt('Create a backup archive for this folder: ')">Backup Zip</button>
+                    <button onclick="quickPrompt('Check this server over SSH and report health: ')">Server Check</button>
+                    <button onclick="quickPrompt('Plan and automate this task safely: ')">Automation Plan</button>
+                </div>
+                <label>Local Learning</label>
+                <select id="cfg_local_learning">
+                    <option value="true">ENABLED (LEARN LOCALLY)</option>
+                    <option value="false">DISABLED</option>
+                </select>
+                <div class="hint">Local learning updates the node's private lattice cache after useful chat replies. Public Hive sharing remains separate and still follows the privacy setting.</div>
+                <label>Low-CPU Mode</label>
+                <select id="cfg_low_cpu">
+                    <option value="true">ENABLED (BACKGROUND LEARNING)</option>
+                    <option value="false">DISABLED</option>
+                </select>
+                <label>Automation</label>
+                <select id="cfg_automation">
+                    <option value="true">ENABLED</option>
+                    <option value="false">DISABLED</option>
+                </select>
+                <div class="skill-grid" id="skill-grid">
+                    <div class="skill-card"><strong>Loading...</strong><small>OpenZero is reading the local skill registry.</small></div>
+                </div>
+            </div>
+            </div>
+
+            <div class="settings-page" data-settings-page="ops">
+            <div class="config-box">
+                <h3>OPERATIONS</h3>
+                <div style="margin-top:10px;" class="flex-row">
+                    <a href="/manual" target="_blank" style="text-decoration:none;">
+                        <button class="action-btn" style="border-color:var(--gold); color:var(--gold);">SYSTEM MANUAL</button>
+                    </a>
+                    <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan);" onclick="openHiveMonitor()">HIVE MONITOR</button>
+                </div>
+                <div style="margin-top:10px;" class="flex-row">
+                    <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan);" onclick="refreshHiveStatus()">REFRESH HIVE</button>
+                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="replayFederationQueue()">REPLAY QUEUE</button>
+                </div>
+                <div style="margin-top:10px;" class="flex-row">
+                    <button class="action-btn" style="border-color:var(--neon); color:var(--neon);" onclick="shareLastChatToHive()">SEND LAST CHAT TO HIVE</button>
+                </div>
+                <div style="margin-top:10px;" class="flex-row">
+                    <button class="action-btn" style="border-color:var(--danger); color:var(--danger);" onclick="pauseHive()">PAUSE HIVE</button>
+                    <button class="action-btn" style="border-color:var(--neon); color:var(--neon);" onclick="resumeHive()">RESUME HIVE</button>
+                </div>
+                <div style="margin-top:10px;" class="flex-row">
+                    <button class="action-btn" style="border-color:var(--danger); color:var(--danger);" onclick="clearFederationQueue()">CLEAR QUEUE</button>
+                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="clearLocalLattice()">CLEAR LOCAL EVENTS</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="settings-page" data-settings-page="keys">
+            <div class="config-box">
+                <h3>KEYS & NODE</h3>
+                <div style="margin-top:15px;">
+                    <label>Node Label</label>
+                    <input type="text" id="cfg_node_label" placeholder="Example: North-64GB">
+
+                    <label>Node Role</label>
+                    <input type="text" id="cfg_node_role" placeholder="general">
+
+                    <label>Node Wallet</label>
+                    <input type="text" id="cfg_wallet" placeholder="Local Solana address">
+
+                    <label>Groq API Key</label>
+                    <input type="password" id="cfg_groq" placeholder="Enter API Key...">
+
+                    <label>Serper API Key (OSINT)</label>
+                    <input type="password" id="cfg_serper" placeholder="Enter Serper Dev Key...">
+
+                    <label>Telegram Bot Token</label>
+                    <input type="password" id="cfg_tele" placeholder="Enter Telegram Token...">
+
+                    <label>OpenZero API Key</label>
+                    <div class="hint">Create a local OpenAI-compatible key for ZeroThink. The key is shown once; store it in ZeroThink Neural Vault as your OpenZero Machine API Key.</div>
+                    <div class="flex-row" style="margin-bottom:10px;">
+                        <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan); padding:8px; font-size:0.78em;" onclick="rotateOpenZeroApiKey()">CREATE / ROTATE</button>
+                        <button class="action-btn delete-btn" style="padding:8px; font-size:0.78em; margin-top:0;" onclick="revokeOpenZeroApiKey()">REVOKE</button>
+                    </div>
+                    <div class="hint" id="openzero-api-status">OpenZero API key not loaded yet.</div>
+                    <input type="text" id="openzero-api-result" readonly placeholder="New key appears here once after rotation." style="display:none;">
+                </div>
+            </div>
+            </div>
+
+            <div class="settings-page" data-settings-page="voice">
+            <div class="config-box">
+                <h3>VOICE & VISION</h3>
+                <div style="margin-top:15px;">
+                    <label>Moltbot Vision</label>
+                    <select id="cfg_vision">
+                        <option value="true">ENABLED (ON)</option>
+                        <option value="false">DISABLED (OFF)</option>
+                    </select>
+
+                    <label>Voice Enabled</label>
+                    <select id="cfg_voice_enabled">
+                        <option value="false">DISABLED</option>
+                        <option value="true">ENABLED</option>
+                    </select>
+
+                    <label>Voice Replies</label>
+                    <select id="cfg_voice_tts">
+                        <option value="false">DISABLED</option>
+                        <option value="true">ENABLED</option>
+                    </select>
+
+                    <label>Always-On Mic Toggle</label>
+                    <select id="cfg_voice_auto">
+                        <option value="false">OFF</option>
+                        <option value="true">ON</option>
+                    </select>
+
+                    <label>Whisper Model</label>
+                    <select id="cfg_voice_model">
+                        <option value="tiny">TINY</option>
+                        <option value="base">BASE</option>
+                        <option value="small">SMALL</option>
+                    </select>
+
+                    <label>Piper Voice</label>
+                    <input type="text" id="cfg_voice_name" placeholder="en_GB-alan-medium">
+
+                    <div class="flex-row">
+                        <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan);" onclick="testVoice()">TEST VOICE</button>
+                        <button class="action-btn" onclick="openHiveMonitor()">OPEN HIVE HQ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="main-stream">
+        <div class="chat-history" id="chat-history">
+            <div class="msg-block system">
+                <div class="sender">[SYSTEM INITIALIZED]</div>
+                <div class="content">Autonomous Node Active. Root terminal access granted. Architect mode engaged.</div>
+            </div>
+        </div>
+        
+        <div id="neural-loop">
+            [///] AGENT RE-ACT LOOP ACTIVE: Computing multi-step trajectory and executing system commands...
+        </div>
+
+        <div class="log-panel" id="log-panel">
+            <span class="log-entry">> LATTICE LOGS INITIALIZED...</span>
+        </div>
+
+        <div class="input-area">
+            <button class="icon-btn" onclick="document.getElementById('file-input').click()" title="Upload File">📎</button>
+            <input type="file" id="file-input" style="display:none" onchange="uploadFile()">
+            <button class="icon-btn" id="clear-mem-btn" onclick="clearMemory()" title="Clear Memory Cortex" style="display:none; color:var(--danger); border-color:var(--danger);">✖</button>
+            <textarea id="cmd-input" placeholder="Enter directive..." onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendCommand(); }"></textarea>
+            <button class="exec-btn" id="exec-btn" onclick="sendCommand()">EXECUTE</button>
+            <button class="stop-btn" id="stop-btn" onclick="stopCommand()" disabled>STOP</button>
+        </div>
+    </div>
+
+    <script>
+        window.showSettingsPage = function(page) {
+            document.querySelectorAll('.settings-page').forEach(panel => {
+                panel.classList.toggle('active', panel.dataset.settingsPage === page);
+            });
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.settingsPage === page);
+            });
+        };
+
+        const socket = io();
+        const chatBox = document.getElementById('chat-history');
+        const neuralLoop = document.getElementById('neural-loop');
+        const clearMemBtn = document.getElementById('clear-mem-btn');
+        const execBtn = document.getElementById('exec-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const cmdInput = document.getElementById('cmd-input');
+        let currentAgentMode = 'chat';
+        let runtimeConfig = {};
+        let customModelInventory = [];
+        let agentRunActive = false;
+
+        function setRunState(active, status = 'idle', message = '') {
+            agentRunActive = !!active;
+            if (execBtn) {
+                execBtn.disabled = agentRunActive;
+            }
+            if (stopBtn) {
+                stopBtn.disabled = !agentRunActive;
+            }
+            if (cmdInput) {
+                cmdInput.disabled = agentRunActive;
+            }
+            if (!neuralLoop) return;
+            if (!agentRunActive) {
+                neuralLoop.style.display = 'none';
+                return;
+            }
+            const note = (message || '').trim();
+            if (status === 'stopping') {
+                neuralLoop.innerText = note || '[///] STOP REQUESTED: Agent Zero is halting at the next safe boundary...';
+            } else {
+                neuralLoop.innerText = note || '[///] AGENT RE-ACT LOOP ACTIVE: Computing multi-step trajectory and executing system commands...';
+            }
+            neuralLoop.style.display = 'block';
+        }
+
+        function setAgentMode(mode) {
+            currentAgentMode = mode;
+            const chatBtn = document.getElementById('mode-chat');
+            const termBtn = document.getElementById('mode-terminal');
+            
+            if (mode === 'terminal') {
+                termBtn.style.background = '#00ffff';
+                termBtn.style.color = '#000';
+                termBtn.style.borderColor = '#00ffff';
+                chatBtn.style.background = '#111';
+                chatBtn.style.color = '#888';
+                chatBtn.style.borderColor = '#333';
+                appendMessage('system', 'MODE', 'AGENT TERMINAL MODE ACTIVE. Agent Zero can now inspect folders, read and write files, search code, build or extract archives, fetch webpages, run OSINT, and use SSH/SCP or shell commands when needed.');
+            } else {
+                chatBtn.style.background = 'var(--neon)';
+                chatBtn.style.color = '#000';
+                chatBtn.style.borderColor = 'var(--neon)';
+                termBtn.style.background = '#111';
+                termBtn.style.color = '#888';
+                termBtn.style.borderColor = '#333';
+                appendMessage('system', 'MODE', 'AGENT CHAT MODE ACTIVE. Conversational logic enabled. Switch to Terminal when you want Agent Zero to act directly on files, archives, web tasks, or remote nodes.');
+            }
+        }
+
+        const cloudModels = [
+            {val: "groq/compound-large", label: "Cloud: Groq Compound Large"},
+            {val: "openai/gpt-oss-120b", label: "Cloud: Groq GPT-OSS 120B"},
+            {val: "meta-llama/llama-4-maverick-17b-128e-instruct", label: "Cloud: Groq Llama 4 17B"},
+            {val: "llama-3.3-70b-versatile", label: "Cloud: Groq Llama 3.3 70B"},
+            {val: "qwen/qwen3-32b", label: "Cloud: Groq Qwen 3 32B"}
+        ];
+
+        function isBitnetModel(modelId) {
+            return (modelId || '').trim().toLowerCase() === 'bitnet-b1.58-2b-4t';
+        }
+
+        function setModelStoreNote(payload) {
+            const note = document.getElementById('model-store-note');
+            if (!note) return;
+            const stores = payload?.stores || payload?.MODEL_STORES || {};
+            const ggufFiles = payload?.gguf_files || stores.gguf_files || [];
+            const customModels = payload?.custom_models || stores.custom_models || [];
+            const ollamaCount = (payload?.models || stores.ollama_models || []).length;
+            const bitnet = payload?.bitnet || payload?.BITNET_STATUS || {};
+            const ggufCount = ggufFiles.length;
+            const ggufFolder = stores.gguf_folder || './models';
+            const bitnetLine = bitnet.ready
+                ? ` BitNet is installed as a separate 1-bit runtime and ready at <code>${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}</code>.`
+                : ` BitNet is optional and currently not installed on this node.`;
+            note.textContent = `Ollama pulls live in the Ollama model store (${ollamaCount} visible) and are the recommended CPU-first local lane. Custom GGUF files live in ${ggufFolder} (${ggufCount} detected), with ${customModels.length} tracked custom package${customModels.length === 1 ? '' : 's'} ready for managed cleanup.${bitnet.ready ? ` BitNet is installed as a separate 1-bit runtime and ready at ${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}.` : ' BitNet is optional and currently not installed on this node.'}`;
+        }
+
+        function renderCustomModelInventory(items) {
+            customModelInventory = Array.isArray(items) ? items : [];
+            const select = document.getElementById('cfg_custom_model');
+            const note = document.getElementById('custom-model-note');
+            if (!select) return;
+
+            select.innerHTML = '';
+            if (!customModelInventory.length) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.innerText = 'No custom GGUF packages detected';
+                select.appendChild(opt);
+                if (note) {
+                    note.textContent = 'Custom Hugging Face GGUF packages will appear here once they are pulled into the local models folder.';
+                }
+                return;
+            }
+
+            customModelInventory.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.gguf_file || item.id || '';
+                const aliasText = (item.aliases || []).length ? item.aliases.join(', ') : 'no alias detected';
+                const fileStatus = item.file_exists ? item.size_label : 'missing file';
+                opt.innerText = `${item.gguf_file || 'unknown.gguf'} // ${aliasText} // ${fileStatus}`;
+                select.appendChild(opt);
+            });
+
+            if (note) {
+                const orphaned = customModelInventory.filter(item => item.is_orphaned_alias).length;
+                note.textContent = `Tracked custom packages: ${customModelInventory.length}. Delete from here to remove both the GGUF file and any linked Ollama aliases when OpenZero can resolve them.${orphaned ? ` Detected ${orphaned} orphaned alias/file mapping issue${orphaned === 1 ? '' : 's'}.` : ''}`;
+            }
+        }
+
+        function setHealthNote(id, text, tone='') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = `health-note${tone ? ` ${tone}` : ''}`;
+            el.textContent = text || '';
+        }
+
+        function quickPrompt(text) {
+            const input = document.getElementById('cmd-input');
+            if (!input) return;
+            input.value = text;
+            input.focus();
+        }
+
+        function renderSkillCatalog(data) {
+            const grid = document.getElementById('skill-grid');
+            const health = document.getElementById('skill-health');
+            if (!grid) return;
+            const skills = Array.isArray(data?.skills) ? data.skills : [];
+            grid.innerHTML = '';
+            if (health) {
+                const serper = data?.serper_enabled ? 'Serper on' : 'fallback search';
+                const learning = data?.local_learning_enabled ? 'local learning on' : 'local learning off';
+                health.textContent = `${skills.length || 0} skills loaded, ${serper}, ${learning}.`;
+            }
+            if (!skills.length) {
+                grid.innerHTML = '<div class="skill-card"><strong>No skills loaded</strong><small>Refresh the page or check the local OpenZero runtime.</small></div>';
+                return;
+            }
+            skills.forEach(skill => {
+                const card = document.createElement('div');
+                card.className = 'skill-card';
+                card.innerHTML = `<strong>${skill.name || skill.id}</strong><small>${skill.triggers || ''}<br>${skill.notes || ''}</small>`;
+                card.onclick = () => quickPrompt(`${skill.name || skill.id}: `);
+                grid.appendChild(card);
+            });
+        }
+
+        function loadSkillCatalog() {
+            fetch('/api/skills')
+                .then(r => r.json())
+                .then(renderSkillCatalog)
+                .catch(() => {
+                    const health = document.getElementById('skill-health');
+                    if (health) health.textContent = 'Skill registry unavailable.';
+                });
+        }
+
+        function refreshVisionHealth() {
+            fetch('/api/vision/status')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('vision-health');
+                    if (!el) return;
+                    const enabled = data.enabled ? 'enabled' : 'disabled';
+                    const status = data.moltbot?.status || 'unknown';
+                    el.textContent = `Vision ${enabled}; Moltbot ${status}.`;
+                })
+                .catch(() => {
+                    const el = document.getElementById('vision-health');
+                    if (el) el.textContent = 'Moltbot status unavailable.';
+                });
+        }
+
+        function setRuntimeHealth(cfg) {
+            const ollama = cfg?.OLLAMA_STATUS || {};
+            const bitnet = cfg?.BITNET_STATUS || {};
+            const effectiveModel = cfg?.ACTIVE_MODEL_EFFECTIVE || cfg?.ACTIVE_MODEL || '';
+            const savedModel = cfg?.SAVED_ACTIVE_MODEL || cfg?.ACTIVE_MODEL || '';
+            const engine = cfg?.LOCAL_ENGINE_EFFECTIVE || (isBitnetModel(effectiveModel) ? 'bitnet' : 'ollama');
+            const versionLabel = ollama.version || ollama.raw || 'unknown';
+            if (engine === 'bitnet') {
+                const bitnetText = bitnet.ready
+                    ? `BitNet runtime: <code>${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}</code> // Microsoft 1-bit lane ready.`
+                    : `BitNet runtime selected but not ready yet. Install or repair the optional 1-bit add-on before expecting local BitNet replies.`;
+                setHealthNote('ollama-health-note', bitnetText, bitnet.ready ? '' : 'warn');
+                const ollamaFallback = ollama.available === false
+                    ? 'Ollama CLI is missing, so Gemma fallback is unavailable on this node right now.'
+                    : `Ollama fallback remains ${ollama.reachable ? 'reachable' : 'not reachable yet'} // version <code>${versionLabel}</code>.`;
+                setHealthNote('bitnet-health-note', ollamaFallback, ollama.reachable ? '' : 'warn');
+            } else if (ollama.available === false) {
+                setHealthNote('ollama-health-note', 'Ollama CLI is missing on this node. Install or repair the local runtime before expecting Gemma models to work.', 'error');
+                setHealthNote('bitnet-health-note', bitnet.ready ? `BitNet add-on is installed separately at <code>${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}</code> if you want the 1-bit lane.` : 'BitNet is optional and currently not installed.');
+            } else {
+                const reachability = ollama.reachable ? 'API reachable' : 'API not reachable yet';
+                setHealthNote('ollama-health-note', `Ollama runtime: <code>${versionLabel}</code> // ${reachability}. If Gemma 4 pulls fail with a newer-version warning, use <b>Update Ollama</b>.`, ollama.reachable ? '' : 'warn');
+                setHealthNote('bitnet-health-note', bitnet.ready ? `BitNet add-on also looks ready at <code>${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}</code>. Select it from the Active Model list when you want the Microsoft 1-bit CPU lane.` : 'BitNet is optional and currently not installed on this node.');
+            }
+
+            if (cfg?.ACTIVE_MODEL_WARNING) {
+                setHealthNote('model-health-note', `${cfg.ACTIVE_MODEL_WARNING}<br>Engine: <code>${engine}</code> // Saved: <code>${savedModel || 'none'}</code> // Effective: <code>${effectiveModel || 'none'}</code>`, 'warn');
+            } else {
+                setHealthNote('model-health-note', `Engine: <code>${engine}</code> // Saved model: <code>${savedModel || 'none'}</code> // Effective model: <code>${effectiveModel || 'none'}</code>`);
+            }
+        }
+
+        function refreshModelInventory() {
+            loadConfigAndModels();
+            appendMessage('system', 'LATTICE', 'Refreshing local model inventory from Ollama, BitNet, and the GGUF folder.');
+        }
+
+        function installLocalModel(modelId) {
+            appendMessage('system', 'LATTICE', `Installing local preset \`${modelId}\`. This can take a while on slower links.`);
+            fetch('/api/install_local_model', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ model: modelId })
+            }).then(r => r.json()).then(data => {
+                if (data.status !== 'success') {
+                    appendMessage('system', 'LATTICE', `[ERROR] ${data.message || 'Model install failed.'}`);
+                    return;
+                }
+                appendMessage('system', 'LATTICE', `${data.message}\n\n- Model: \`${data.model}\``);
+                loadConfigAndModels();
+            }).catch(() => {
+                appendMessage('system', 'LATTICE', '[ERROR] Model install failed.');
+            });
+        }
+
+        function upgradeOllama() {
+            appendMessage('system', 'LATTICE', 'Updating Ollama with the official installer. This can take a little while on slower nodes.');
+            fetch('/api/ollama/upgrade', { method: 'POST' }).then(r => r.json()).then(data => {
+                const report = data.report || {};
+                const ollama = report.ollama || {};
+                appendMessage(
+                    data.status === 'success' ? 'system' : 'terminal',
+                    'LATTICE',
+                    `${data.message || 'Ollama upgrade finished.'}\n\n- Version: \`${ollama.version || ollama.raw || 'unknown'}\`\n- API reachable: **${report.ready ? 'YES' : 'NO'}**`
+                );
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] Ollama upgrade failed.'));
+        }
+
+        function repairLocalBrain() {
+            appendMessage('system', 'LATTICE', 'Repairing the local brain. OpenZero will refresh Ollama, then try the best Gemma track for this machine.');
+            fetch('/api/repair_local_brain', { method: 'POST' }).then(r => r.json()).then(data => {
+                const attempts = (data.attempts || []).map(item => `- ${item.model}: ${item.ok ? 'OK' : 'FAILED'}`).join('\n');
+                appendMessage(
+                    data.status === 'success' ? 'system' : 'terminal',
+                    'LATTICE',
+                    `${data.message || 'Repair cycle finished.'}${attempts ? `\n\n${attempts}` : ''}`
+                );
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] Local brain repair failed.'));
+        }
+
+        function installBitnet() {
+            appendMessage('system', 'LATTICE', 'Installing the optional Microsoft BitNet 1-bit lane. OpenZero will fetch the official GGUF weights, build the runtime, and switch the local lane to BitNet when ready.');
+            fetch('/api/bitnet/install', { method: 'POST' }).then(r => r.json()).then(data => {
+                appendMessage(
+                    data.status === 'success' ? 'system' : 'terminal',
+                    'LATTICE',
+                    `${data.message || 'BitNet install finished.'}\n\n- Engine: \`bitnet\`\n- Alias: \`${data?.bitnet?.model_alias || 'bitnet-b1.58-2b-4t'}\`\n- Ready: **${data?.bitnet?.ready ? 'YES' : 'NO'}**`
+                );
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] BitNet install failed.'));
+        }
+
+        function repairBitnet() {
+            appendMessage('system', 'LATTICE', 'Repairing the optional BitNet runtime. This will re-run the Microsoft 1-bit build path and refresh the local add-on state.');
+            fetch('/api/bitnet/repair', { method: 'POST' }).then(r => r.json()).then(data => {
+                appendMessage(
+                    data.status === 'success' ? 'system' : 'terminal',
+                    'LATTICE',
+                    `${data.message || 'BitNet repair finished.'}\n\n- Engine: \`bitnet\`\n- Alias: \`${data?.bitnet?.model_alias || 'bitnet-b1.58-2b-4t'}\`\n- Ready: **${data?.bitnet?.ready ? 'YES' : 'NO'}**`
+                );
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] BitNet repair failed.'));
+        }
+
+        function removeBitnet() {
+            if (!confirm('Remove the optional BitNet runtime and switch this node back to the Gemma/Ollama lane?')) return;
+            fetch('/api/bitnet/remove', { method: 'POST' }).then(r => r.json()).then(data => {
+                appendMessage(
+                    data.status === 'success' ? 'system' : 'terminal',
+                    'LATTICE',
+                    `${data.message || 'BitNet remove finished.'}\n\n- Active model: \`${data?.config?.ACTIVE_MODEL || runtimeConfig.ACTIVE_MODEL || 'gemma4:e4b'}\``
+                );
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] BitNet removal failed.'));
+        }
+
+        function currentHiveMonitorUrl() {
+            const configuredUrl = (document.getElementById('cfg_hive_url')?.value || runtimeConfig.OPENZERO_HIVE_URL || '').trim();
+            if (!configuredUrl) return 'https://openzero.talktoai.org/hive-monitor';
+            if (configuredUrl.endsWith('/api/hive')) return configuredUrl.replace(/\/api\/hive$/, '/hive-monitor');
+            if (configuredUrl.endsWith('/api_hive.php')) return configuredUrl.replace(/\/api_hive\.php$/, '/hive-monitor');
+            return configuredUrl;
+        }
+
+        function openHiveMonitor() {
+            window.open(currentHiveMonitorUrl(), '_blank');
+        }
+
+        function refreshHiveStatus() {
+            fetch('/api/hive/status').then(r => r.json()).then(data => {
+                const remote = data.remote || {};
+                const local = data.local || {};
+                const federation = local.federation || {};
+                const lookupState = federation.remote_lookup_enabled ? 'REMOTE LOOKUP ACTIVE' : 'LOCAL-FIRST LOOKUP';
+                const lookupReason = federation.remote_lookup_reason ? `\n- Lookup note: **${federation.remote_lookup_reason}**` : '';
+                const shareMode = (federation.share_mode || 'manual').toUpperCase();
+                appendMessage(
+                    'system',
+                    'HIVE',
+                    `Hive refresh complete.
+
+- Mode: **${(federation.mode || 'standalone').toUpperCase()}**
+- Hive HQ: **${federation.primary_url || 'LOCAL ONLY'}**
+- Mirrors: **${(federation.mirror_urls || []).length}**
+- Unsent local events: **${federation.queued_events || 0}**
+- Local cache events: **${federation.local_knowledge_events || 0}**
+- Lookup: **${lookupState}**
+- Chat sharing: **${shareMode}**
+- Visible remote nodes: **${(remote.nodes || []).length}**
+- Meaning: This queue is only unsent lattice history from this node, not pending LLM jobs.${lookupReason}`
+                );
+            }).catch(() => appendMessage('system', 'HIVE', 'Hive refresh failed.'));
+        }
+
+        function replayFederationQueue() {
+            fetch('/api/hive/replay', { method: 'POST' }).then(r => r.json()).then(data => {
+                const result = data.result || {};
+                const local = data.local || {};
+                const federation = local.federation || {};
+                appendMessage(
+                    'system',
+                    'FEDERATION',
+                    `Replay cycle finished.
+
+- Replayed: **${result.replayed || 0}**
+- Remaining queued: **${result.remaining || federation.queued_events || 0}**
+- Active mode: **${(federation.mode || 'standalone').toUpperCase()}**`
+                );
+            }).catch(() => appendMessage('system', 'FEDERATION', 'Replay cycle failed.'));
+        }
+
+        function shareLastChatToHive() {
+            if (!confirm('Publish the last completed chat answer to Hive search after local safety filtering? Only do this for knowledge you intentionally want other nodes to use.')) return;
+            fetch('/api/hive/share_last', { method: 'POST' }).then(r => r.json()).then(data => {
+                if (data.status !== 'success') {
+                    appendMessage('system', 'HIVE PRIVACY', `[BLOCKED] ${data.message || 'Hive share was not accepted.'}`);
+                    return;
+                }
+                appendMessage('system', 'HIVE PRIVACY', data.message || 'Last chat shared to Hive.');
+                refreshHiveStatus();
+            }).catch(() => appendMessage('system', 'HIVE PRIVACY', 'Unable to share the last chat to Hive.'));
+        }
+
+        function pauseHive() {
+            fetch('/api/hive/pause', { method: 'POST' }).then(r => r.json()).then(data => {
+                appendMessage('system', 'HIVE', data.message || 'Hive paused.');
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'HIVE', 'Unable to pause Hive right now.'));
+        }
+
+        function resumeHive() {
+            fetch('/api/hive/resume', { method: 'POST' }).then(r => r.json()).then(data => {
+                appendMessage('system', 'HIVE', data.message || 'Hive resumed.');
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'HIVE', 'Unable to resume Hive right now.'));
+        }
+
+        function clearFederationQueue() {
+            if (!confirm('Clear the local unsent Hive event queue on this node? This does not delete your core config.')) return;
+            fetch('/api/hive/clear_queue', { method: 'POST' }).then(r => r.json()).then(data => {
+                const result = data.result || {};
+                appendMessage('system', 'FEDERATION', `${result.message || 'Queue cleared.'}\n\n- Cleared: **${result.cleared || 0}**`);
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'FEDERATION', 'Unable to clear the local queue.'));
+        }
+
+        function clearLocalLattice() {
+            if (!confirm('Clear the local lattice knowledge cache on this node? This only wipes the local continuity cache.')) return;
+            fetch('/api/hive/clear_local_events', { method: 'POST' }).then(r => r.json()).then(data => {
+                const result = data.result || {};
+                appendMessage('system', 'FEDERATION', `${result.message || 'Local lattice cache cleared.'}\n\n- Cleared: **${result.cleared || 0}**`);
+                loadConfigAndModels();
+            }).catch(() => appendMessage('system', 'FEDERATION', 'Unable to clear the local lattice cache.'));
+        }
+
+        function testVoice() {
+            fetch('/api/voice/speak', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ text: 'OpenZero voice stack online. This node is ready.' })
+            }).then(r => r.json()).then(data => {
+                appendMessage('system', 'VOICE', `Voice result:\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``);
+            });
+        }
+
+        function uploadFile() {
+            const input = document.getElementById('file-input');
+            if (input.files.length === 0) return;
+            
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            appendMessage('system', 'UPLOADER', `Initiating secure upload of \`${file.name}\`...`);
+            
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    clearMemBtn.style.display = 'flex';
+                    clearMemBtn.title = `Clear Memory: ${file.name}`;
+                } else {
+                    appendMessage('system', 'ERROR', `Upload failed: ${data.message}`);
+                }
+            });
+        }
+
+        function clearMemory() {
+            fetch('/api/clear_memory', { method: 'POST' }).then(r => r.json()).then(data => {
+                appendMessage('system', 'CORTEX', 'Short-term memory cortex cleared.');
+                clearMemBtn.style.display = 'none';
+            });
+        }
+
+        function loadConfigAndModels() {
+            // Fetch installed local models
+            fetch('/api/models').then(r => r.json()).then(data => {
+                const select = document.getElementById('cfg_model');
+                select.innerHTML = '';
+                setModelStoreNote(data);
+                renderCustomModelInventory(data.custom_models || []);
+                const ollamaModels = data.models || [];
+                const bitnet = data.bitnet || {};
+                
+                // Populate Cloud Models
+                cloudModels.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.val;
+                    opt.innerText = m.label;
+                    select.appendChild(opt);
+                });
+                
+                // Populate Local Models straight from Ollama
+                ollamaModels.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.innerText = `Local: ${m}`;
+                    select.appendChild(opt);
+                });
+
+                if ((bitnet.ready || bitnet.selected) && !Array.from(select.options).some(opt => opt.value === (bitnet.model_alias || 'bitnet-b1.58-2b-4t'))) {
+                    const opt = document.createElement('option');
+                    opt.value = bitnet.model_alias || 'bitnet-b1.58-2b-4t';
+                    opt.innerText = `Local: ${bitnet.model_alias || 'bitnet-b1.58-2b-4t'} // Microsoft BitNet 1-bit`;
+                    select.appendChild(opt);
+                }
+
+                // Fetch current active config to pre-select the right option
+                fetch('/api/config').then(r => r.json()).then(cfg => {
+                    runtimeConfig = cfg;
+                    const effectiveModel = cfg.ACTIVE_MODEL_EFFECTIVE || cfg.ACTIVE_MODEL;
+                    // If the model in .env isn't in the list (rare), add it so the dropdown doesn't break
+                    if (!Array.from(select.options).some(opt => opt.value === effectiveModel)) {
+                        const opt = document.createElement('option');
+                        opt.value = effectiveModel;
+                        opt.innerText = `Resolved Local: ${effectiveModel}`;
+                        select.appendChild(opt);
+                    }
+                    
+                    select.value = effectiveModel;
+                    setRuntimeHealth(cfg);
+                    document.getElementById('cfg_vision').value = cfg.VISION_ENABLED;
+                    document.getElementById('cfg_hive').value = cfg.HIVE_MIND_ENABLED;
+                    document.getElementById('cfg_hive_mode').value = cfg.OPENZERO_HIVE_MODE || 'standalone';
+                    document.getElementById('cfg_hive_url').value = cfg.OPENZERO_HIVE_URL || '';
+                    document.getElementById('cfg_hive_mirrors').value = cfg.OPENZERO_HIVE_MIRRORS || '';
+                    document.getElementById('cfg_hive_spool').value = cfg.OPENZERO_HIVE_LOCAL_SPOOL_ENABLED || 'true';
+                    document.getElementById('cfg_hive_lookup').value = cfg.OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED || 'false';
+                    document.getElementById('cfg_hive_share_mode').value = ['manual', 'private', 'auto_safe'].includes(cfg.OPENZERO_HIVE_SHARE_MODE) ? cfg.OPENZERO_HIVE_SHARE_MODE : 'manual';
+                    document.getElementById('cfg_local_learning').value = cfg.OPENZERO_LOCAL_LEARNING_ENABLED || 'true';
+                    document.getElementById('cfg_low_cpu').value = cfg.OPENZERO_LOW_CPU_MODE || 'true';
+                    document.getElementById('cfg_automation').value = cfg.OPENZERO_AUTOMATION_ENABLED || 'true';
+                    document.getElementById('cfg_fee').value = cfg.FEE_OZ_COINS || cfg.FEE_ZERO_COINS;
+                    document.getElementById('cfg_p_good').value = cfg.P_GOOD_THRESHOLD;
+                    document.getElementById('cfg_oz_ca').value = cfg.OZ_TOKEN_CA;
+                    document.getElementById('cfg_paid_hive').value = cfg.PAID_HIVE_ENABLED;
+                    document.getElementById('cfg_paid_address').value = cfg.PAID_HIVE_ADDRESS;
+                    document.getElementById('cfg_paid_free_boost').value = cfg.PAID_HIVE_FREE_BOOST;
+                    document.getElementById('cfg_paid_multiplier').value = cfg.PAID_HIVE_STAKE_MULTIPLIER;
+                    document.getElementById('cfg_node_label').value = cfg.NODE_LABEL;
+                    document.getElementById('cfg_node_role').value = cfg.NODE_ROLE;
+                    document.getElementById('cfg_wallet').value = cfg.SOLANA_ADDRESS;
+                    document.getElementById('cfg_voice_enabled').value = cfg.VOICE_ENABLED;
+                    document.getElementById('cfg_voice_tts').value = cfg.VOICE_TTS_ENABLED;
+                    document.getElementById('cfg_voice_auto').value = cfg.VOICE_AUTO_LISTEN;
+                    document.getElementById('cfg_voice_model').value = cfg.VOICE_STT_MODEL;
+                    document.getElementById('cfg_voice_name').value = cfg.VOICE_TTS_VOICE;
+                    if(cfg.COMP_MODE) document.getElementById('cfg_comp_mode').value = cfg.COMP_MODE;
+                    
+                    if(cfg.HAS_GROQ) document.getElementById('cfg_groq').placeholder = "•••••••• (Key Saved)";
+                    if(cfg.HAS_SERPER) document.getElementById('cfg_serper').placeholder = "•••••••• (Key Saved)";
+                    if(cfg.HAS_TELEGRAM) document.getElementById('cfg_tele').placeholder = "•••••••• (Token Saved)";
+                    setOpenZeroApiStatus(cfg);
+                    loadSkillCatalog();
+                    refreshVisionHealth();
+                });
+            });
+        }
+
+        window.onload = function() {
+            loadConfigAndModels();
+            loadSkillCatalog();
+            refreshVisionHealth();
+        };
+        socket.on('reload_models', loadConfigAndModels);
+
+        function deleteActiveModel() {
+            const model = document.getElementById('cfg_model').value;
+            if(!model || cloudModels.some(m => m.val === model)) {
+                alert("Cannot delete cloud models or empty selections.");
+                return;
+            }
+            if (isBitnetModel(model)) {
+                removeBitnet();
+                return;
+            }
+            const customRecord = customModelInventory.find(item => (item.aliases || []).includes(model));
+            let deleteFile = false;
+            let deleteAllAliases = false;
+            let ggufFile = '';
+            if (customRecord && customRecord.gguf_file) {
+                deleteAllAliases = true;
+                ggufFile = customRecord.gguf_file;
+            }
+            if(confirm(`WARNING: Are you sure you want to permanently delete '${model}' from disk?`)) {
+                if (customRecord && customRecord.gguf_file) {
+                    deleteFile = confirm(`This model is linked to custom GGUF package '${customRecord.gguf_file}'. Also delete that GGUF file from the local models folder?`);
+                }
+                fetch('/api/delete_model', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        model: model,
+                        gguf_file: ggufFile,
+                        delete_file: deleteFile,
+                        delete_all_aliases: deleteAllAliases
+                    })
+                }).then(r => r.json()).then(data => {
+                    appendMessage('system', 'LATTICE', data.message);
+                    loadConfigAndModels();
+                });
+            }
+        }
+
+        function deleteCustomModel() {
+            const ggufFile = document.getElementById('cfg_custom_model').value;
+            if (!ggufFile) {
+                alert('No custom GGUF package selected.');
+                return;
+            }
+            const record = customModelInventory.find(item => item.gguf_file === ggufFile);
+            const aliasText = record && (record.aliases || []).length ? ` and linked alias(es) ${record.aliases.join(', ')}` : '';
+            if (!confirm(`Delete custom GGUF package '${ggufFile}'${aliasText}?`)) {
+                return;
+            }
+            fetch('/api/delete_model', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    gguf_file: ggufFile,
+                    delete_file: true,
+                    delete_all_aliases: true
+                })
+            }).then(r => r.json()).then(data => {
+                appendMessage('system', 'LATTICE', data.message);
+                loadConfigAndModels();
+            }).catch(() => {
+                appendMessage('system', 'LATTICE', '[ERROR] Custom GGUF package deletion failed.');
+            });
+        }
+
+        function pullWeights() {
+            const url = document.getElementById('hf_url').value.trim();
+            const modelName = document.getElementById('hf_model_name').value.trim();
+            const fileName = document.getElementById('hf_file_name').value.trim();
+
+            if (!url || !modelName) {
+                appendMessage('system', 'WEIGHTS', '[ERROR] Provide both a GGUF download URL and a model alias.');
+                return;
+            }
+
+            appendMessage('system', 'WEIGHTS', `Starting GGUF pull for \`${modelName}\`.\n\n- URL: \`${url}\`\n- This can take a while for large models.\n- The model selector will refresh automatically when injection completes.`);
+
+            fetch('/api/pull_weights', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    url: url,
+                    model_name: modelName,
+                    file_name: fileName
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.status !== 'success') {
+                    appendMessage('system', 'WEIGHTS', `[ERROR] ${data.message || 'Weight pull failed.'}`);
+                    return;
+                }
+                appendMessage('system', 'WEIGHTS', `${data.message}\n\n- Saved file: \`${data.file_name}\`\n- Model alias: \`${data.model_name}\``);
+                document.getElementById('hf_url').value = '';
+                document.getElementById('hf_model_name').value = '';
+                document.getElementById('hf_file_name').value = '';
+                loadConfigAndModels();
+            }).catch(() => {
+                appendMessage('system', 'WEIGHTS', '[ERROR] Weight pull failed.');
+            });
+        }
+
+        function appendMessage(senderClass, senderName, text) {
+            const div = document.createElement('div');
+            div.className = `msg-block ${senderClass}`;
+            const sender = document.createElement('div');
+            sender.className = 'sender';
+            sender.textContent = `[${senderName}]`;
+            const content = document.createElement('div');
+            content.className = 'content';
+            content.textContent = text || '';
+            div.appendChild(sender);
+            div.appendChild(content);
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendCommand() {
+            if (agentRunActive) return;
+            const input = document.getElementById('cmd-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            appendMessage('user', 'ARCHITECT', msg);
+            input.value = '';
+            setRunState(true, 'running', 'Agent Zero is executing your request.');
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const compMode = document.getElementById('cfg_comp_mode').value;
+            socket.emit('user_message', { 
+                message: msg, 
+                comp_mode: compMode,
+                agent_mode: currentAgentMode
+            });
+        }
+
+        function stopCommand() {
+            if (!agentRunActive) return;
+            socket.emit('stop_agent');
+            setRunState(true, 'stopping', 'Stop requested. Agent Zero is winding down.');
+        }
+
+        socket.on('agent_reply', (data) => {
+            const msgClass = (data.mode === 'terminal') ? 'terminal' : (data.mode === 'system' ? 'system' : 'zero');
+            const senderName = (data.mode === 'terminal') ? 'ROOT@TERMINAL' : (data.mode === 'system' ? 'SYSTEM' : 'AGENT ZERO');
+            appendMessage(msgClass, senderName, data.data);
+            if(data.data.includes('[INJECTION SUCCESS]')) {
+                loadConfigAndModels(); // Automatically refreshes the dropdown list
+            }
+        });
+
+        socket.on('agent_state', (data) => {
+            const running = !!(data && data.running);
+            const status = (data && data.status) ? data.status : 'idle';
+            const message = (data && data.message) ? data.message : '';
+            setRunState(running, status, message);
+        });
+
+        socket.on('agent_log', (data) => { 
+            const lp = document.getElementById('log-panel');
+            const entry = document.createElement('span');
+            entry.className = 'log-entry active';
+            entry.innerText = '> ' + data.data;
+            lp.appendChild(entry);
+            lp.scrollTop = lp.scrollHeight;
+            
+            // Revert color of previous logs
+            const children = lp.children;
+            if (children.length > 1) {
+                children[children.length - 2].classList.remove('active');
+            }
+        });
+
+        function saveAllSettings() {
+            const currentPrimaryHive = (runtimeConfig.OPENZERO_HIVE_URL || 'https://openzero.talktoai.org/api/hive').trim();
+            const currentFee = (document.getElementById('cfg_fee').value.trim() || runtimeConfig.FEE_OZ_COINS || runtimeConfig.FEE_ZERO_COINS || '0.0');
+            const currentThreshold = (document.getElementById('cfg_p_good').value.trim() || runtimeConfig.P_GOOD_THRESHOLD || '0.10');
+            const currentMultiplier = (document.getElementById('cfg_paid_multiplier').value.trim() || runtimeConfig.PAID_HIVE_STAKE_MULTIPLIER || '1.0');
+            const currentRole = (document.getElementById('cfg_node_role').value.trim() || runtimeConfig.NODE_ROLE || 'general');
+            const currentVoice = (document.getElementById('cfg_voice_name').value.trim() || runtimeConfig.VOICE_TTS_VOICE || 'en_GB-alan-medium');
+            const selectedModel = document.getElementById('cfg_model').value;
+            const selectedCloudModel = cloudModels.some(m => m.val === selectedModel);
+            let selectedLocalEngine = runtimeConfig.LOCAL_ENGINE_EFFECTIVE || runtimeConfig.LOCAL_ENGINE || 'ollama';
+            if (isBitnetModel(selectedModel)) {
+                selectedLocalEngine = 'bitnet';
+            } else if (!selectedCloudModel) {
+                selectedLocalEngine = 'ollama';
+            }
+            const updates = {
+                ACTIVE_MODEL: selectedModel,
+                LOCAL_ENGINE: selectedLocalEngine,
+                GROQ_API_KEY: document.getElementById('cfg_groq').value.trim(),
+                SERPER_API_KEY: document.getElementById('cfg_serper').value.trim(),
+                TELEGRAM_BOT_TOKEN: document.getElementById('cfg_tele').value.trim(),
+                VISION_ENABLED: document.getElementById('cfg_vision').value,
+                HIVE_MIND_ENABLED: document.getElementById('cfg_hive').value,
+                OPENZERO_HIVE_MODE: document.getElementById('cfg_hive_mode').value,
+                OPENZERO_HIVE_URL: document.getElementById('cfg_hive_url').value.trim() || currentPrimaryHive,
+                OPENZERO_HIVE_MIRRORS: document.getElementById('cfg_hive_mirrors').value.trim(),
+                OPENZERO_HIVE_LOCAL_SPOOL_ENABLED: document.getElementById('cfg_hive_spool').value,
+                OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED: document.getElementById('cfg_hive_lookup').value,
+                OPENZERO_HIVE_SHARE_MODE: document.getElementById('cfg_hive_share_mode').value,
+                OPENZERO_LOCAL_LEARNING_ENABLED: document.getElementById('cfg_local_learning').value,
+                OPENZERO_LOW_CPU_MODE: document.getElementById('cfg_low_cpu').value,
+                OPENZERO_AUTOMATION_ENABLED: document.getElementById('cfg_automation').value,
+                FEE_OZ_COINS: currentFee,
+                FEE_ZERO_COINS: currentFee,
+                COMP_MODE: document.getElementById('cfg_comp_mode').value,
+                P_GOOD_THRESHOLD: currentThreshold,
+                OZ_TOKEN_CA: document.getElementById('cfg_oz_ca').value.trim(),
+                PAID_HIVE_ENABLED: document.getElementById('cfg_paid_hive').value,
+                PAID_HIVE_ADDRESS: document.getElementById('cfg_paid_address').value.trim(),
+                PAID_HIVE_FREE_BOOST: document.getElementById('cfg_paid_free_boost').value,
+                PAID_HIVE_STAKE_MULTIPLIER: currentMultiplier,
+                NODE_LABEL: document.getElementById('cfg_node_label').value.trim(),
+                NODE_ROLE: currentRole,
+                SOLANA_ADDRESS: document.getElementById('cfg_wallet').value.trim(),
+                VOICE_ENABLED: document.getElementById('cfg_voice_enabled').value,
+                VOICE_TTS_ENABLED: document.getElementById('cfg_voice_tts').value,
+                VOICE_AUTO_LISTEN: document.getElementById('cfg_voice_auto').value,
+                VOICE_STT_MODEL: document.getElementById('cfg_voice_model').value,
+                VOICE_TTS_VOICE: currentVoice
+            };
+
+            if (!updates.PAID_HIVE_ADDRESS) {
+                updates.PAID_HIVE_ADDRESS = updates.SOLANA_ADDRESS;
+            }
+
+            const secretInputs = [
+                { key: 'GROQ_API_KEY', el: document.getElementById('cfg_groq') },
+                { key: 'SERPER_API_KEY', el: document.getElementById('cfg_serper') },
+                { key: 'TELEGRAM_BOT_TOKEN', el: document.getElementById('cfg_tele') }
+            ];
+            secretInputs.forEach(({ key, el }) => {
+                if (!updates[key] && (el.placeholder || '').includes('Saved')) {
+                    delete updates[key];
+                }
+            });
+
+            fetch('/api/config/bulk', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ updates })
+            }).then(r => r.json()).then(data => {
+                if (data.status !== 'success') {
+                    appendMessage('system', 'LATTICE', `[ERROR] ${data.message || 'Configuration save failed.'}`);
+                    return;
+                }
+                appendMessage('system', 'LATTICE', `[SUCCESS] System Configuration saved and locked to .env file.`);
+                document.getElementById('cfg_groq').value = '';
+                document.getElementById('cfg_serper').value = '';
+                document.getElementById('cfg_tele').value = '';
+                loadConfigAndModels();
+            }).catch(() => {
+                appendMessage('system', 'LATTICE', `[ERROR] Configuration save failed.`);
+            });
+        }
+
+        function setOpenZeroApiStatus(cfg) {
+            const status = document.getElementById('openzero-api-status');
+            if(!status) return;
+            const hint = cfg.OPENZERO_API_KEY_HINT_PUBLIC || cfg.OPENZERO_API_KEY_HINT || '';
+            const enabled = String(cfg.OPENZERO_API_ENABLED || '').toLowerCase() === 'true';
+            if(cfg.HAS_OPENZERO_API_KEY && enabled) {
+                status.innerText = `API enabled. Saved key hint: ${hint || 'hidden'}.`;
+            } else {
+                status.innerText = 'API disabled. Create a key before connecting this node to ZeroThink.';
+            }
+        }
+
+        function rotateOpenZeroApiKey() {
+            if(!confirm('Create a new OpenZero API key? The previous key will stop working.')) return;
+            fetch('/api/openzero/key', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'rotate' })
+            }).then(r => r.json()).then(data => {
+                if(data.status !== 'success') {
+                    appendMessage('system', 'LATTICE', `[ERROR] ${data.message || 'OpenZero key rotation failed.'}`);
+                    return;
+                }
+                const result = document.getElementById('openzero-api-result');
+                result.style.display = 'block';
+                result.value = data.api_key || '';
+                document.getElementById('openzero-api-status').innerText = `Copy this key now. Saved hint: ${data.hint || 'hidden'}.`;
+                appendMessage('system', 'LATTICE', '[SUCCESS] OpenZero API key created. Copy it now; it will not be shown again.');
+            }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] OpenZero key rotation failed.'));
+        }
+
+        function revokeOpenZeroApiKey() {
+            if(!confirm('Revoke the current OpenZero API key?')) return;
+            fetch('/api/openzero/key', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'revoke' })
+            }).then(r => r.json()).then(data => {
+                if(data.status !== 'success') {
+                    appendMessage('system', 'LATTICE', `[ERROR] ${data.message || 'OpenZero key revoke failed.'}`);
+                    return;
+                }
+                const result = document.getElementById('openzero-api-result');
+                result.value = '';
+                result.style.display = 'none';
+                document.getElementById('openzero-api-status').innerText = 'API disabled. Create a key before connecting this node to ZeroThink.';
+                appendMessage('system', 'LATTICE', '[SUCCESS] OpenZero API key revoked.');
+            }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] OpenZero key revoke failed.'));
+        }
+
+        setInterval(() => {
+            fetch('/stats').then(r => r.json()).then(data => {
+                document.getElementById('sys-cpu').innerText = data.cpu + '%';
+                document.getElementById('sys-ram').innerText = data.ram + `% (${data.ram_gb || '--'} GB)`;
+                document.getElementById('sys-hive').innerText = data.hive;
+                document.getElementById('sys-hive-mode').innerText = (data.hive_mode || '--').toUpperCase();
+                document.getElementById('sys-hive-queue').innerText = data.hive_queue ?? '--';
+                document.getElementById('sys-hive-cache').innerText = data.hive_cache ?? '--';
+                document.getElementById('sys-hive-lookup').innerText = data.hive_lookup || '--';
+                document.getElementById('sys-hive-share').innerText = (data.hive_share_mode || 'manual').toUpperCase();
+                document.getElementById('sys-mode').innerText = data.mode;
+                document.getElementById('sys-id').innerText = data.identity;
+                document.getElementById('sys-tier').innerText = data.node_tier || '--';
+                document.getElementById('sys-model').innerText = data.active_model || '--';
+                document.getElementById('sys-context').innerText = data.context_window || '--';
+            }).catch(e => {});
+        }, 2000);
+        setInterval(refreshVisionHealth, 30000);
+    </script>
+</body>
+</html>
