@@ -26,6 +26,11 @@ DEFAULTS: Dict[str, str] = {
     "OPENZERO_LOCAL_LEARNING_TERMINAL": "false",
     "OPENZERO_AUTOMATION_ENABLED": "true",
     "OPENZERO_LOW_CPU_MODE": "true",
+    "OPENZERO_CPU_PROFILE": "balanced",
+    "OPENZERO_OLLAMA_THREADS": "0",
+    "OPENZERO_OLLAMA_NUM_BATCH": "512",
+    "OPENZERO_OLLAMA_KEEP_ALIVE": "10m",
+    "BITNET_THREADS": "0",
     "ACTIVE_MODEL": "gemma4:e4b",
     "LOCAL_ENGINE": "ollama",
     "COMP_MODE": "hybrid",
@@ -158,6 +163,44 @@ def env_int(env: Dict[str, str], key: str, default: int = 0) -> int:
         return int(float(env.get(key, default)))
     except (TypeError, ValueError):
         return default
+
+
+def cpu_performance_profile(env: Dict[str, str]) -> Dict[str, object]:
+    try:
+        import psutil
+
+        cores = psutil.cpu_count(logical=True) or os.cpu_count() or 2
+    except Exception:
+        cores = os.cpu_count() or 2
+
+    cores = max(1, int(cores))
+    profile = (env.get("OPENZERO_CPU_PROFILE") or "balanced").strip().lower()
+    if profile in {"max", "full", "turbo"}:
+        threads = cores
+    elif profile in {"compact", "low", "quiet"}:
+        threads = min(cores, 4)
+    else:
+        threads = max(1, cores - (1 if cores > 2 else 0))
+
+    requested_threads = env_int(env, "OPENZERO_OLLAMA_THREADS", 0)
+    if requested_threads > 0:
+        threads = min(cores, max(1, requested_threads))
+
+    bitnet_threads = env_int(env, "BITNET_THREADS", 0)
+    if bitnet_threads <= 0:
+        bitnet_threads = threads
+
+    num_batch = min(4096, max(64, env_int(env, "OPENZERO_OLLAMA_NUM_BATCH", 512)))
+    keep_alive = (env.get("OPENZERO_OLLAMA_KEEP_ALIVE") or "10m").strip() or "10m"
+
+    return {
+        "cpu_cores": cores,
+        "profile": profile,
+        "threads": threads,
+        "bitnet_threads": min(cores, max(1, bitnet_threads)),
+        "num_batch": num_batch,
+        "keep_alive": keep_alive,
+    }
 
 
 def resource_profile(env: Dict[str, str]) -> Dict[str, object]:

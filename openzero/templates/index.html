@@ -278,6 +278,26 @@
                 </div>
                 <div class="hint">Gemma via Ollama remains the default lane. Microsoft BitNet is an optional 1-bit CPU add-on for lower-power or older systems and has its own runtime separate from Ollama.</div>
 
+                <label>CPU Performance Profile</label>
+                <select id="cfg_cpu_profile">
+                    <option value="balanced">BALANCED (RECOMMENDED)</option>
+                    <option value="compact">COMPACT (SMALL VPS)</option>
+                    <option value="max">MAX CPU (FASTEST)</option>
+                </select>
+                <div class="hint">Balanced leaves the machine responsive, compact is for small VPS installs, and max gives local models the most CPU available.</div>
+                <div class="flex-row">
+                    <div style="flex:1;">
+                        <label>Ollama Threads</label>
+                        <input type="number" id="cfg_ollama_threads" min="0" placeholder="0 = auto">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Batch Size</label>
+                        <input type="number" id="cfg_ollama_batch" min="64" max="4096" step="64" placeholder="512">
+                    </div>
+                </div>
+                <label>Keep Model Warm</label>
+                <input type="text" id="cfg_ollama_keep_alive" placeholder="10m">
+
                 <label>GGUF Download URL</label>
                 <input type="text" id="hf_url" placeholder="https://huggingface.co/.../resolve/main/model.gguf">
                 <label>Model Alias For Local GGUF</label>
@@ -984,6 +1004,10 @@
                     document.getElementById('cfg_local_learning').value = cfg.OPENZERO_LOCAL_LEARNING_ENABLED || 'true';
                     document.getElementById('cfg_low_cpu').value = cfg.OPENZERO_LOW_CPU_MODE || 'true';
                     document.getElementById('cfg_automation').value = cfg.OPENZERO_AUTOMATION_ENABLED || 'true';
+                    document.getElementById('cfg_cpu_profile').value = ['balanced', 'compact', 'max'].includes(cfg.OPENZERO_CPU_PROFILE) ? cfg.OPENZERO_CPU_PROFILE : 'balanced';
+                    document.getElementById('cfg_ollama_threads').value = cfg.OPENZERO_OLLAMA_THREADS || '0';
+                    document.getElementById('cfg_ollama_batch').value = cfg.OPENZERO_OLLAMA_NUM_BATCH || '512';
+                    document.getElementById('cfg_ollama_keep_alive').value = cfg.OPENZERO_OLLAMA_KEEP_ALIVE || '10m';
                     document.getElementById('cfg_fee').value = cfg.FEE_OZ_COINS || cfg.FEE_ZERO_COINS;
                     document.getElementById('cfg_p_good').value = cfg.P_GOOD_THRESHOLD;
                     document.getElementById('cfg_oz_ca').value = cfg.OZ_TOKEN_CA;
@@ -1220,6 +1244,10 @@
                 OPENZERO_LOCAL_LEARNING_ENABLED: document.getElementById('cfg_local_learning').value,
                 OPENZERO_LOW_CPU_MODE: document.getElementById('cfg_low_cpu').value,
                 OPENZERO_AUTOMATION_ENABLED: document.getElementById('cfg_automation').value,
+                OPENZERO_CPU_PROFILE: document.getElementById('cfg_cpu_profile').value,
+                OPENZERO_OLLAMA_THREADS: document.getElementById('cfg_ollama_threads').value.trim() || '0',
+                OPENZERO_OLLAMA_NUM_BATCH: document.getElementById('cfg_ollama_batch').value.trim() || '512',
+                OPENZERO_OLLAMA_KEEP_ALIVE: document.getElementById('cfg_ollama_keep_alive').value.trim() || '10m',
                 FEE_OZ_COINS: currentFee,
                 FEE_ZERO_COINS: currentFee,
                 COMP_MODE: document.getElementById('cfg_comp_mode').value,

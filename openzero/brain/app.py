@@ -31,7 +31,7 @@ if CURRENT_DIR not in sys.path:
 
 import hivemind.bridge as hive  # noqa: E402
 from integrity import ensure_integrity_state, integrity_status, seal_json  # noqa: E402
-from openzero_config import env_bool, load_env, resource_profile, save_env_value, save_env_values  # noqa: E402
+from openzero_config import cpu_performance_profile, env_bool, load_env, resource_profile, save_env_value, save_env_values  # noqa: E402
 from voice_stack import VoiceStack  # noqa: E402
 
 
@@ -942,6 +942,7 @@ def skill_catalog_result(query: str = "") -> str:
 def get_system_prompt(agent_mode: str = "chat") -> str:
     config = current_config()
     profile = resource_profile(config)
+    cpu_profile = cpu_performance_profile(config)
     active_context = effective_local_context_window(config, profile)
     system_block = TERMINAL_SYSTEM_PROMPT if agent_mode == "terminal" else ZERO_SYSTEM_PROMPT
     return (
@@ -952,6 +953,7 @@ def get_system_prompt(agent_mode: str = "chat") -> str:
         f"- Recommended model: {profile['recommended_model']}\n"
         f"- RAM tier: {profile['node_tier']} ({profile['ram_gb']} GB)\n"
         f"- Context window: {active_context}\n"
+        f"- CPU profile: {cpu_profile['profile']} ({cpu_profile['threads']}/{cpu_profile['cpu_cores']} threads, batch {cpu_profile['num_batch']})\n"
         f"- Hive enabled: {config.get('HIVE_MIND_ENABLED')}\n"
         f"- Voice enabled: {config.get('VOICE_ENABLED')}\n"
         f"- P(G) threshold: {config.get('P_GOOD_THRESHOLD')}\n"
@@ -1059,11 +1061,17 @@ def ask_ollama_local(prompt: str, context: str = "", agent_mode: str = "chat", c
             "- OpenZero has already started a background self-heal pass. You can also use `Update Ollama` or `Repair Local Brain` from the panel."
         )
     final_prompt = local_prompt_block(prompt, context=context, agent_mode=agent_mode)
+    cpu_profile = cpu_performance_profile(config)
     payload = {
         "model": resolution["model"],
         "prompt": final_prompt,
         "stream": False,
-        "options": {"num_ctx": effective_local_context_window(config, profile), "num_thread": max(1, (psutil.cpu_count() or 2) - 1)},
+        "keep_alive": cpu_profile["keep_alive"],
+        "options": {
+            "num_ctx": effective_local_context_window(config, profile),
+            "num_thread": cpu_profile["threads"],
+            "num_batch": cpu_profile["num_batch"],
+        },
     }
     try:
         response = requests.post("http://127.0.0.1:11434/api/generate", json=payload, timeout=240)
@@ -1092,6 +1100,7 @@ def ask_bitnet(prompt: str, context: str = "", agent_mode: str = "chat") -> str:
         )
 
     final_prompt = local_prompt_block(prompt, context=context, agent_mode=agent_mode)
+    cpu_profile = cpu_performance_profile(config)
     command = [
         status["venv_python"],
         os.path.join(status["repo_dir"], "run_inference.py"),
@@ -1104,7 +1113,7 @@ def ask_bitnet(prompt: str, context: str = "", agent_mode: str = "chat") -> str:
         "-n",
         "512",
         "-t",
-        str(max(1, (psutil.cpu_count() or 2) - 1)),
+        str(cpu_profile["bitnet_threads"]),
     ]
     try:
         result = subprocess.run(
@@ -2101,9 +2110,11 @@ def ask_ollama_openai_compatible(messages, requested_model: str = "", max_tokens
         "model": resolution["model"],
         "prompt": final_prompt,
         "stream": False,
+        "keep_alive": cpu_profile["keep_alive"],
         "options": {
             "num_ctx": effective_local_context_window(config, profile),
-            "num_thread": max(1, (psutil.cpu_count() or 2) - 1),
+            "num_thread": cpu_profile["threads"],
+            "num_batch": cpu_profile["num_batch"],
             "num_predict": max(64, min(int(max_tokens or 1024), 4096)),
             "temperature": max(0.0, min(float(temperature), 2.0)),
         },
