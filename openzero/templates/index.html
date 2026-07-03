@@ -441,6 +441,56 @@
                         <option value="true">ENABLED</option>
                     </select>
 
+                    <label>Voice Output Backend</label>
+                    <select id="cfg_voice_backend">
+                        <option value="piper">PIPER (LIGHTWEIGHT OFFLINE)</option>
+                        <option value="voicebox">VOICEBOX (LOCAL VOICE STUDIO)</option>
+                        <option value="auto">AUTO (VOICEBOX THEN PIPER)</option>
+                    </select>
+
+                    <label>Voicebox URL</label>
+                    <input type="text" id="cfg_voicebox_url" placeholder="http://127.0.0.1:17493">
+                    <div class="hint">Voicebox is optional. Run it locally from github.com/jamiepine/voicebox, then point OpenZero at its local API for cloned voices, Kokoro/LuxTTS-style engines, profiles, and CPU-friendly speech.</div>
+
+                    <label>Voicebox Profile</label>
+                    <input type="text" id="cfg_voicebox_profile" placeholder="Leave blank for Voicebox default, or paste a profile name/id">
+
+                    <div class="flex-row">
+                        <div style="flex:1;">
+                            <label>Voicebox Engine</label>
+                            <select id="cfg_voicebox_engine">
+                                <option value="auto">AUTO</option>
+                                <option value="kokoro">KOKORO</option>
+                                <option value="luxtts">LUXTTS</option>
+                                <option value="qwen">QWEN</option>
+                                <option value="chatterbox">CHATTERBOX</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label>Language</label>
+                            <input type="text" id="cfg_voicebox_language" placeholder="en">
+                        </div>
+                    </div>
+
+                    <label>Voicebox Personality</label>
+                    <select id="cfg_voicebox_personality">
+                        <option value="false">OFF</option>
+                        <option value="true">ON</option>
+                    </select>
+
+                    <label>Fallback To Piper</label>
+                    <select id="cfg_voicebox_fallback">
+                        <option value="true">YES</option>
+                        <option value="false">NO</option>
+                    </select>
+
+                    <div class="flex-row" style="margin-bottom:10px;">
+                        <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan);" onclick="checkVoicebox()">CHECK VOICEBOX</button>
+                        <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="listVoiceboxProfiles()">LIST PROFILES</button>
+                        <button class="action-btn" onclick="openVoicebox()">OPEN</button>
+                    </div>
+                    <div class="hint" id="voicebox-status-note">Voicebox status not checked yet.</div>
+
                     <label>Always-On Mic Toggle</label>
                     <select id="cfg_voice_auto">
                         <option value="false">OFF</option>
@@ -916,6 +966,29 @@
             });
         }
 
+        function voiceboxUrl() {
+            return (document.getElementById('cfg_voicebox_url').value || 'http://127.0.0.1:17493').trim();
+        }
+
+        function checkVoicebox() {
+            fetch('/api/voice/voicebox/status').then(r => r.json()).then(data => {
+                const note = document.getElementById('voicebox-status-note');
+                const ok = data.available || data.status === 'success';
+                note.innerText = ok ? `Voicebox online at ${data.url || voiceboxUrl()}` : `Voicebox offline: ${data.message || 'not reachable'}`;
+                appendMessage('system', 'VOICEBOX', `Voicebox status:\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``);
+            }).catch(() => appendMessage('system', 'VOICEBOX', 'Unable to check Voicebox. Make sure it is running locally.'));
+        }
+
+        function listVoiceboxProfiles() {
+            fetch('/api/voice/voicebox/profiles').then(r => r.json()).then(data => {
+                appendMessage('system', 'VOICEBOX', `Voicebox profiles:\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``);
+            }).catch(() => appendMessage('system', 'VOICEBOX', 'Unable to list Voicebox profiles.'));
+        }
+
+        function openVoicebox() {
+            window.open(voiceboxUrl(), '_blank', 'noopener');
+        }
+
         function uploadFile() {
             const input = document.getElementById('file-input');
             if (input.files.length === 0) return;
@@ -1020,9 +1093,16 @@
                     document.getElementById('cfg_wallet').value = cfg.SOLANA_ADDRESS;
                     document.getElementById('cfg_voice_enabled').value = cfg.VOICE_ENABLED;
                     document.getElementById('cfg_voice_tts').value = cfg.VOICE_TTS_ENABLED;
+                    document.getElementById('cfg_voice_backend').value = cfg.VOICE_TTS_BACKEND || 'piper';
                     document.getElementById('cfg_voice_auto').value = cfg.VOICE_AUTO_LISTEN;
                     document.getElementById('cfg_voice_model').value = cfg.VOICE_STT_MODEL;
                     document.getElementById('cfg_voice_name').value = cfg.VOICE_TTS_VOICE;
+                    document.getElementById('cfg_voicebox_url').value = cfg.VOICEBOX_URL || 'http://127.0.0.1:17493';
+                    document.getElementById('cfg_voicebox_profile').value = cfg.VOICEBOX_PROFILE || '';
+                    document.getElementById('cfg_voicebox_engine').value = cfg.VOICEBOX_ENGINE || 'auto';
+                    document.getElementById('cfg_voicebox_language').value = cfg.VOICEBOX_LANGUAGE || 'en';
+                    document.getElementById('cfg_voicebox_personality').value = cfg.VOICEBOX_PERSONALITY || 'false';
+                    document.getElementById('cfg_voicebox_fallback').value = cfg.VOICEBOX_FALLBACK_PIPER || 'true';
                     if(cfg.COMP_MODE) document.getElementById('cfg_comp_mode').value = cfg.COMP_MODE;
                     
                     if(cfg.HAS_GROQ) document.getElementById('cfg_groq').placeholder = "•••••••• (Key Saved)";
@@ -1262,9 +1342,17 @@
                 SOLANA_ADDRESS: document.getElementById('cfg_wallet').value.trim(),
                 VOICE_ENABLED: document.getElementById('cfg_voice_enabled').value,
                 VOICE_TTS_ENABLED: document.getElementById('cfg_voice_tts').value,
+                VOICE_TTS_BACKEND: document.getElementById('cfg_voice_backend').value,
                 VOICE_AUTO_LISTEN: document.getElementById('cfg_voice_auto').value,
                 VOICE_STT_MODEL: document.getElementById('cfg_voice_model').value,
-                VOICE_TTS_VOICE: currentVoice
+                VOICE_TTS_VOICE: currentVoice,
+                VOICEBOX_ENABLED: document.getElementById('cfg_voice_backend').value === 'piper' ? 'false' : 'true',
+                VOICEBOX_URL: document.getElementById('cfg_voicebox_url').value.trim() || 'http://127.0.0.1:17493',
+                VOICEBOX_PROFILE: document.getElementById('cfg_voicebox_profile').value.trim(),
+                VOICEBOX_ENGINE: document.getElementById('cfg_voicebox_engine').value,
+                VOICEBOX_LANGUAGE: document.getElementById('cfg_voicebox_language').value.trim() || 'en',
+                VOICEBOX_PERSONALITY: document.getElementById('cfg_voicebox_personality').value,
+                VOICEBOX_FALLBACK_PIPER: document.getElementById('cfg_voicebox_fallback').value
             };
 
             if (!updates.PAID_HIVE_ADDRESS) {

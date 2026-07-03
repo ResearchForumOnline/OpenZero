@@ -236,7 +236,7 @@ SKILL_CATALOG = [
         "name": "Voice",
         "triggers": "speak, read aloud, transcribe, voice reply",
         "tool": '<speak>Text to speak locally.</speak>',
-        "notes": "Uses local voice stack when installed and enabled.",
+        "notes": "Uses local voice stack when installed and enabled. Piper is the lightweight offline TTS lane; Voicebox can be selected for cloned profiles, Kokoro/LuxTTS-style engines, and local studio speech.",
     },
 ]
 
@@ -2925,6 +2925,16 @@ def hive_resume():
 @app.route("/api/voice/status", methods=["GET"])
 def voice_status():
     return jsonify({"status": "success", "voice": current_voice().status()})
+
+
+@app.route("/api/voice/voicebox/status", methods=["GET"])
+def voicebox_status():
+    return jsonify(current_voice().voicebox_health())
+
+
+@app.route("/api/voice/voicebox/profiles", methods=["GET"])
+def voicebox_profiles():
+    return jsonify(current_voice().voicebox_profiles())
 
 
 @app.route("/api/voice/speak", methods=["POST"])
