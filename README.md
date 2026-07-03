@@ -6,6 +6,12 @@ Public site: https://openzero.talktoai.org/
 
 Docs: https://docs.talktoai.org/openzero/
 
+## Featured Ecosystem Video
+
+[![TalkToAI: Sovereignty Through ZeroThink and OpenZero Infrastructure](https://i.ytimg.com/vi/R52hsRdCmSM/hqdefault.jpg)](https://www.youtube.com/watch?v=R52hsRdCmSM)
+
+Watch the ecosystem overview: [TalkToAI: Sovereignty Through ZeroThink and OpenZero Infrastructure](https://www.youtube.com/watch?v=R52hsRdCmSM). It shows how ZeroThink, OpenZero, local-first infrastructure, and the wider TalkToAI product stack fit together.
+
 ## What Is In This Repository
 
 - `openzero/` contains the public OpenZero node, panel templates, installers, watchdog helpers, and local client-side federation code.

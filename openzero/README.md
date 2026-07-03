@@ -30,6 +30,13 @@ The result is a hybrid workflow: use ZeroThink as the polished web workbench, th
 - Docs: https://docs.talktoai.org/
 - OpenZero manual: https://docs.talktoai.org/openzero-user-manual/
 - Voicebox upstream: https://github.com/jamiepine/voicebox
+- Ecosystem video: https://www.youtube.com/watch?v=R52hsRdCmSM
+
+## Featured Ecosystem Video
+
+[![TalkToAI: Sovereignty Through ZeroThink and OpenZero Infrastructure](https://i.ytimg.com/vi/R52hsRdCmSM/hqdefault.jpg)](https://www.youtube.com/watch?v=R52hsRdCmSM)
+
+This video is the broad overview for the TalkToAI stack: ZeroThink as the web workbench, OpenZero as the user-owned CPU/server node, and the wider infrastructure path for local-first AI.
 
 ## What Is Included
 
@@ -199,4 +206,3 @@ OpenZero can run tools and local commands depending on how it is installed and c
 ## Contributing
 
 Contributions are welcome when they improve install reliability, docs, CPU performance, UI clarity, security posture, tests, or compatibility. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
-
