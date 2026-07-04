@@ -1,0 +1,3 @@
+95cbb9afd3841b6c2c0dcfca107fe05b389c5345dbbfc757d58e153482f51308  ZeroMint_OS_v1.0.iso.part001
+d3fcad548bec2ea3c844e2e73cfba7ac83a4502778bce5b204d7c14f963567f3  ZeroMint_OS_v1.0.iso.part002
+c76d919b7f3b186c3310bfd50d1f9ad194ed5a541723ca46ab4dc25f844e6a3c  ZeroMint_OS_v1.0.iso.part003

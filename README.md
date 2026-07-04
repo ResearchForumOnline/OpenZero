@@ -71,6 +71,7 @@ http://localhost:1024
 | --- | --- |
 | Latest GitHub source archive | [Download ZIP](https://github.com/ResearchForumOnline/OpenZero/archive/refs/heads/main.zip) |
 | GitHub releases | [OpenZero releases](https://github.com/ResearchForumOnline/OpenZero/releases) |
+| ZeroMint OS GitHub release | [zeromint-os-v1.0](https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0) |
 | Hosted installer | [openzero.talktoai.org/install.sh](https://openzero.talktoai.org/install.sh) |
 | Update script | [openzero/update.sh](openzero/update.sh) |
 | ZeroMint OS v1.0 ISO | [Download ISO](https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso) |

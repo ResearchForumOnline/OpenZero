@@ -38,7 +38,7 @@ ZeroMint OS v1.0 is available from the OpenZero download server, with the torren
 
 ## Why is the ZeroMint OS ISO not committed directly to GitHub?
 
-The ISO is about 5.54 GiB. GitHub blocks normal repository files over 100 MiB, and GitHub release assets must be under 2 GiB each. The public repo therefore tracks the documentation, checksum, and torrent metadata while the ISO stays on the OpenZero download server.
+The ISO is about 5.54 GiB. GitHub blocks normal repository files over 100 MiB, and GitHub release assets must be under 2 GiB each. The public repo therefore tracks documentation, checksums, and torrent metadata, while the GitHub Release provides the ISO as three split parts.
 
 ## Can premium code be hidden on GitHub?
 

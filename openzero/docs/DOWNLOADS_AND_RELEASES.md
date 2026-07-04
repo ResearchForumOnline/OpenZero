@@ -10,6 +10,7 @@ This page explains the public download paths for OpenZero.
 | Latest public updates | [UPDATES.md](UPDATES.md) |
 | Source ZIP for current main branch | <https://github.com/ResearchForumOnline/OpenZero/archive/refs/heads/main.zip> |
 | GitHub releases | <https://github.com/ResearchForumOnline/OpenZero/releases> |
+| ZeroMint OS GitHub release | <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0> |
 | Hosted installer | <https://openzero.talktoai.org/install.sh> |
 | Hosted update script | <https://openzero.talktoai.org/update.sh> |
 | ZeroMint OS v1.0 ISO | <https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso> |
@@ -70,10 +71,12 @@ ZeroMint OS v1.0 is the OpenZero-focused ISO route for users who want a bootable
 
 The ISO is too large for a normal GitHub repository commit. It is hosted on the OpenZero server, with a torrent and SHA256 checksums tracked here for verification:
 
+- GitHub split release: <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0>
 - ISO: <https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso>
 - Torrent: <https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent>
 - Guide: [ZEROMINT_OS.md](ZEROMINT_OS.md)
 - Checksums: [../../docs/downloads/SHA256SUMS.txt](../../docs/downloads/SHA256SUMS.txt)
+- Split asset checksums: [../../docs/downloads/SHA256SUMS.parts.txt](../../docs/downloads/SHA256SUMS.parts.txt)
 
 Verified ISO SHA256:
 
