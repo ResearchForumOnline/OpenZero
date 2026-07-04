@@ -179,6 +179,7 @@ See [docs/PREMIUM_EXTENSIONS.md](docs/PREMIUM_EXTENSIONS.md).
 ## Documentation Map
 
 - [Install Guide](docs/INSTALL.md)
+- [Downloads And Releases](docs/DOWNLOADS_AND_RELEASES.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [CPU Runtime](docs/CPU_RUNTIME.md)
 - [Z-Spark Draft-Verify](docs/ZSPARK.md)

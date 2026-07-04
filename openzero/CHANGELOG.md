@@ -6,6 +6,10 @@
 - Added explicit open-core / premium-extension boundary documentation.
 - Added security policy and contribution guide.
 - Updated `.env.example` to match current configuration surface.
+- Added Z-Spark draft-verify runtime for CPU-first draft, confidence gate, and target verification.
+- Added OpenAI-compatible API metadata for `openzero_spark` requests from ZeroThink or other clients.
+- Expanded the GitHub landing page with install, download, release, capability, API, ZeroThink bridge, Moltbot, Voicebox, BitNet, and offline release sections.
+- Added the OpenZero 5.4 terminal-style screenshot to the public GitHub homepage.
 
 ## 2026-07-03
 
@@ -15,4 +19,3 @@
 - Added optional Voicebox voice backend.
 - Added Voicebox health/profile endpoints.
 - Updated OpenZero release zip and live checksum.
-
