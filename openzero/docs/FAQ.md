@@ -12,6 +12,10 @@ No. OpenZero is CPU-first by default. GPU acceleration can help, but the project
 
 Start with the default Gemma local lane installed by the script. Use smaller models on small machines.
 
+## What changed in the July 2026 update?
+
+The public OpenZero material now explains the full product surface more clearly: Super Panel, CPU-first operation, OpenAI-compatible API keys, ZeroThink bridge, Z-Spark draft-verify, optional Voicebox, Moltbot, offline bundles, release/download paths, and public safety boundaries.
+
 ## How does ZeroThink use OpenZero?
 
 OpenZero creates a local API key. You paste that key into ZeroThink Neural Vault. ZeroThink can then route suitable work through your OpenZero node.
@@ -23,6 +27,10 @@ No. Z-Spark is OpenZero's custom CPU-first draft-verify layer inspired by DSpark
 ## Is Voicebox bundled?
 
 No. Voicebox is optional and installed separately from https://github.com/jamiepine/voicebox. OpenZero can connect to it when it is running locally.
+
+## Where is the public changelog?
+
+See [UPDATES.md](UPDATES.md) for public-safe update notes. It summarizes user-visible changes without exposing private infrastructure, credentials, logs, or protected implementation details.
 
 ## Can premium code be hidden on GitHub?
 

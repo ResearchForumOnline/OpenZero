@@ -195,6 +195,7 @@ Start from `openzero/.env.example` and keep real `.env` files out of Git.
 ## Documentation
 
 - [Install Guide](openzero/docs/INSTALL.md)
+- [Latest Updates](openzero/docs/UPDATES.md)
 - [Downloads And Releases](openzero/docs/DOWNLOADS_AND_RELEASES.md)
 - [Architecture](openzero/docs/ARCHITECTURE.md)
 - [CPU Runtime](openzero/docs/CPU_RUNTIME.md)

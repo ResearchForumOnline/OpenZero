@@ -7,6 +7,7 @@ This page explains the public download paths for OpenZero.
 | Need | Link |
 | --- | --- |
 | Public source repository | <https://github.com/ResearchForumOnline/OpenZero> |
+| Latest public updates | [UPDATES.md](UPDATES.md) |
 | Source ZIP for current main branch | <https://github.com/ResearchForumOnline/OpenZero/archive/refs/heads/main.zip> |
 | GitHub releases | <https://github.com/ResearchForumOnline/OpenZero/releases> |
 | Hosted installer | <https://openzero.talktoai.org/install.sh> |
