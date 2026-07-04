@@ -169,7 +169,7 @@ defaults = {
     "HIVE_MIND_ENABLED": "false",
     "FEE_OZ_COINS": "0.0",
     "FEE_ZERO_COINS": "0.0",
-    "OZ_TOKEN_CA": "86mnqW1TcHiFVSHHgHDf4htzs4qEGW9nr3Uzz5GjttXk",
+    "OZ_TOKEN_CA": "",
     "PAID_HIVE_ENABLED": "false",
     "PAID_HIVE_FREE_BOOST": "true",
     "VOICE_ENABLED": "false",

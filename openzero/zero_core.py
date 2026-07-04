@@ -225,10 +225,10 @@ def show_status() -> None:
     print(f"  Context window: {profile['context_window']}")
     print(f"  Hive: {'ONLINE' if hive_state['hive_enabled'] else 'OFFLINE'}")
     print(f"  Voice: {'ON' if voice_state['voice_enabled'] else 'OFF'}")
-    print(f"  Paid hive: {config.get('PAID_HIVE_ENABLED')}")
+    print(f"  Priority federation: {config.get('PAID_HIVE_ENABLED')}")
     print(f"  P(G): {config.get('P_GOOD_THRESHOLD')}")
-    print(f"  OZ token CA: {config.get('OZ_TOKEN_CA')}")
-    print(f"  Solana address: {config.get('SOLANA_ADDRESS')}")
+    print(f"  Coordination reference: {config.get('OZ_TOKEN_CA') or 'not set'}")
+    print(f"  Node address: {config.get('SOLANA_ADDRESS') or 'not set'}")
     print(f"  Integrity: {integrity['manifest']['status']} / ethics={integrity['ethics']['status']}")
 
 
@@ -250,7 +250,7 @@ def handle_meta_command(user_input: str) -> bool:
     argument = parts[1].strip() if len(parts) > 1 else ""
 
     if command in {"!help", "!?"}:
-        print("Commands: !status, !tasks, !mode <local|cloud|hybrid>, !hive on/off/status, !setfee <amount>, !upload <path>, !voice on/off/status, !listen <audio-file>, !speak <text>, !paid on/off, !wallet <sol-address>, !pg <0.1>, !donate")
+        print("Commands: !status, !tasks, !mode <local|cloud|hybrid>, !hive on/off/status, !setfee <weight>, !upload <path>, !voice on/off/status, !listen <audio-file>, !speak <text>, !paid on/off, !pg <0.1>")
         return True
     if command == "!status":
         show_status()
@@ -283,9 +283,9 @@ def handle_meta_command(user_input: str) -> bool:
             fee = float(argument)
             save_config({"FEE_OZ_COINS": str(fee), "FEE_ZERO_COINS": str(fee)})
             hive.set_compute_fee(fee, get_config())
-            print(f"{Fore.GREEN}[HIVE MIND] Compute fee set to {fee} OZ.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[HIVE MIND] Priority weight set to {fee}.{Style.RESET_ALL}")
         except ValueError:
-            print("Usage: !setfee <amount>")
+            print("Usage: !setfee <weight>")
         return True
     if command == "!upload":
         if not argument:
@@ -323,16 +323,16 @@ def handle_meta_command(user_input: str) -> bool:
     if command == "!paid":
         if argument.lower() in {"on", "off"}:
             save_config({"PAID_HIVE_ENABLED": "true" if argument.lower() == "on" else "false"})
-            print(f"{Fore.GREEN}[PAID HIVE] Set to {argument.lower()}.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[FEDERATION] Priority mode set to {argument.lower()}.{Style.RESET_ALL}")
         else:
-            print(f"PAID_HIVE_ENABLED={config.get('PAID_HIVE_ENABLED')}")
+            print(f"PRIORITY_FEDERATION={config.get('PAID_HIVE_ENABLED')}")
         return True
     if command == "!wallet":
         if argument:
             save_config({"SOLANA_ADDRESS": argument, "PAID_HIVE_ADDRESS": argument})
-            print(f"{Fore.GREEN}[WALLET] Solana address updated.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[NODE] Address updated.{Style.RESET_ALL}")
         else:
-            print("Usage: !wallet <solana-address>")
+            print("Usage: !wallet <node-address>")
         return True
     if command == "!pg":
         try:
@@ -341,12 +341,6 @@ def handle_meta_command(user_input: str) -> bool:
             print(f"{Fore.GREEN}[ETHICS] P(G) threshold set to {threshold:.2f}.{Style.RESET_ALL}")
         except ValueError:
             print("Usage: !pg <0.10-0.99>")
-        return True
-    if command == "!donate":
-        print(f"\n{Fore.GREEN}--- SUPPORT OPENZERO RESEARCH ---{Style.RESET_ALL}")
-        print(f"Solana (SOL): {config.get('SOLANA_ADDRESS')}")
-        print(f"$OZ Token CA: {config.get('OZ_TOKEN_CA')}")
-        print("Thank you for supporting the OpenZero lattice.\n")
         return True
     if command.startswith("!"):
         print(execute_system_command(user_input[1:]))

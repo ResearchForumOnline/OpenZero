@@ -369,7 +369,7 @@ footer {
 <h2>00 // INTRODUCTION: WHAT IS OPENZERO?</h2>
 <p>If you are new to Artificial Intelligence, you might be used to websites like ChatGPT or Claude. Those are "Cloud AI" systems. They live on someone else's computer, they read your private data, and they restrict what you can ask them. OpenZero is fundamentally different.</p>
 <p><b>OpenZero is a Sovereign AI Agent.</b> An AI Agent is a software system that doesn't just talk to you; it can observe its environment, make plans, and execute tasks autonomously. OpenZero is installed directly onto <i>your</i> hardware. It acts as your digital employee, complete with terminal access to your computer, a web browser (Moltbot) to see the internet, and a direct uplink to your phone via Telegram.</p>
-<div class="note"><strong>OpenZero 5.4 note:</strong> This build adds the OpenZero-only Hive API path, RAM-aware node profiling, paid-hive controls, a configurable P(G) threshold, self-healing watchdog services, optional local voice support using faster-whisper plus Piper-compatible speech output or Voicebox, a true offline release path that can carry the local Gemma model store into an air-gapped machine, an optional Microsoft BitNet 1-bit add-on for lower-power CPU nodes, a compact skills registry for low-CPU agent work, local private learning, Moltbot health checks, and a local OpenAI-compatible API key bridge for ZeroThink.</div>
+<div class="note"><strong>OpenZero 5.4 note:</strong> This build adds the OpenZero-only Hive API path, RAM-aware node profiling, federation controls, a configurable P(G) threshold, self-healing watchdog services, optional local voice support using faster-whisper plus Piper-compatible speech output or Voicebox, a true offline release path that can carry the local Gemma model store into an air-gapped machine, an optional Microsoft BitNet 1-bit add-on for lower-power CPU nodes, a compact skills registry for low-CPU agent work, local private learning, Moltbot health checks, and a local OpenAI-compatible API key bridge for ZeroThink.</div>
 
 <h2>01 // DEPLOYMENT & UPDATES</h2>
 <p>Deploying the OpenZero Lattice is designed to be fully automated. The installer downloads the Neural Brain (Python), the Vision System (Node.js/Chrome), and the Process Manager (PM2), linking them all together.</p>
@@ -470,7 +470,7 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 </tr>
 <tr>
 <td><code>OPENZERO_HIVE_SHARE_MODE=private</code></td>
-<td>Never publish chat knowledge. Use this if the machine handles secrets, wallets, customer chats, or private research.</td>
+<td>Never publish chat knowledge. Use this if the machine handles secrets, customer chats, private credentials, or private research.</td>
 </tr>
 <tr>
 <td><code>OPENZERO_LOCAL_LEARNING_ENABLED=true</code></td>

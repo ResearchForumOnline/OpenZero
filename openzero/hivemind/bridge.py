@@ -597,7 +597,7 @@ def load_or_generate_keys():
             _private_key = None
 
     if _private_key is None:
-        print(f"{Fore.YELLOW}[CRYPTO] Generating OpenZero RSA keypair...{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}[KEYS] Generating OpenZero RSA keypair...{Style.RESET_ALL}")
         _private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         with open(PRIVATE_KEY_PATH, "wb") as handle:
             handle.write(

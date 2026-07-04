@@ -199,19 +199,19 @@
 
             <div class="settings-page" data-settings-page="economy">
             <div class="config-box">
-                <h3>ECONOMY & PAID HIVE</h3>
-                <label>$OZ Compute Fee</label>
+                <h3>FEDERATION CONTROLS</h3>
+                <label>Priority Weight</label>
                 <input type="text" id="cfg_fee" placeholder="0.0">
                 <label>P(G) Threshold</label>
                 <input type="text" id="cfg_p_good" placeholder="0.10">
-                <label>$OZ Token CA</label>
-                <input type="text" id="cfg_oz_ca" placeholder="86mnqW1TcHiFVSHHgHDf4htzs4qEGW9nr3Uzz5GjttXk">
-                <label>Paid Hive</label>
+                <label>Coordination Reference</label>
+                <input type="text" id="cfg_oz_ca" placeholder="Optional local reference">
+                <label>Priority Federation</label>
                 <select id="cfg_paid_hive">
                     <option value="false">DISABLED</option>
                     <option value="true">ENABLED</option>
                 </select>
-                <label>Paid Hive Solana Address</label>
+                <label>Priority Node Address</label>
                 <input type="text" id="cfg_paid_address" placeholder="Stored locally on this node">
                 <div class="flex-row">
                     <div style="flex:1;">
@@ -414,8 +414,8 @@
                     <label>Node Role</label>
                     <input type="text" id="cfg_node_role" placeholder="general">
 
-                    <label>Node Wallet</label>
-                    <input type="text" id="cfg_wallet" placeholder="Local Solana address">
+                    <label>Node Address</label>
+                    <input type="text" id="cfg_wallet" placeholder="Stored locally on this node">
 
                     <label>Groq API Key</label>
                     <input type="password" id="cfg_groq" placeholder="Enter API Key...">
