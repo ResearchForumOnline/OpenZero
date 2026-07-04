@@ -993,6 +993,188 @@ def ask_groq(prompt: str, context: str = "", agent_mode: str = "chat") -> str:
         return f"[ERROR] Groq routing failed: {error}"
 
 
+def clamp_float(raw_value, default: float, minimum: float, maximum: float) -> float:
+    try:
+        value = float(raw_value)
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(maximum, value))
+
+
+def clamp_int(raw_value, default: int, minimum: int, maximum: int) -> int:
+    try:
+        value = int(float(raw_value))
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(maximum, value))
+
+
+def spark_mode_from(config: Dict[str, str]) -> str:
+    mode = (config.get("OPENZERO_SPARK_MODE") or "auto").strip().lower()
+    if mode in {"true", "yes", "enabled", "on"}:
+        return "force"
+    if mode in {"false", "no", "disabled"}:
+        return "off"
+    if mode not in {"off", "auto", "force"}:
+        return "auto"
+    return mode
+
+
+def spark_draft_model(config: Dict[str, str]) -> str:
+    return normalize_local_model_name(config.get("OPENZERO_SPARK_DRAFT_MODEL") or "qwen2.5:0.5b")
+
+
+def openzero_spark_status(config: Optional[Dict[str, str]] = None, installed_models: Optional[List[str]] = None) -> Dict[str, object]:
+    config = dict(config or current_config())
+    mode = spark_mode_from(config)
+    draft_model = spark_draft_model(config)
+    active_model = normalize_local_model_name(config.get("ACTIVE_MODEL") or "")
+    installed = set(list_ollama_models() if installed_models is None else installed_models)
+    threshold = clamp_float(config.get("OPENZERO_SPARK_CONFIDENCE_THRESHOLD"), 0.58, 0.05, 0.95)
+    ready = mode != "off" and bool(draft_model) and draft_model in installed and draft_model != active_model
+    if mode == "off":
+        message = "Z-Spark is off."
+    elif not draft_model:
+        message = "Z-Spark needs a draft model alias."
+    elif draft_model == active_model:
+        message = "Z-Spark draft model must be different from the target model."
+    elif draft_model not in installed:
+        message = f"Z-Spark is waiting for draft model `{draft_model}` to be installed."
+    else:
+        message = f"Z-Spark ready: `{draft_model}` drafts, target model verifies."
+    return {
+        "mode": mode,
+        "draft_model": draft_model,
+        "ready": ready,
+        "threshold": threshold,
+        "message": message,
+    }
+
+
+def run_ollama_generate(
+    model: str,
+    prompt: str,
+    config: Dict[str, str],
+    profile: Dict[str, object],
+    max_predict: int,
+    temperature: float,
+    timeout: int = 240,
+) -> str:
+    cpu_profile = cpu_performance_profile(config)
+    payload = {
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "keep_alive": cpu_profile["keep_alive"],
+        "options": {
+            "num_ctx": effective_local_context_window(config, profile),
+            "num_thread": cpu_profile["threads"],
+            "num_batch": cpu_profile["num_batch"],
+            "num_predict": max(32, min(int(max_predict or 1024), 4096)),
+            "temperature": max(0.0, min(float(temperature), 2.0)),
+        },
+    }
+    response = requests.post("http://127.0.0.1:11434/api/generate", json=payload, timeout=timeout)
+    if response.status_code >= 400:
+        detail = response.text.strip() or response.reason or f"HTTP {response.status_code}"
+        raise RuntimeError(detail)
+    response.raise_for_status()
+    return str(response.json().get("response") or "").strip()
+
+
+def build_spark_draft_prompt(prompt: str, context: str = "", agent_mode: str = "chat") -> str:
+    clipped_context = (context or "")[:3000]
+    mode_note = "terminal/operator" if agent_mode == "terminal" else "chat/research"
+    return (
+        "You are the OpenZero Z-Spark lightweight draft head. Produce a compact candidate for a larger target model to verify.\n"
+        "Do not execute tools. Do not claim certainty. Return plain text with these labels:\n"
+        "CONFIDENCE: number from 0.05 to 0.95\n"
+        "DRAFT: concise candidate answer or action plan\n"
+        "VERIFY: facts, commands, or assumptions the target model must check\n\n"
+        f"MODE: {mode_note}\n"
+        f"CONTEXT:\n{clipped_context}\n\n"
+        f"USER:\n{prompt}\n"
+    )
+
+
+def spark_confidence(raw_draft: str) -> float:
+    text = raw_draft or ""
+    match = re.search(r"CONFIDENCE\s*[:=]\s*(0?\.\d+|1(?:\.0+)?)", text, flags=re.I)
+    if match:
+        return clamp_float(match.group(1), 0.5, 0.05, 0.95)
+    lowered = text.lower()
+    penalty = 0.0
+    for token in ["unsure", "cannot verify", "unknown", "guess", "maybe", "not enough context"]:
+        if token in lowered:
+            penalty += 0.07
+    length_bonus = 0.08 if len(text.strip()) > 220 else 0.0
+    return clamp_float(0.52 + length_bonus - penalty, 0.5, 0.05, 0.85)
+
+
+def build_spark_verified_prompt(final_prompt: str, draft: str, confidence: float, threshold: float) -> str:
+    if not draft.strip():
+        return final_prompt
+    confidence_label = f"{confidence:.2f}"
+    scheduler_note = (
+        "ACCEPT-PREFIX"
+        if confidence >= threshold
+        else "LOW-CONFIDENCE: treat as a weak hint and rebuild from first principles"
+    )
+    return (
+        f"{final_prompt}\n\n"
+        "[Z-SPARK DRAFT-VERIFY LAYER]\n"
+        "This is OpenZero custom code inspired by DSpark-style speculative decoding: a lightweight local draft is proposed, "
+        "then the target model verifies, corrects, and produces the final answer. This is not the official DeepSeek DSpark checkpoint.\n"
+        f"- Draft confidence: {confidence_label}\n"
+        f"- Confidence scheduler decision: {scheduler_note}\n"
+        "- Verification rule: keep only useful material that survives your own reasoning, discard errors, and answer as the target model.\n\n"
+        f"DRAFT CANDIDATE:\n{draft[:5000]}\n\n"
+        "OPENZERO VERIFIED FINAL:"
+    )
+
+
+def maybe_apply_zspark(
+    final_prompt: str,
+    user_prompt: str,
+    context: str,
+    agent_mode: str,
+    config: Dict[str, str],
+    profile: Dict[str, object],
+    installed_models: Optional[List[str]] = None,
+) -> Dict[str, object]:
+    status = openzero_spark_status(config, installed_models=installed_models)
+    if not status["ready"]:
+        return {"prompt": final_prompt, "spark": status}
+    max_draft_tokens = clamp_int(config.get("OPENZERO_SPARK_MAX_DRAFT_TOKENS"), 384, 64, 1024)
+    try:
+        draft = run_ollama_generate(
+            str(status["draft_model"]),
+            build_spark_draft_prompt(user_prompt, context=context, agent_mode=agent_mode),
+            config,
+            profile,
+            max_predict=max_draft_tokens,
+            temperature=0.2,
+            timeout=120,
+        )
+    except Exception as error:
+        status.update({"ready": False, "message": f"Z-Spark draft failed and target-only mode continued: {error}"})
+        return {"prompt": final_prompt, "spark": status}
+    confidence = spark_confidence(draft)
+    threshold = float(status["threshold"])
+    status.update(
+        {
+            "used": True,
+            "confidence": round(confidence, 3),
+            "scheduled": confidence >= threshold,
+            "message": f"Z-Spark draft verified by target model at confidence {confidence:.2f}.",
+        }
+    )
+    return {
+        "prompt": build_spark_verified_prompt(final_prompt, draft, confidence, threshold),
+        "spark": status,
+    }
+
+
 def local_prompt_block(prompt: str, context: str = "", agent_mode: str = "chat") -> str:
     history_block = "\n".join(f"{item['role'].upper()}: {item['content']}" for item in CHAT_HISTORY[-(MAX_HISTORY * 2):])
     upload_block = f"\nUPLOADED FILE DATA:\n{LATEST_UPLOAD_CONTENT[:16000]}" if LATEST_UPLOAD_CONTENT else ""
@@ -1061,26 +1243,33 @@ def ask_ollama_local(prompt: str, context: str = "", agent_mode: str = "chat", c
             "- OpenZero has already started a background self-heal pass. You can also use `Update Ollama` or `Repair Local Brain` from the panel."
         )
     final_prompt = local_prompt_block(prompt, context=context, agent_mode=agent_mode)
-    cpu_profile = cpu_performance_profile(config)
-    payload = {
-        "model": resolution["model"],
-        "prompt": final_prompt,
-        "stream": False,
-        "keep_alive": cpu_profile["keep_alive"],
-        "options": {
-            "num_ctx": effective_local_context_window(config, profile),
-            "num_thread": cpu_profile["threads"],
-            "num_batch": cpu_profile["num_batch"],
-        },
-    }
+    spark_result = maybe_apply_zspark(
+        final_prompt,
+        prompt,
+        context,
+        agent_mode,
+        config,
+        profile,
+        installed_models=resolution.get("installed_models"),
+    )
+    final_prompt = str(spark_result.get("prompt") or final_prompt)
     try:
-        response = requests.post("http://127.0.0.1:11434/api/generate", json=payload, timeout=240)
-        if response.status_code >= 400:
-            detail = response.text.strip() or response.reason or f"HTTP {response.status_code}"
-            maybe_trigger_runtime_self_heal(detail)
-            return f"[ERROR] Local brain offline: {detail}\n[SELF-HEAL] OpenZero has started an automatic local runtime repair cycle."
-        response.raise_for_status()
-        return response.json()["response"]
+        reply = run_ollama_generate(
+            resolution["model"],
+            final_prompt,
+            config,
+            profile,
+            max_predict=2048,
+            temperature=0.6,
+            timeout=240,
+        )
+        spark_meta = spark_result.get("spark") or {}
+        if env_bool(config, "OPENZERO_SPARK_SHOW_TRACE", False) and spark_meta.get("used"):
+            reply = (
+                f"[Z-SPARK] Draft `{spark_meta.get('draft_model')}` verified by `{resolution['model']}` "
+                f"(confidence {spark_meta.get('confidence')}).\n\n{reply}"
+            )
+        return reply
     except Exception as error:
         maybe_trigger_runtime_self_heal(str(error))
         return f"[ERROR] Local brain offline: {error}\n[SELF-HEAL] OpenZero has started an automatic local runtime repair cycle."
@@ -2079,7 +2268,13 @@ def openzero_messages_to_prompt(messages) -> Dict[str, str]:
     }
 
 
-def ask_ollama_openai_compatible(messages, requested_model: str = "", max_tokens: int = 1024, temperature: float = 0.6) -> Dict[str, str]:
+def ask_ollama_openai_compatible(
+    messages,
+    requested_model: str = "",
+    max_tokens: int = 1024,
+    temperature: float = 0.6,
+    spark_mode_override: str = "",
+) -> Dict[str, object]:
     config = dict(current_config())
     requested_model = normalize_local_model_name(requested_model or "")
     if requested_model:
@@ -2090,6 +2285,10 @@ def ask_ollama_openai_compatible(messages, requested_model: str = "", max_tokens
             raise ValueError(f"Requested OpenZero model is not installed on this node: {requested_model}")
         config["ACTIVE_MODEL"] = requested_model
         config["LOCAL_ENGINE"] = "ollama"
+
+    override_mode = (spark_mode_override or "").strip().lower()
+    if override_mode in {"off", "auto", "force"}:
+        config["OPENZERO_SPARK_MODE"] = override_mode
 
     profile = resource_profile(config)
     resolution = resolve_local_model_selection(config, profile, include_ollama_status=False)
@@ -2105,27 +2304,31 @@ def ask_ollama_openai_compatible(messages, requested_model: str = "", max_tokens
         f"CHAT:\n{prompt}\n\n"
         "OPENZERO:"
     )
+    spark_result = maybe_apply_zspark(
+        final_prompt,
+        prompt,
+        system_context,
+        "chat",
+        config,
+        profile,
+        installed_models=resolution.get("installed_models"),
+    )
+    final_prompt = str(spark_result.get("prompt") or final_prompt)
 
-    payload = {
-        "model": resolution["model"],
-        "prompt": final_prompt,
-        "stream": False,
-        "keep_alive": cpu_profile["keep_alive"],
-        "options": {
-            "num_ctx": effective_local_context_window(config, profile),
-            "num_thread": cpu_profile["threads"],
-            "num_batch": cpu_profile["num_batch"],
-            "num_predict": max(64, min(int(max_tokens or 1024), 4096)),
-            "temperature": max(0.0, min(float(temperature), 2.0)),
-        },
-    }
-    response = requests.post("http://127.0.0.1:11434/api/generate", json=payload, timeout=240)
-    if response.status_code >= 400:
-        detail = response.text.strip() or response.reason or f"HTTP {response.status_code}"
-        maybe_trigger_runtime_self_heal(detail)
-        raise RuntimeError(f"Local brain offline: {detail}")
-    response.raise_for_status()
-    return {"model": resolution["model"], "reply": str(response.json().get("response") or "").strip()}
+    try:
+        reply = run_ollama_generate(
+            resolution["model"],
+            final_prompt,
+            config,
+            profile,
+            max_predict=max_tokens,
+            temperature=temperature,
+            timeout=240,
+        )
+    except Exception as error:
+        maybe_trigger_runtime_self_heal(str(error))
+        raise RuntimeError(f"Local brain offline: {error}")
+    return {"model": resolution["model"], "reply": reply, "spark": spark_result.get("spark") or {}}
 
 
 @app.route("/")
@@ -2214,7 +2417,13 @@ def openzero_chat_completions():
         temperature = 0.6
 
     try:
-        result = ask_ollama_openai_compatible(messages, requested_model, max_tokens, temperature)
+        result = ask_ollama_openai_compatible(
+            messages,
+            requested_model,
+            max_tokens,
+            temperature,
+            spark_mode_override=str(data.get("spark_mode") or data.get("openzero_spark") or ""),
+        )
     except ValueError as error:
         return openzero_api_error(str(error), 400)
     except Exception as error:
@@ -2239,6 +2448,7 @@ def openzero_chat_completions():
                 "completion_tokens": 0,
                 "total_tokens": 0,
             },
+            "openzero_spark": result.get("spark") or {},
         }
     )
 
@@ -2284,6 +2494,7 @@ def stats():
             "hive_cache": federation.get("local_knowledge_events", 0),
             "hive_lookup": "ON" if federation.get("remote_lookup_enabled") else "LOCAL-FIRST",
             "hive_share_mode": federation.get("share_mode", "manual"),
+            "spark": openzero_spark_status(config, installed_models=local_resolution.get("installed_models", [])),
         }
     )
 
@@ -2352,6 +2563,7 @@ def get_config():
             "LOCAL_MODEL_PRESETS": LOCAL_MODEL_PRESETS,
             "BITNET_MODEL_PRESETS": BITNET_MODEL_PRESETS,
             "BITNET_STATUS": bitnet_runtime,
+            "OPENZERO_SPARK_STATUS": openzero_spark_status(config, installed_models=ollama_models),
             "OLLAMA_STATUS": local_resolution["ollama"],
             "LOCAL_MODEL_CANDIDATES": local_resolution["preferred_candidates"],
             "MODEL_STORES": {

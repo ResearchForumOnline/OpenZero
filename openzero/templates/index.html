@@ -298,6 +298,25 @@
                 <label>Keep Model Warm</label>
                 <input type="text" id="cfg_ollama_keep_alive" placeholder="10m">
 
+                <label>Z-Spark Draft-Verify</label>
+                <select id="cfg_spark_mode">
+                    <option value="auto">AUTO (USE WHEN DRAFT MODEL IS READY)</option>
+                    <option value="force">FORCE (TRY DRAFT-VERIFY)</option>
+                    <option value="off">OFF (TARGET MODEL ONLY)</option>
+                </select>
+                <div class="flex-row">
+                    <div style="flex:1;">
+                        <label>Draft Model</label>
+                        <input type="text" id="cfg_spark_draft_model" placeholder="qwen2.5:0.5b">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Confidence Gate</label>
+                        <input type="number" id="cfg_spark_threshold" min="0.05" max="0.95" step="0.01" placeholder="0.58">
+                    </div>
+                </div>
+                <div class="health-note" id="spark-health-note"></div>
+                <div class="hint">Z-Spark is OpenZero's custom DSpark-inspired layer: a small local drafter proposes a compact answer, then the active target model verifies and rewrites it. True DeepSeek DSpark requires trained draft checkpoints; this CPU-first mode uses OpenZero's own draft-check code.</div>
+
                 <label>GGUF Download URL</label>
                 <input type="text" id="hf_url" placeholder="https://huggingface.co/.../resolve/main/model.gguf">
                 <label>Model Alias For Local GGUF</label>
@@ -746,6 +765,10 @@
             const savedModel = cfg?.SAVED_ACTIVE_MODEL || cfg?.ACTIVE_MODEL || '';
             const engine = cfg?.LOCAL_ENGINE_EFFECTIVE || (isBitnetModel(effectiveModel) ? 'bitnet' : 'ollama');
             const versionLabel = ollama.version || ollama.raw || 'unknown';
+            const spark = cfg?.OPENZERO_SPARK_STATUS || {};
+            if (spark.message) {
+                setHealthNote('spark-health-note', spark.message, spark.ready ? '' : (spark.mode === 'off' ? '' : 'warn'));
+            }
             if (engine === 'bitnet') {
                 const bitnetText = bitnet.ready
                     ? `BitNet runtime: <code>${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}</code> // Microsoft 1-bit lane ready.`
@@ -1081,6 +1104,9 @@
                     document.getElementById('cfg_ollama_threads').value = cfg.OPENZERO_OLLAMA_THREADS || '0';
                     document.getElementById('cfg_ollama_batch').value = cfg.OPENZERO_OLLAMA_NUM_BATCH || '512';
                     document.getElementById('cfg_ollama_keep_alive').value = cfg.OPENZERO_OLLAMA_KEEP_ALIVE || '10m';
+                    document.getElementById('cfg_spark_mode').value = ['auto', 'force', 'off'].includes(cfg.OPENZERO_SPARK_MODE) ? cfg.OPENZERO_SPARK_MODE : 'auto';
+                    document.getElementById('cfg_spark_draft_model').value = cfg.OPENZERO_SPARK_DRAFT_MODEL || 'qwen2.5:0.5b';
+                    document.getElementById('cfg_spark_threshold').value = cfg.OPENZERO_SPARK_CONFIDENCE_THRESHOLD || '0.58';
                     document.getElementById('cfg_fee').value = cfg.FEE_OZ_COINS || cfg.FEE_ZERO_COINS;
                     document.getElementById('cfg_p_good').value = cfg.P_GOOD_THRESHOLD;
                     document.getElementById('cfg_oz_ca').value = cfg.OZ_TOKEN_CA;
@@ -1328,6 +1354,9 @@
                 OPENZERO_OLLAMA_THREADS: document.getElementById('cfg_ollama_threads').value.trim() || '0',
                 OPENZERO_OLLAMA_NUM_BATCH: document.getElementById('cfg_ollama_batch').value.trim() || '512',
                 OPENZERO_OLLAMA_KEEP_ALIVE: document.getElementById('cfg_ollama_keep_alive').value.trim() || '10m',
+                OPENZERO_SPARK_MODE: document.getElementById('cfg_spark_mode').value,
+                OPENZERO_SPARK_DRAFT_MODEL: document.getElementById('cfg_spark_draft_model').value.trim() || 'qwen2.5:0.5b',
+                OPENZERO_SPARK_CONFIDENCE_THRESHOLD: document.getElementById('cfg_spark_threshold').value.trim() || '0.58',
                 FEE_OZ_COINS: currentFee,
                 FEE_ZERO_COINS: currentFee,
                 COMP_MODE: document.getElementById('cfg_comp_mode').value,

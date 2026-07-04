@@ -16,6 +16,10 @@ Start with the default Gemma local lane installed by the script. Use smaller mod
 
 OpenZero creates a local API key. You paste that key into ZeroThink Neural Vault. ZeroThink can then route suitable work through your OpenZero node.
 
+## Is Z-Spark the same as DeepSeek DSpark?
+
+No. Z-Spark is OpenZero's custom CPU-first draft-verify layer inspired by DSpark's broad pattern: draft, confidence gate, verify. The official DSpark path uses trained speculative-decoding checkpoints and model-runtime internals. OpenZero uses a practical open-core implementation that works through local Ollama models and falls back safely when a draft model is unavailable.
+
 ## Is Voicebox bundled?
 
 No. Voicebox is optional and installed separately from https://github.com/jamiepine/voicebox. OpenZero can connect to it when it is running locally.
@@ -39,4 +43,3 @@ Moltbot is the local browser/page inspection helper used for visual and text-bas
 ## Where do I report security issues?
 
 Use the security policy in [../SECURITY.md](../SECURITY.md).
-

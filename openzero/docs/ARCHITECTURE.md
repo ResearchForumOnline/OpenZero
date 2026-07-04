@@ -8,6 +8,8 @@ OpenZero is an open-core local AI node. It is built from small cooperating parts
 flowchart TD
   User["Operator / User"] --> Panel["OpenZero Super Panel"]
   Panel --> Flask["Python Flask + Socket.IO Brain"]
+  Flask --> ZSpark["Z-Spark Draft-Verify Scheduler"]
+  ZSpark --> Ollama
   Flask --> Ollama["Ollama Local Models"]
   Flask --> BitNet["Optional BitNet Runtime"]
   Flask --> Moltbot["Moltbot Browser Worker"]
@@ -42,6 +44,12 @@ The local model lane is used by:
 - `/v1/chat/completions`;
 - ZeroThink bridge calls;
 - local model repair/install actions.
+
+## Z-Spark Draft-Verify Lane
+
+Z-Spark sits above Ollama and below the chat/API routes. When enabled and ready, it asks a small local draft model for a compact candidate answer, estimates confidence, then asks the active target model to verify and rewrite. This gives OpenZero a DSpark-inspired pattern without requiring official DeepSeek DSpark checkpoints or target-model internals.
+
+Read [ZSPARK.md](ZSPARK.md) for the full behavior and limits.
 
 ## Tool Lane
 
@@ -81,4 +89,3 @@ The public repo should contain:
 - no premium/private module source.
 
 Premium or private modules should live outside this public repository. See [PREMIUM_EXTENSIONS.md](PREMIUM_EXTENSIONS.md).
-

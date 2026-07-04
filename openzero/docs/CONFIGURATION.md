@@ -25,6 +25,16 @@ Never commit real `.env` files.
 | `OPENZERO_OLLAMA_KEEP_ALIVE` | `10m` |
 | `BITNET_THREADS` | `0` |
 
+## Z-Spark Draft-Verify
+
+| Key | Default | Purpose |
+| --- | --- | --- |
+| `OPENZERO_SPARK_MODE` | `auto` | `off`, `auto`, or `force` for the custom DSpark-inspired draft-verify lane. |
+| `OPENZERO_SPARK_DRAFT_MODEL` | `qwen2.5:0.5b` | Small Ollama model used to draft before target verification. |
+| `OPENZERO_SPARK_CONFIDENCE_THRESHOLD` | `0.58` | Confidence gate used by the prefix scheduler. |
+| `OPENZERO_SPARK_MAX_DRAFT_TOKENS` | `384` | Maximum draft size before target verification. |
+| `OPENZERO_SPARK_SHOW_TRACE` | `false` | Adds a short visible trace to local panel replies when enabled. |
+
 ## API Bridge
 
 | Key | Default | Purpose |
@@ -78,4 +88,3 @@ Never commit real `.env` files.
 | `TELEGRAM_BOT_TOKEN` | Optional Telegram integration. |
 
 Keep these empty unless you intentionally use the feature.
-

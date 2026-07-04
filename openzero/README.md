@@ -45,6 +45,7 @@ This video is the broad overview for the TalkToAI stack: ZeroThink as the web wo
 | Super Panel | Browser UI for models, Hive controls, voice, API key management, local runtime status, and settings. |
 | Local LLM lane | Ollama-backed Gemma defaults with model repair, install buttons, custom GGUF URL support, and CPU profile tuning. |
 | CPU profiles | Compact, balanced, and max CPU modes with thread, batch, and keep-warm controls. |
+| Z-Spark | Optional OpenZero draft-verify layer inspired by DSpark: a small local drafter proposes a candidate, then the active target model verifies and writes the final answer. |
 | OpenAI-compatible API | `/v1/chat/completions` for local Ollama model calls with an OpenZero API key. |
 | ZeroThink bridge | Create an OpenZero API key and paste it into ZeroThink Neural Vault to let ZeroThink use your own node. |
 | Moltbot | Local browser/text extraction path for page inspection, research, and web-aware agent actions. |
@@ -109,11 +110,21 @@ OpenZero does not assume an expensive GPU. The current runtime exposes:
 - `OPENZERO_OLLAMA_THREADS=0`
 - `OPENZERO_OLLAMA_NUM_BATCH=512`
 - `OPENZERO_OLLAMA_KEEP_ALIVE=10m`
+- `OPENZERO_SPARK_MODE=auto`
+- `OPENZERO_SPARK_DRAFT_MODEL=qwen2.5:0.5b`
 - `BITNET_THREADS=0`
 
 The same profile logic is used by normal chat, the local `/v1` route, and BitNet where relevant.
 
 Read more in [docs/CPU_RUNTIME.md](docs/CPU_RUNTIME.md).
+
+## Z-Spark Draft-Verify
+
+OpenZero now includes a custom Z-Spark runtime inspired by DSpark-style speculative decoding. It is not the official DeepSeek DSpark checkpoint path. Instead, it is an open-core CPU-first implementation: a lightweight local model drafts, OpenZero estimates confidence, and the active model verifies or rewrites the result.
+
+ZeroThink can request the lane through the OpenAI-compatible bridge with `openzero_spark: "auto"`.
+
+Read more in [docs/ZSPARK.md](docs/ZSPARK.md).
 
 ## Optional Voicebox Integration
 
@@ -170,6 +181,7 @@ See [docs/PREMIUM_EXTENSIONS.md](docs/PREMIUM_EXTENSIONS.md).
 - [Install Guide](docs/INSTALL.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [CPU Runtime](docs/CPU_RUNTIME.md)
+- [Z-Spark Draft-Verify](docs/ZSPARK.md)
 - [ZeroThink Bridge](docs/ZEROTHINK_BRIDGE.md)
 - [API Reference](docs/API.md)
 - [Voicebox Integration](docs/VOICEBOX.md)

@@ -1,5 +1,9 @@
 # OpenZero
 
+<p align="center">
+  <img src="docs/images/openzero-5-4-terminal-ui.png" alt="OpenZero 5.4 terminal-style local AI node interface" width="960">
+</p>
+
 OpenZero is a local-first AI node and operator panel for machines you control. It focuses on practical local automation: model setup, service checks, file and archive work, optional web reading through Moltbot, offline release builds, and privacy-aware federation controls.
 
 Public site: https://openzero.talktoai.org/
@@ -16,6 +20,7 @@ Watch the ecosystem overview: [TalkToAI: Sovereignty Through ZeroThink and OpenZ
 
 - `openzero/` contains the public OpenZero node, panel templates, installers, watchdog helpers, and local client-side federation code.
 - `docs/` explains the security model, Hive boundary, private extension policy, and release checks.
+- `openzero/docs/ZSPARK.md` documents the custom Z-Spark draft-verify path inspired by DSpark-style speculative decoding.
 - `.github/workflows/ci.yml` runs a lightweight syntax check for the Python source.
 
 ## What Is Not Included

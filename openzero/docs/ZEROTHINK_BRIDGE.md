@@ -45,9 +45,16 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
     "model": "gemma4:e4b",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}
-    ]
+    ],
+    "openzero_spark": "auto"
   }'
 ```
+
+## Z-Spark From ZeroThink
+
+ZeroThink can request OpenZero's custom Z-Spark draft-verify lane by sending `openzero_spark: "auto"` with the OpenAI-compatible request.
+
+When the user's OpenZero node has the configured draft model installed, OpenZero drafts with the small model, confidence-gates the draft, and verifies through the active target model before returning the final answer to ZeroThink. If the draft model is missing, OpenZero continues with target-only inference.
 
 ## Security Rule
 
@@ -66,4 +73,3 @@ The public UI should not show:
 - private server URLs;
 - prompt internals;
 - admin-only routing logic.
-

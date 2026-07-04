@@ -18,6 +18,9 @@ OpenZero is designed to be useful on CPU-first machines. It does not require an 
 | `OPENZERO_OLLAMA_THREADS` | `0` | `0` means automatic. Positive values override thread count. |
 | `OPENZERO_OLLAMA_NUM_BATCH` | `512` | Batch size passed to Ollama. Clamped internally. |
 | `OPENZERO_OLLAMA_KEEP_ALIVE` | `10m` | Keeps the local model warm for follow-up calls. |
+| `OPENZERO_SPARK_MODE` | `auto` | Optional draft-verify lane: `off`, `auto`, or `force`. |
+| `OPENZERO_SPARK_DRAFT_MODEL` | `qwen2.5:0.5b` | Small local draft model used before target verification. |
+| `OPENZERO_SPARK_CONFIDENCE_THRESHOLD` | `0.58` | Confidence gate for treating the draft as useful context. |
 | `BITNET_THREADS` | `0` | `0` means follow the OpenZero profile. |
 
 ## Where It Applies
@@ -26,6 +29,7 @@ The CPU profile is used by:
 
 - normal local Ollama chat;
 - `/v1/chat/completions`;
+- Z-Spark draft and target verification calls;
 - BitNet runtime calls where enabled;
 - the system prompt status line so the agent knows its node profile.
 
@@ -53,3 +57,8 @@ Stay practical. CPU-first users should prefer smaller quantized models. Large mo
 
 OpenZero is opinionated toward working installs over impressive model names.
 
+## Z-Spark On CPU
+
+Z-Spark can improve answer discipline by making a small model draft first and the active model verify after. It does not guarantee faster output on CPU, because a weak node may spend extra time running the draft call.
+
+Use `auto` for normal installs. Use `off` on very small machines. Use `force` only when testing a draft model that is definitely installed and much smaller than the target.

@@ -30,9 +30,12 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
       {"role": "user", "content": "Say OpenZero API OK"}
     ],
     "temperature": 0.6,
-    "max_tokens": 512
+    "max_tokens": 512,
+    "openzero_spark": "auto"
   }'
 ```
+
+`openzero_spark` is optional. Accepted values are `off`, `auto`, and `force`. In `auto` mode, OpenZero uses the Z-Spark draft-verify layer only when the configured small draft model is installed. The response includes an `openzero_spark` metadata object so ZeroThink or another client can see whether the path was used.
 
 ## Config
 
@@ -95,4 +98,3 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
 ## Operational Warning
 
 Treat local endpoints as admin/operator endpoints unless specifically designed for public use. Protect them with network controls.
-
