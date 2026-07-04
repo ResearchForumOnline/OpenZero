@@ -32,6 +32,14 @@ No. Voicebox is optional and installed separately from https://github.com/jamiep
 
 See [UPDATES.md](UPDATES.md) for public-safe update notes. It summarizes user-visible changes without exposing private infrastructure, credentials, logs, or protected implementation details.
 
+## Where can I get ZeroMint OS v1.0?
+
+ZeroMint OS v1.0 is available from the OpenZero download server, with the torrent metadata and checksums tracked in this repository. See [ZEROMINT_OS.md](ZEROMINT_OS.md).
+
+## Why is the ZeroMint OS ISO not committed directly to GitHub?
+
+The ISO is about 5.54 GiB. GitHub blocks normal repository files over 100 MiB, and GitHub release assets must be under 2 GiB each. The public repo therefore tracks the documentation, checksum, and torrent metadata while the ISO stays on the OpenZero download server.
+
 ## Can premium code be hidden on GitHub?
 
 No. Public GitHub code is viewable and copyable. Premium code should live outside this public repository as private modules, hosted services, private packages, compiled bundles, or signed extensions.

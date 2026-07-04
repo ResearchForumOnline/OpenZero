@@ -12,6 +12,9 @@ This page explains the public download paths for OpenZero.
 | GitHub releases | <https://github.com/ResearchForumOnline/OpenZero/releases> |
 | Hosted installer | <https://openzero.talktoai.org/install.sh> |
 | Hosted update script | <https://openzero.talktoai.org/update.sh> |
+| ZeroMint OS v1.0 ISO | <https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso> |
+| ZeroMint OS torrent | <https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent> |
+| ZeroMint OS guide | [ZEROMINT_OS.md](ZEROMINT_OS.md) |
 | Online manual | <https://docs.talktoai.org/openzero-user-manual/> |
 
 ## Standard Install
@@ -60,6 +63,23 @@ chmod +x build_offline_release.sh
 ```
 
 Read the full guide: [OFFLINE_RELEASE.md](OFFLINE_RELEASE.md).
+
+## ZeroMint OS v1.0
+
+ZeroMint OS v1.0 is the OpenZero-focused ISO route for users who want a bootable operating-system-style download for testing, labs, or a local AI workstation.
+
+The ISO is too large for a normal GitHub repository commit. It is hosted on the OpenZero server, with a torrent and SHA256 checksums tracked here for verification:
+
+- ISO: <https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso>
+- Torrent: <https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent>
+- Guide: [ZEROMINT_OS.md](ZEROMINT_OS.md)
+- Checksums: [../../docs/downloads/SHA256SUMS.txt](../../docs/downloads/SHA256SUMS.txt)
+
+Verified ISO SHA256:
+
+```text
+52f2d62f7f286484b28f7c5128b398c1ddb87ca354efa997965f5eef98263668
+```
 
 ## What A Good Public Release Should Include
 

@@ -6,6 +6,7 @@ Public-safe changelog for user-visible OpenZero changes. This file avoids API ke
 
 ### Added
 
+- Added the ZeroMint OS v1.0 download guide, verified SHA256 checksums, and torrent metadata so the large ISO is discoverable from GitHub without committing a multi-gigabyte binary to the repository.
 - Expanded the root GitHub README so visitors can see the real OpenZero capability surface from the repository front page.
 - Added stronger documentation links for install, downloads, releases, CPU runtime, API, architecture, ZeroThink bridge, Z-Spark, Voicebox, security model, configuration, troubleshooting, and roadmap.
 - Added Z-Spark documentation for OpenZero's custom CPU-first draft/verify lane.
@@ -40,4 +41,3 @@ Public-safe changelog for user-visible OpenZero changes. This file avoids API ke
 ## Earlier 2026 - Foundation Work
 
 - Built the public OpenZero release direction around local AI, Ollama model routing, Super Panel operation, OpenAI-compatible API keys, Moltbot/browser tooling, Hive boundary concepts, offline bundle paths, and integration with ZeroThink.
-

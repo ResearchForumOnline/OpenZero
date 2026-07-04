@@ -73,6 +73,9 @@ http://localhost:1024
 | GitHub releases | [OpenZero releases](https://github.com/ResearchForumOnline/OpenZero/releases) |
 | Hosted installer | [openzero.talktoai.org/install.sh](https://openzero.talktoai.org/install.sh) |
 | Update script | [openzero/update.sh](openzero/update.sh) |
+| ZeroMint OS v1.0 ISO | [Download ISO](https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso) |
+| ZeroMint OS torrent | [Download torrent](https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent) |
+| ZeroMint OS guide | [openzero/docs/ZEROMINT_OS.md](openzero/docs/ZEROMINT_OS.md) |
 | Download guide | [openzero/docs/DOWNLOADS_AND_RELEASES.md](openzero/docs/DOWNLOADS_AND_RELEASES.md) |
 | Offline release guide | [openzero/docs/OFFLINE_RELEASE.md](openzero/docs/OFFLINE_RELEASE.md) |
 | Public release checklist | [docs/PUBLIC_RELEASE_CHECKLIST.md](docs/PUBLIC_RELEASE_CHECKLIST.md) |
@@ -197,6 +200,7 @@ Start from `openzero/.env.example` and keep real `.env` files out of Git.
 - [Install Guide](openzero/docs/INSTALL.md)
 - [Latest Updates](openzero/docs/UPDATES.md)
 - [Downloads And Releases](openzero/docs/DOWNLOADS_AND_RELEASES.md)
+- [ZeroMint OS v1.0 ISO](openzero/docs/ZEROMINT_OS.md)
 - [Architecture](openzero/docs/ARCHITECTURE.md)
 - [CPU Runtime](openzero/docs/CPU_RUNTIME.md)
 - [Z-Spark Draft-Verify](openzero/docs/ZSPARK.md)
@@ -233,6 +237,8 @@ OpenZero is for people searching for:
 - offline AI release bundle
 - Linux AI operator panel
 - local voice AI server
+- OpenZero Linux ISO
+- ZeroMint OS local AI workstation
 
 ## Related TalkToAI Projects
 

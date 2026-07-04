@@ -42,6 +42,7 @@ id_ed25519*
 *.deb
 *.iso
 *.torrent
+!docs/downloads/*.torrent
 *.sha256
 *.bak
 *.bak_*
