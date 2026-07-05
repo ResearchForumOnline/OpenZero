@@ -1,6 +1,6 @@
 # OpenZero
 
-OpenZero is a local-first AI node for people who want more than a hosted chatbot tab. It combines a web Super Panel, local LLM routing, CPU-friendly model controls, an OpenAI-compatible local API, Moltbot browser tooling, optional Voicebox speech, optional BitNet, private local learning, and a ZeroThink bridge.
+OpenZero is a local-first AI node for people who want more than a hosted chatbot tab. It combines a web Super Panel, local LLM routing, CPU-friendly model controls, an OpenAI-compatible local API, Moltbot browser tooling, optional Voicebox speech, optional CallChat Matrix bot support, optional BitNet, private local learning, and a ZeroThink bridge.
 
 OpenZero is designed for normal Linux servers first. GPU acceleration is welcome when available, but the default path is practical CPU operation through Ollama, compact model choices, and a panel that exposes the important controls without forcing every user into command-line tuning.
 
@@ -16,6 +16,7 @@ That matters because a node can:
 - route ZeroThink work through a user's own machine;
 - browse and inspect pages through Moltbot;
 - speak through Piper or Voicebox;
+- power a CallChat Matrix room agent through the local API;
 - work in normal server environments;
 - be packaged for offline or air-gapped installs;
 - keep private state local unless the operator explicitly enables sharing.
@@ -50,6 +51,7 @@ This video is the broad overview for the TalkToAI stack: ZeroThink as the web wo
 | ZeroThink bridge | Create an OpenZero API key and paste it into ZeroThink Neural Vault to let ZeroThink use your own node. |
 | Moltbot | Local browser/text extraction path for page inspection, research, and web-aware agent actions. |
 | Voice | Piper offline speech by default; optional Voicebox backend for richer local voice studio workflows. |
+| CallChat bot | Matrix room agent bridge using OpenZero as the local brain and Voicebox for optional command-triggered audio. |
 | BitNet | Optional Microsoft BitNet 1-bit CPU lane for lower-power nodes. |
 | Offline release | Builder path for packaging code, wheels, Node runtime, PM2, Ollama binary, Moltbot deps, and model store. |
 | Security posture | Local-first defaults, API key hashing, explicit sharing controls, and no browser-supplied OpenZero endpoint trust. |
@@ -144,6 +146,12 @@ OpenZero exposes:
 
 Read more in [docs/VOICEBOX.md](docs/VOICEBOX.md).
 
+## CallChat Zero Bot Bridge
+
+OpenZero can power `@zero:callchat.org`, a CallChat Matrix bot that answers approved rooms through the local `/v1/chat/completions` endpoint and can use Voicebox for audio replies.
+
+Read more in [docs/CALLCHAT_ZERO_BOT.md](docs/CALLCHAT_ZERO_BOT.md).
+
 ## API Example
 
 After creating an OpenZero API key in the Super Panel:
@@ -186,6 +194,7 @@ See [docs/PREMIUM_EXTENSIONS.md](docs/PREMIUM_EXTENSIONS.md).
 - [ZeroThink Bridge](docs/ZEROTHINK_BRIDGE.md)
 - [API Reference](docs/API.md)
 - [Voicebox Integration](docs/VOICEBOX.md)
+- [CallChat Zero Bot Bridge](docs/CALLCHAT_ZERO_BOT.md)
 - [Offline Release](docs/OFFLINE_RELEASE.md)
 - [Security Model](docs/SECURITY_MODEL.md)
 - [Premium Extensions](docs/PREMIUM_EXTENSIONS.md)

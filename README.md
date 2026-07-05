@@ -32,6 +32,7 @@ OpenZero lets a user or business install a private AI node on a server, VPS, des
 - ZeroThink Neural Vault integration so ZeroThink can use a user-owned OpenZero machine;
 - Moltbot page reading and browser-style web inspection for agent workflows;
 - optional Voicebox or Piper speech routes for local voice output;
+- CallChat Zero Bot bridge so OpenZero can power a Matrix room agent with optional Voicebox speech;
 - optional BitNet 1-bit CPU lane for lower-power model experiments;
 - Z-Spark draft-verify routing inspired by DSpark-style speculative decoding;
 - offline release bundles for air-gapped or low-connectivity installs;
@@ -94,6 +95,7 @@ http://localhost:1024
 | ZeroThink bridge | Create a machine API key in OpenZero and paste it into ZeroThink Neural Vault to route suitable work through your own node. |
 | Moltbot | Local page inspection and text extraction path for research, webpage reading, and agent actions. |
 | Voice | Piper offline speech by default; optional Voicebox backend for richer local voice workflows. |
+| CallChat bot | Matrix room agent bridge for CallChat using OpenZero as the local brain and Voicebox for optional speech. |
 | BitNet | Optional Microsoft BitNet-style 1-bit CPU lane for low-power experiments. |
 | Offline release | Builder path for source, Python wheels, Node runtime, PM2, Moltbot dependencies, Ollama binary, and optional model stores. |
 | Security posture | Local-first defaults, hashed API keys, explicit sharing controls, no browser-supplied OpenZero endpoint trust. |
@@ -140,6 +142,12 @@ OpenZero includes Moltbot integration for controlled page reading and website in
 OpenZero keeps Piper as the offline fallback and can connect to a local Voicebox service when richer voice workflows are installed.
 
 Read more: [openzero/docs/VOICEBOX.md](openzero/docs/VOICEBOX.md)
+
+### CallChat Zero Bot
+
+OpenZero can act as the local brain for `@zero:callchat.org`, a Matrix room agent that answers approved CallChat rooms, explains the ecosystem, and can use Voicebox for command-triggered audio replies.
+
+Read more: [openzero/docs/CALLCHAT_ZERO_BOT.md](openzero/docs/CALLCHAT_ZERO_BOT.md)
 
 ## API Example
 
@@ -208,6 +216,7 @@ Start from `openzero/.env.example` and keep real `.env` files out of Git.
 - [ZeroThink Bridge](openzero/docs/ZEROTHINK_BRIDGE.md)
 - [API Reference](openzero/docs/API.md)
 - [Voicebox Integration](openzero/docs/VOICEBOX.md)
+- [CallChat Zero Bot Bridge](openzero/docs/CALLCHAT_ZERO_BOT.md)
 - [Offline Release](openzero/docs/OFFLINE_RELEASE.md)
 - [Security Model](openzero/docs/SECURITY_MODEL.md)
 - [Premium Extensions](openzero/docs/PREMIUM_EXTENSIONS.md)
