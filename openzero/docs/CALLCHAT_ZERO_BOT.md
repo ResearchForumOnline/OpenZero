@@ -101,9 +101,16 @@ From a CallChat room where the bot is invited:
 ```text
 !zero help
 !zero about
+!zero callchat
+!zero openzero
+!zero frontdesk
+!zero voice
+!zero rules
 !zero status
 !zero explain-shield
 !zero voice OpenZero voice test complete.
 ```
 
 If OpenZero is down, the bot should use a local fallback and clearly say the local brain is unavailable.
+
+`!zero status` should use a fast reachability check for OpenZero and Voicebox. It should not wait on a full model request just to show service status.
