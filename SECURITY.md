@@ -20,4 +20,6 @@ Contact: security@talktoai.org or shaf@talktoai.org
 
 ## Public Release Boundary
 
-No production database credentials, private Hive HQ server config, generated private keys, local vaults, backup archives, model weights, or live server snapshots should be committed to this repository.
+No production database credentials, private Hive HQ server config, generated private keys, local vaults, backup archives, model weights, live server snapshots, Matrix account files, customer data, or room exports should be committed to this repository.
+
+Private CallChat Shield, ZMath, premium entitlement, policy, and deployment-specific security source must stay outside public repositories. Public docs may describe product behaviour, licensing, and safety boundaries, but should not publish private implementation details or unverifiable cryptography claims.
