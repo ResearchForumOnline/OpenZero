@@ -225,10 +225,10 @@ def show_status() -> None:
     print(f"  Context window: {profile['context_window']}")
     print(f"  Hive: {'ONLINE' if hive_state['hive_enabled'] else 'OFFLINE'}")
     print(f"  Voice: {'ON' if voice_state['voice_enabled'] else 'OFF'}")
-    print(f"  Priority federation: {config.get('PAID_HIVE_ENABLED')}")
+    print(f"  Priority routing: {config.get('PAID_HIVE_ENABLED')}")
     print(f"  P(G): {config.get('P_GOOD_THRESHOLD')}")
     print(f"  Coordination reference: {config.get('OZ_TOKEN_CA') or 'not set'}")
-    print(f"  Node address: {config.get('SOLANA_ADDRESS') or 'not set'}")
+    print(f"  Node reference: {config.get('SOLANA_ADDRESS') or 'not set'}")
     print(f"  Integrity: {integrity['manifest']['status']} / ethics={integrity['ethics']['status']}")
 
 
@@ -327,12 +327,12 @@ def handle_meta_command(user_input: str) -> bool:
         else:
             print(f"PRIORITY_FEDERATION={config.get('PAID_HIVE_ENABLED')}")
         return True
-    if command == "!wallet":
+    if command in {"!node-address", "!node-reference", "!wallet"}:
         if argument:
             save_config({"SOLANA_ADDRESS": argument, "PAID_HIVE_ADDRESS": argument})
-            print(f"{Fore.GREEN}[NODE] Address updated.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[NODE] Reference updated.{Style.RESET_ALL}")
         else:
-            print("Usage: !wallet <node-address>")
+            print("Usage: !node-reference <label-or-reference>")
         return True
     if command == "!pg":
         try:

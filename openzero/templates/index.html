@@ -206,13 +206,13 @@
                 <input type="text" id="cfg_p_good" placeholder="0.10">
                 <label>Coordination Reference</label>
                 <input type="text" id="cfg_oz_ca" placeholder="Optional local reference">
-                <label>Priority Federation</label>
+                <label>Priority Routing</label>
                 <select id="cfg_paid_hive">
                     <option value="false">DISABLED</option>
                     <option value="true">ENABLED</option>
                 </select>
-                <label>Priority Node Address</label>
-                <input type="text" id="cfg_paid_address" placeholder="Stored locally on this node">
+                <label>Priority Node Reference</label>
+                <input type="text" id="cfg_paid_address" placeholder="Optional local node reference">
                 <div class="flex-row">
                     <div style="flex:1;">
                         <label>Free Boost</label>
@@ -222,7 +222,7 @@
                         </select>
                     </div>
                     <div style="flex:1;">
-                        <label>Stake Multiplier</label>
+                        <label>Priority Multiplier</label>
                         <input type="text" id="cfg_paid_multiplier" placeholder="1.0">
                     </div>
                 </div>
@@ -414,8 +414,8 @@
                     <label>Node Role</label>
                     <input type="text" id="cfg_node_role" placeholder="general">
 
-                    <label>Node Address</label>
-                    <input type="text" id="cfg_wallet" placeholder="Stored locally on this node">
+                    <label>Node Public Reference</label>
+                    <input type="text" id="cfg_node_reference" placeholder="Optional non-secret node label">
 
                     <label>Groq API Key</label>
                     <input type="password" id="cfg_groq" placeholder="Enter API Key...">
@@ -1116,7 +1116,7 @@
                     document.getElementById('cfg_paid_multiplier').value = cfg.PAID_HIVE_STAKE_MULTIPLIER;
                     document.getElementById('cfg_node_label').value = cfg.NODE_LABEL;
                     document.getElementById('cfg_node_role').value = cfg.NODE_ROLE;
-                    document.getElementById('cfg_wallet').value = cfg.SOLANA_ADDRESS;
+                    document.getElementById('cfg_node_reference').value = cfg.SOLANA_ADDRESS;
                     document.getElementById('cfg_voice_enabled').value = cfg.VOICE_ENABLED;
                     document.getElementById('cfg_voice_tts').value = cfg.VOICE_TTS_ENABLED;
                     document.getElementById('cfg_voice_backend').value = cfg.VOICE_TTS_BACKEND || 'piper';
@@ -1368,7 +1368,7 @@
                 PAID_HIVE_STAKE_MULTIPLIER: currentMultiplier,
                 NODE_LABEL: document.getElementById('cfg_node_label').value.trim(),
                 NODE_ROLE: currentRole,
-                SOLANA_ADDRESS: document.getElementById('cfg_wallet').value.trim(),
+                SOLANA_ADDRESS: document.getElementById('cfg_node_reference').value.trim(),
                 VOICE_ENABLED: document.getElementById('cfg_voice_enabled').value,
                 VOICE_TTS_ENABLED: document.getElementById('cfg_voice_tts').value,
                 VOICE_TTS_BACKEND: document.getElementById('cfg_voice_backend').value,
