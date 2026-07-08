@@ -2230,6 +2230,43 @@ def openzero_api_authorized(config: Dict[str, str]) -> bool:
     return bool(legacy_plain and hmac.compare_digest(token, legacy_plain))
 
 
+PUBLIC_CONFIG_KEY_ALLOWLIST = {
+    "HAS_GROQ",
+    "HAS_OPENZERO_API_KEY",
+    "HAS_SERPER",
+    "HAS_TELEGRAM",
+    "OPENZERO_API_KEY_HINT_PUBLIC",
+}
+SENSITIVE_CONFIG_MARKERS = (
+    "API_KEY",
+    "TOKEN",
+    "SECRET",
+    "PASSWORD",
+    "PASS",
+    "SUDO",
+    "HASH",
+)
+
+
+def is_public_config_sensitive(key: str) -> bool:
+    upper = key.upper()
+    if upper in PUBLIC_CONFIG_KEY_ALLOWLIST:
+        return False
+    return any(marker in upper for marker in SENSITIVE_CONFIG_MARKERS)
+
+
+def public_config_payload(payload):
+    if isinstance(payload, dict):
+        return {
+            key: public_config_payload(value)
+            for key, value in payload.items()
+            if not is_public_config_sensitive(str(key))
+        }
+    if isinstance(payload, list):
+        return [public_config_payload(item) for item in payload]
+    return payload
+
+
 def openzero_message_content_to_text(content) -> str:
     if isinstance(content, str):
         return content
@@ -2546,41 +2583,40 @@ def get_config():
     ollama_models = list_ollama_models()
     gguf_files = list_local_gguf_files()
     custom_models = custom_model_inventory(ollama_models)
-    return jsonify(
-        {
-            **config,
-            "SAVED_ACTIVE_MODEL": saved_active_model,
-            "ACTIVE_MODEL_EFFECTIVE": effective_active_model,
-            "ACTIVE_MODEL_WARNING": active_model_warning,
-            "ACTIVE_MODEL_STATUS": active_model_status,
-            "LOCAL_ENGINE_EFFECTIVE": local_engine_from(config),
-            "HAS_GROQ": bool(config.get("GROQ_API_KEY")),
-            "HAS_SERPER": bool(config.get("SERPER_API_KEY")),
-            "HAS_TELEGRAM": bool(config.get("TELEGRAM_BOT_TOKEN")),
-            "HAS_OPENZERO_API_KEY": bool(config.get("OPENZERO_API_KEY_HASH") or config.get("OPENZERO_API_KEY")),
-            "OPENZERO_API_KEY_HINT_PUBLIC": config.get("OPENZERO_API_KEY_HINT", ""),
-            "PROFILE": profile,
-            "LOCAL_MODEL_PRESETS": LOCAL_MODEL_PRESETS,
-            "BITNET_MODEL_PRESETS": BITNET_MODEL_PRESETS,
-            "BITNET_STATUS": bitnet_runtime,
-            "OPENZERO_SPARK_STATUS": openzero_spark_status(config, installed_models=ollama_models),
-            "OLLAMA_STATUS": local_resolution["ollama"],
-            "LOCAL_MODEL_CANDIDATES": local_resolution["preferred_candidates"],
-            "MODEL_STORES": {
-                "ollama_store": "Ollama system model store",
-                "gguf_folder": MODELS_FOLDER,
-                "ollama_models": ollama_models,
-                "gguf_files": gguf_files,
-                "custom_models": custom_models,
-                "custom_registry": CUSTOM_MODEL_REGISTRY_PATH,
-            },
-            "VOICE_STATUS": voice_status,
-            "INTEGRITY_STATUS": integrity_status(BASE_DIR),
-            "FEDERATION_STATUS": hive_state.get("federation", {}),
-            "HIVE_STATUS": hive_state,
-            "NODE_CAPABILITIES": hive.current_capabilities(),
-        }
-    )
+    payload = {
+        **config,
+        "SAVED_ACTIVE_MODEL": saved_active_model,
+        "ACTIVE_MODEL_EFFECTIVE": effective_active_model,
+        "ACTIVE_MODEL_WARNING": active_model_warning,
+        "ACTIVE_MODEL_STATUS": active_model_status,
+        "LOCAL_ENGINE_EFFECTIVE": local_engine_from(config),
+        "HAS_GROQ": bool(config.get("GROQ_API_KEY")),
+        "HAS_SERPER": bool(config.get("SERPER_API_KEY")),
+        "HAS_TELEGRAM": bool(config.get("TELEGRAM_BOT_TOKEN")),
+        "HAS_OPENZERO_API_KEY": bool(config.get("OPENZERO_API_KEY_HASH") or config.get("OPENZERO_API_KEY")),
+        "OPENZERO_API_KEY_HINT_PUBLIC": config.get("OPENZERO_API_KEY_HINT", ""),
+        "PROFILE": profile,
+        "LOCAL_MODEL_PRESETS": LOCAL_MODEL_PRESETS,
+        "BITNET_MODEL_PRESETS": BITNET_MODEL_PRESETS,
+        "BITNET_STATUS": bitnet_runtime,
+        "OPENZERO_SPARK_STATUS": openzero_spark_status(config, installed_models=ollama_models),
+        "OLLAMA_STATUS": local_resolution["ollama"],
+        "LOCAL_MODEL_CANDIDATES": local_resolution["preferred_candidates"],
+        "MODEL_STORES": {
+            "ollama_store": "Ollama system model store",
+            "gguf_folder": MODELS_FOLDER,
+            "ollama_models": ollama_models,
+            "gguf_files": gguf_files,
+            "custom_models": custom_models,
+            "custom_registry": CUSTOM_MODEL_REGISTRY_PATH,
+        },
+        "VOICE_STATUS": voice_status,
+        "INTEGRITY_STATUS": integrity_status(BASE_DIR),
+        "FEDERATION_STATUS": hive_state.get("federation", {}),
+        "HIVE_STATUS": hive_state,
+        "NODE_CAPABILITIES": hive.current_capabilities(),
+    }
+    return jsonify(public_config_payload(payload))
 
 
 @app.route("/api/integrity/status", methods=["GET"])
@@ -2596,7 +2632,7 @@ def update_config():
     if not key:
         return jsonify({"status": "error", "message": "Missing key"}), 400
     config = apply_config_updates({key: value})
-    return jsonify({"status": "success", "config": config})
+    return jsonify({"status": "success", "config": public_config_payload(config)})
 
 
 @app.route("/api/config/bulk", methods=["POST"])
@@ -2606,7 +2642,7 @@ def update_config_bulk():
     if not updates:
         return jsonify({"status": "error", "message": "No updates provided"}), 400
     config = apply_config_updates(updates)
-    return jsonify({"status": "success", "config": config})
+    return jsonify({"status": "success", "config": public_config_payload(config)})
 
 
 @app.route("/api/models", methods=["GET"])
