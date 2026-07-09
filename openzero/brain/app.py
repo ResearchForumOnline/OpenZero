@@ -2400,6 +2400,7 @@ def rotate_openzero_api_key():
         config = apply_config_updates(
             {
                 "OPENZERO_API_ENABLED": "false",
+                "OPENZERO_API_KEY": "",
                 "OPENZERO_API_KEY_HASH": "",
                 "OPENZERO_API_KEY_HINT": "",
             }
@@ -2417,6 +2418,7 @@ def rotate_openzero_api_key():
     config = apply_config_updates(
         {
             "OPENZERO_API_ENABLED": "true",
+            "OPENZERO_API_KEY": "",
             "OPENZERO_API_KEY_HASH": openzero_api_hash(token),
             "OPENZERO_API_KEY_HINT": openzero_api_hint(token),
         }
