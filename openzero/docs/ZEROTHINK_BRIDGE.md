@@ -29,11 +29,19 @@ OpenZero stores an API key hash, not the raw key.
 
 The key is shown once when created or rotated. Store it securely.
 
+Rotation is a local administrator operation. OpenZero rejects rotation requests
+that arrive from a remote address or through forwarded proxy headers.
+
 ## Local API Endpoint
 
 ```text
 POST /v1/chat/completions
+GET /v1/models
 ```
+
+Both routes require the OpenZero bearer key. The models route lets ZeroThink or
+another trusted client discover the local Ollama inventory without relying on a
+hard-coded model list.
 
 Example:
 

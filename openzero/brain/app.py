@@ -2230,6 +2230,13 @@ def openzero_api_authorized(config: Dict[str, str]) -> bool:
     return bool(legacy_plain and hmac.compare_digest(token, legacy_plain))
 
 
+def openzero_local_admin_request() -> bool:
+    """Allow key rotation only from a direct local request, never through a proxy."""
+    if (request.remote_addr or "").strip() not in {"127.0.0.1", "::1"}:
+        return False
+    return not request.headers.get("X-Forwarded-For") and not request.headers.get("X-Real-IP")
+
+
 PUBLIC_CONFIG_KEY_ALLOWLIST = {
     "HAS_GROQ",
     "HAS_OPENZERO_API_KEY",
@@ -2394,6 +2401,13 @@ def manual():
 
 @app.route("/api/openzero/key", methods=["POST"])
 def rotate_openzero_api_key():
+    if not openzero_local_admin_request():
+        return openzero_api_error(
+            "OpenZero API key rotation is a local administrator operation.",
+            403,
+            "permission_error",
+        )
+
     data = request.json or {}
     action = str(data.get("action") or "rotate").strip().lower()
     if action == "revoke":
@@ -2430,6 +2444,28 @@ def rotate_openzero_api_key():
             "api_key": token,
             "hint": config.get("OPENZERO_API_KEY_HINT", ""),
             "enabled": env_bool(config, "OPENZERO_API_ENABLED", False),
+        }
+    )
+
+
+@app.route("/v1/models", methods=["GET"])
+def openzero_list_models():
+    config = current_config()
+    if not openzero_api_authorized(config):
+        return openzero_api_error("Unauthorized OpenZero API key.", 401, "authentication_error")
+
+    return jsonify(
+        {
+            "object": "list",
+            "data": [
+                {
+                    "id": model,
+                    "object": "model",
+                    "created": 0,
+                    "owned_by": "openzero-local",
+                }
+                for model in list_ollama_models()
+            ],
         }
     )
 

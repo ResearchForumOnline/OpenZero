@@ -6,7 +6,9 @@ OpenZero exposes local API routes for panel actions, local model calls, voice, m
 
 The OpenAI-compatible API requires an OpenZero API key.
 
-Create or rotate it in the Super Panel. The key is displayed once.
+Create or rotate it from a direct session on the OpenZero host. Key rotation is
+intentionally rejected when the request arrives through a proxy or remote client.
+The key is displayed once.
 
 ```http
 Authorization: Bearer ztapi_your_key_here
@@ -37,6 +39,15 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
 
 `openzero_spark` is optional. Accepted values are `off`, `auto`, and `force`. In `auto` mode, OpenZero uses the Z-Spark draft-verify layer only when the configured small draft model is installed. The response includes an `openzero_spark` metadata object so ZeroThink or another client can see whether the path was used.
 
+## OpenAI-Compatible Models
+
+```http
+GET /v1/models
+```
+
+This authenticated route returns the local Ollama models currently available to
+OpenAI-compatible clients. It uses the same bearer key as chat completions.
+
 ## Config
 
 | Route | Method | Purpose |
@@ -49,6 +60,7 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
 
 | Route | Method | Purpose |
 | --- | --- | --- |
+| `/v1/models` | GET | List installed local models for authenticated OpenAI-compatible clients. |
 | `/api/models` | GET | List local/cloud/custom model status. |
 | `/api/install_local_model` | POST | Pull a supported local Ollama model. |
 | `/api/delete_model` | POST | Delete a local model/package. |
