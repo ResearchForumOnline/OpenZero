@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-12
+
+- Added authenticated OpenAI-compatible local model discovery at `GET /v1/models`.
+- Restricted API-key rotation to direct loopback administrator requests.
+- Documented the model discovery and local-only key-management contract.
+
 ## 2026-07-04
 
 - Added professional public README and documentation suite.
