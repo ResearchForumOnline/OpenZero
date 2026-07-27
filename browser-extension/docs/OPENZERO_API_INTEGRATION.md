@@ -16,7 +16,7 @@ Expected response:
   "object": "list",
   "data": [
     {
-      "id": "openzerogemma",
+      "id": "openzerogemma:latest",
       "object": "model"
     }
   ]
@@ -26,24 +26,26 @@ Expected response:
 ### Planner call
 
 ```http
-POST /v1/chat/completions
+POST /v1/browser/plan
 Authorization: Bearer <OpenZero API key>
 Content-Type: application/json
 ```
 
-The extension sends an OpenAI-compatible `messages` array, model name,
-`temperature: 0.1`, `max_tokens: 500`, and the configured
-`openzero_spark` mode. It reads `choices[0].message.content`.
+The extension sends a bounded task, step number, short action history, and
+privacy-reduced page snapshot. OpenZero uses a browser-only prompt, validates
+one JSON action, and performs one bounded repair attempt if the local model
+returns malformed output.
 
 The planner content must be exactly one JSON object. Markdown, free prose,
 multiple actions, tool tags, CSS selectors, and JavaScript are rejected.
 
-## Why no new OpenZero route is required
+## Why the planner has its own route
 
 The current Moltbot route operates a server-side headless Chromium page. It
 cannot attach to an existing user-owned Brave tab. The extension therefore:
 
-- uses OpenZero only as a planner;
+- uses OpenZero only as a planner through a prompt that excludes general
+  operator/root-tool instructions;
 - keeps inspection and actuation in the browser;
 - enforces consent locally, after model output;
 - avoids a public browser-command queue.
@@ -65,7 +67,7 @@ sent cleartext across a network.
 
 ## Default model
 
-The prototype defaults to `openzerogemma` to match the requested OpenZero Gemma
+The extension defaults to `openzerogemma:latest` to match the OpenZero Gemma
 lane. Model discovery is authoritative: if `/v1/models` does not return that
 name, select an installed model or repair/install the model on OpenZero before
 running the extension.

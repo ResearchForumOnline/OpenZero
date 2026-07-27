@@ -39,11 +39,23 @@ arbitrary JavaScript are blocked.
 
 - [Tab Pilot product and setup page](https://openzero.talktoai.org/tab-pilot.html)
 - [Extension source and security documentation](browser-extension/README.md)
-- [Verified Brave extension ZIP](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.1.0.zip)
+- [Verified Brave extension ZIP](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.zip)
+- [Signed Brave extension CRX](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx)
 - [Windows setup helper](openzero/install-tab-pilot.ps1)
 
-The helper verifies the published ZIP and prepares the extension folder, but
-Brave intentionally keeps the final **Load unpacked** approval manual.
+On Linux, the normal OpenZero install and update scripts automatically configure
+the signed extension when Brave is present. They create a browser-planner-only
+token, install a managed Brave policy, and point Brave at the signed update
+feed. Use `--no-tab-pilot` to opt out. Windows keeps the verified unpacked helper
+path, where Brave deliberately requires the final **Load unpacked** approval.
+
+The Super Panel also shows two optional Qwen3 8B builds. They are never
+downloaded or selected during a normal install:
+
+- [`Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf`](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) — compact Q5 experiment, installed as `openzeroqwen3-q5`;
+- [`Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf`](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) — larger F16 experiment, installed as `openzeroqwen3-f16`.
+
+`openzerogemma:latest` remains the verified default.
 
 ## What You Can Build With It
 
@@ -98,8 +110,11 @@ http://localhost:1024
 | ZeroMint OS GitHub release | [zeromint-os-v1.0](https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0) |
 | Hosted installer | [openzero.talktoai.org/install.sh](https://openzero.talktoai.org/install.sh) |
 | Brave Tab Pilot page | [openzero.talktoai.org/tab-pilot.html](https://openzero.talktoai.org/tab-pilot.html) |
-| Brave extension ZIP | [Download v0.1.0](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.1.0.zip) |
+| Brave extension ZIP | [Download v0.2.0](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.zip) |
+| Signed Brave extension | [Download v0.2.0 CRX](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx) |
 | OpenZero Gemma GGUF | [Hugging Face model](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) |
+| Optional Qwen3 8B Q5 | [Hugging Face GGUF](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) |
+| Optional Qwen3 8B F16 | [Hugging Face GGUF](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) |
 | Update script | [openzero/update.sh](openzero/update.sh) |
 | ZeroMint OS v1.0 ISO | [Download ISO](https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso) |
 | ZeroMint OS torrent | [Download torrent](https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent) |

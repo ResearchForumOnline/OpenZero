@@ -53,7 +53,7 @@ test("OpenZero request uses authenticated compatible route and parses action", a
     settings: {
       apiBaseUrl: "http://127.0.0.1:1024",
       apiKey: "unit-test-key",
-      model: "openzerogemma",
+      model: "openzerogemma:latest",
       openzeroSpark: "auto"
     },
     task: "Open details",
@@ -63,16 +63,15 @@ test("OpenZero request uses authenticated compatible route and parses action", a
     fetchImpl: async (url, init) => {
       captured = { url, init };
       return new Response(
-        JSON.stringify({
-          choices: [{ message: { content: '{"action":"click","element_id":"e1"}' } }]
-        }),
+        JSON.stringify({ action: { action: "click", element_id: "e1" } }),
         { status: 200, headers: { "Content-Type": "application/json" } }
       );
     }
   });
-  assert.equal(captured.url, "http://127.0.0.1:1024/v1/chat/completions");
+  assert.equal(captured.url, "http://127.0.0.1:1024/v1/browser/plan");
   assert.equal(captured.init.headers.Authorization, "Bearer unit-test-key");
-  assert.equal(JSON.parse(captured.init.body).model, "openzerogemma");
+  assert.equal(JSON.parse(captured.init.body).model, "openzerogemma:latest");
+  assert.equal(JSON.parse(captured.init.body).snapshot.text, "Untrusted page text");
   assert.equal(action.action, "click");
 });
 
@@ -81,12 +80,12 @@ test("model discovery returns IDs and reports authentication errors", async () =
     apiBaseUrl: "http://localhost:1024",
     apiKey: "unit-test-key",
     fetchImpl: async () =>
-      new Response(JSON.stringify({ data: [{ id: "openzerogemma" }, { id: "" }] }), {
+      new Response(JSON.stringify({ data: [{ id: "openzerogemma:latest" }, { id: "" }] }), {
         status: 200,
         headers: { "Content-Type": "application/json" }
       })
   });
-  assert.deepEqual(models, ["openzerogemma"]);
+  assert.deepEqual(models, ["openzerogemma:latest"]);
 
   await assert.rejects(
     () =>

@@ -122,7 +122,9 @@ export async function requestBrowserAction({
   if (!settings.apiKey) {
     throw new Error("Set an OpenZero API key in extension options.");
   }
-  const response = await fetchImpl(`${baseUrl}/v1/chat/completions`, {
+  const plannerMessages = buildPlannerMessages({ task, snapshot, step, history });
+  const plannerContext = JSON.parse(plannerMessages[1].content);
+  const response = await fetchImpl(`${baseUrl}/v1/browser/plan`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${settings.apiKey}`,
@@ -130,10 +132,10 @@ export async function requestBrowserAction({
     },
     body: JSON.stringify({
       model: settings.model,
-      messages: buildPlannerMessages({ task, snapshot, step, history }),
-      temperature: 0.1,
-      max_tokens: 500,
-      openzero_spark: settings.openzeroSpark || "auto"
+      task: plannerContext.user_task,
+      step,
+      history: plannerContext.previous_actions,
+      snapshot: plannerContext.page_snapshot_untrusted
     }),
     signal,
     cache: "no-store",
@@ -151,11 +153,10 @@ export async function requestBrowserAction({
     const detail = payload?.error?.message || payload?.message || `HTTP ${response.status}`;
     throw new Error(`OpenZero API error: ${String(detail).slice(0, 400)}`);
   }
-  const content = payload?.choices?.[0]?.message?.content;
-  if (typeof content !== "string") {
-    throw new Error("OpenZero response did not contain choices[0].message.content.");
+  if (!payload?.action || typeof payload.action !== "object") {
+    throw new Error("OpenZero response did not contain a browser action.");
   }
-  return parsePlannerResponse(content, snapshot?.url || "");
+  return normalizeBrowserAction(payload.action, snapshot?.url || "");
 }
 
 export async function listOpenZeroModels({ apiBaseUrl, apiKey, fetchImpl = fetch }) {

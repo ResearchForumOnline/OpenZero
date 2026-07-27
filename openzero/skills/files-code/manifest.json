@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "id": "files-code",
+  "name": "Files and Code",
+  "description": "Inspect, change, and verify local files, source code, or OpenZero skill manifests with narrow scope and rollback awareness. Use for repository work, configuration edits, skill creation, log inspection, debugging, implementation, tests, refactors, or creating local artifacts.",
+  "version": "1.0.0",
+  "risk_class": "medium",
+  "risk_summary": "Local writes and processes are task-scoped; deletion, broad overwrite, credentials, and permissions require confirmation.",
+  "summary": "Inspect first, preserve unrelated work, make bounded edits, then verify the actual diff and relevant tests.",
+  "triggers": [
+    "code",
+    "config",
+    "debug",
+    "edit",
+    "files",
+    "implement",
+    "logs",
+    "skill catalog",
+    "skill manifest",
+    "skills",
+    "tests"
+  ],
+  "entrypoint": "SKILL.md",
+  "tools": [
+    "list_dir",
+    "tree",
+    "read_file",
+    "search",
+    "write_file",
+    "append_file",
+    "replace_text",
+    "mkdir",
+    "remove_path",
+    "bash"
+  ],
+  "tool_schemas": [
+    {
+      "action": "search",
+      "required": ["path", "pattern"],
+      "optional": ["max_results"]
+    },
+    {
+      "action": "read_file",
+      "required": ["path"],
+      "optional": ["start_line", "end_line"]
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "filesystem.read"
+    ],
+    "task_scoped": [
+      "filesystem.write",
+      "process.run"
+    ],
+    "confirm": [
+      "credentials.change",
+      "destructive.delete",
+      "destructive.overwrite",
+      "permissions.change"
+    ]
+  },
+  "budgets": {
+    "max_steps": 10,
+    "max_tool_calls": 18,
+    "max_seconds": 600,
+    "max_output_chars": 18000
+  },
+  "completion": {
+    "required_evidence": [
+      "Inspect the final diff or exact output files.",
+      "Run the narrowest meaningful validation."
+    ],
+    "stop_when": [
+      "The requested change is verified.",
+      "A conflict, missing requirement, or unsafe target prevents a bounded change."
+    ]
+  },
+  "references": [
+    "references/change-safety.md",
+    "references/skill-authoring.md"
+  ],
+  "limitations": [
+    "A passing syntax check is not proof of runtime behavior.",
+    "Task-scoped writes do not authorize unrelated cleanup."
+  ]
+}

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Lock onto the local Gemma 4 edge engine by default.
-ACTIVE_MODEL = os.getenv("ACTIVE_MODEL", "gemma4:e4b")
+ACTIVE_MODEL = os.getenv("ACTIVE_MODEL", "openzerogemma:latest")
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 
 # Load the DevOps Frameworks into the System Prompt so the AI is smart

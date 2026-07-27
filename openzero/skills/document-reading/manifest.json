@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "id": "document-reading",
+  "name": "Document Reading",
+  "description": "Extract and analyze local TXT, DOCX, PDF, or legacy DOC documents without interpreting binary bytes as text. Use for uploaded documents, Word files, PDF reading, summaries, content checks, or diagnosing document-conversion failures.",
+  "version": "1.0.0",
+  "risk_class": "low",
+  "risk_summary": "Local bounded extraction does not execute macros; external upload and macro execution are outside the default grant.",
+  "summary": "Detect the real format, use bounded native extraction or an available local converter, and report converter or OCR requirements honestly.",
+  "triggers": [
+    "doc",
+    "docx",
+    "document",
+    "extract text",
+    "pdf",
+    "read file",
+    "summarize document",
+    "upload"
+  ],
+  "entrypoint": "SKILL.md",
+  "tools": [
+    "read_file",
+    "zip_list",
+    "zip_extract",
+    "bash"
+  ],
+  "tool_schemas": [
+    {
+      "action": "read_file",
+      "required": ["path"],
+      "optional": ["start_line", "end_line"]
+    },
+    {
+      "action": "zip_list",
+      "required": ["path"],
+      "optional": []
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "archive.read",
+      "filesystem.read"
+    ],
+    "task_scoped": [
+      "document.convert",
+      "filesystem.write",
+      "process.run"
+    ],
+    "confirm": [
+      "document.external_upload",
+      "document.macro_execute"
+    ]
+  },
+  "budgets": {
+    "max_steps": 8,
+    "max_tool_calls": 12,
+    "max_seconds": 300,
+    "max_output_chars": 24000
+  },
+  "completion": {
+    "required_evidence": [
+      "Report detected format, extraction method, and truncation state.",
+      "Base analysis only on successfully extracted text."
+    ],
+    "stop_when": [
+      "Readable text is extracted and the requested analysis is complete.",
+      "A required local converter or OCR engine is unavailable and the exact requirement is reported."
+    ]
+  },
+  "references": [
+    "references/formats-and-converters.md"
+  ],
+  "limitations": [
+    "Scanned PDFs require OCR, which is not silently inferred or fabricated.",
+    "Legacy DOC and PDF extraction depend on installed local converters."
+  ]
+}

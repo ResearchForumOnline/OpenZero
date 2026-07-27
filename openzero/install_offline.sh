@@ -6,7 +6,7 @@ MODE="server"
 ENABLE_VOICE="false"
 ENABLE_BITNET="false"
 INSTALL_DIR="${SCRIPT_DIR}"
-OPENZERO_DEFAULT_MODEL="gemma4:e4b"
+OPENZERO_DEFAULT_MODEL="openzerogemma:latest"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -80,7 +80,7 @@ fi
 
 if [[ -x "${INSTALL_DIR}/.runtime/ollama/ollama" ]]; then
     export OLLAMA_MODELS="${INSTALL_DIR}/.runtime/ollama-models"
-    for candidate in gemma4:e4b gemma4:e2b gemma3:12b gemma3:4b; do
+    for candidate in openzerogemma:latest gemma4:e4b gemma4:e2b gemma3:12b gemma3:4b; do
         if "${INSTALL_DIR}/.runtime/ollama/ollama" list 2>/dev/null | grep -Fq "${candidate}"; then
             OPENZERO_DEFAULT_MODEL="${candidate}"
             break

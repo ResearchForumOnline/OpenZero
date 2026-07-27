@@ -201,6 +201,23 @@
         .card-icon { font-size: 2.5em; margin-bottom: 20px; }
         .card h3 { color: #fff; margin: 0 0 10px 0; letter-spacing: 1px; }
         .card p { color: #888; font-size: 0.9em; line-height: 1.6; text-transform: none; }
+        .model-card::after {
+            content: '';
+            position: absolute;
+            width: 150px; height: 150px;
+            right: -76px; top: -76px;
+            border: 1px solid rgba(0,255,65,.3);
+            border-radius: 50%;
+            animation: model-orbit 9s linear infinite;
+        }
+        .model-card.qwen { border-color: rgba(114,167,255,.42); }
+        .model-card.qwen::after { border-color: rgba(114,167,255,.55); }
+        .model-card .model-label { display:inline-block; margin-bottom:14px; padding:5px 9px; border:1px solid currentColor; color:var(--neon); font-size:.72em; letter-spacing:.12em; }
+        .model-card.qwen .model-label { color:#72a7ff; }
+        .model-card a { position:relative; z-index:1; color:var(--neon); }
+        .model-card.qwen a { color:#72a7ff; }
+        @keyframes model-orbit { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .model-card::after { animation:none; } }
 
         /* TERMINAL DEPLOYMENT */
         .terminal-box {
@@ -421,14 +438,41 @@
         </div>
     </div>
 
+    <div class="section-header">
+        <span class="section-num">00.5</span>
+        <span class="section-title">VERIFIED_MODEL_MATRIX</span>
+    </div>
+
+    <div class="grid-system">
+        <article class="card model-card">
+            <span class="model-label">DEFAULT // 5.46 GiB</span>
+            <h3>OPENZERO GEMMA</h3>
+            <p><code>openzerogemma:latest</code>. Installed and selected by the normal OpenZero setup after exact size, SHA-256, and GGUF validation.</p>
+            <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/blob/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf">VIEW VERIFIED GGUF →</a>
+        </article>
+        <article class="card model-card qwen">
+            <span class="model-label">OPTIONAL // 5.45 GiB</span>
+            <h3>QWEN3 8B Q5</h3>
+            <p><code>openzeroqwen3-q5</code>. A smaller quantized experiment, available from the Super Panel but never pulled or activated automatically.</p>
+            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf">VIEW Q5 GGUF →</a>
+        </article>
+        <article class="card model-card qwen">
+            <span class="model-label">OPTIONAL // 13.82 GiB</span>
+            <h3>QWEN3 8B F16</h3>
+            <p><code>openzeroqwen3-f16</code>. The full fused F16 experiment for operators with sufficient memory and disk headroom.</p>
+            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf">VIEW F16 GGUF →</a>
+        </article>
+    </div>
+
     <div class="zeromint-banner" style="border-left-color:var(--neon); border-color:var(--neon);">
         <div class="tagline">NEW // OPENZERO GEMMA + BRAVE TAB PILOT</div>
         <h2 style="color:var(--neon);">LET YOUR LOCAL OPENZERO NODE WORK INSIDE ONE TAB YOU APPROVE.</h2>
         <p style="text-transform:none;">OpenZero Tab Pilot is an early-access Manifest V3 extension for Brave. It uses authenticated OpenZero planning while tab control stays inside the browser: inspect, navigate, click, type, select, scroll, wait, back, and forward. Every tab requires an explicit grant, new origins require Brave permission, and consequential actions or personal-data entry pause for one-time approval.</p>
         <p style="text-transform:none;">The verified default model is <code>openzerogemma:latest</code>, based on the public Zero-Gemma4-E4B-OpenZero GGUF release. Passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and arbitrary JavaScript are blocked by the extension.</p>
+        <p style="text-transform:none;">On Linux, the normal OpenZero install and update flow now detects Brave, provisions a planner-only token, installs the signed extension through managed policy, and registers automatic CRX updates. Use <code>--no-tab-pilot</code> to opt out.</p>
         <div class="nav-grid" style="margin-top:22px;">
             <a href="/tab-pilot.html" class="btn-large btn-neon">TAB PILOT SETUP</a>
-            <a href="/downloads/OpenZero-Tab-Pilot-Brave-v0.1.0.zip" class="btn-large">DOWNLOAD EXTENSION</a>
+            <a href="/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx" class="btn-large">SIGNED EXTENSION v0.2</a>
             <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF" class="btn-large" style="border-color:var(--gold); color:var(--gold)">OPENZERO GEMMA MODEL</a>
             <a href="https://github.com/ResearchForumOnline/OpenZero" class="btn-large" style="border-color:var(--purple); color:var(--purple)">SOURCE + SECURITY DOCS</a>
         </div>

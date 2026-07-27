@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "apiBaseUrl": {
+      "type": "string",
+      "description": "Managed OpenZero API origin."
+    },
+    "apiKey": {
+      "type": "string",
+      "description": "Managed, browser-planner-scoped API token."
+    },
+    "model": {
+      "type": "string",
+      "description": "Managed local model name."
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { listOpenZeroModels } from "./shared/openzero-client.js";
 import {
+  mergeEffectiveSettings,
   mergeSettings,
   normalizeApiBaseUrl,
   originPattern
@@ -26,6 +27,8 @@ const fields = {
 };
 
 let savedSettings = mergeSettings();
+let savedLocalSettings = {};
+let managedSettings = {};
 
 function settingsFromForm() {
   return mergeSettings({
@@ -68,8 +71,13 @@ function requestApiOrigin(settings) {
 }
 
 async function load() {
-  const stored = await chrome.storage.local.get(SETTINGS_KEY);
-  savedSettings = mergeSettings(stored[SETTINGS_KEY]);
+  const [stored, managed] = await Promise.all([
+    chrome.storage.local.get(SETTINGS_KEY),
+    chrome.storage.managed.get().catch(() => ({}))
+  ]);
+  savedLocalSettings = stored[SETTINGS_KEY] || {};
+  managedSettings = managed || {};
+  savedSettings = mergeEffectiveSettings(savedLocalSettings, managedSettings);
   render(savedSettings);
 }
 
@@ -86,8 +94,15 @@ form.addEventListener("submit", async (event) => {
     if (!allowed) {
       throw new Error("Brave did not grant access to the OpenZero API origin.");
     }
-    await chrome.storage.local.set({ [SETTINGS_KEY]: next });
-    savedSettings = next;
+    const localSettings = { ...next };
+    for (const key of ["apiBaseUrl", "apiKey", "model"]) {
+      if (typeof managedSettings[key] === "string" && managedSettings[key].trim()) {
+        delete localSettings[key];
+      }
+    }
+    await chrome.storage.local.set({ [SETTINGS_KEY]: localSettings });
+    savedLocalSettings = localSettings;
+    savedSettings = mergeEffectiveSettings(savedLocalSettings, managedSettings);
     render(savedSettings);
     fields.saveResult.textContent = "Saved.";
   } catch (error) {
@@ -107,9 +122,15 @@ fields.test.addEventListener("click", async () => {
       throw new Error("Brave did not grant access to the OpenZero API origin.");
     }
     const models = await listOpenZeroModels(settings);
-    fields.testResult.textContent = models.length
-      ? `Connected.\n\nInstalled models:\n${models.map((model) => `- ${model}`).join("\n")}`
-      : "Connected, but /v1/models returned no installed local models.";
+    if (!models.includes(settings.model)) {
+      throw new Error(
+        `Connected, but configured model ${settings.model} is not installed. ` +
+          `Available: ${models.join(", ") || "none"}`
+      );
+    }
+    fields.testResult.textContent =
+      `Connected. Configured model is available: ${settings.model}\n\n` +
+      `Installed models:\n${models.map((model) => `- ${model}`).join("\n")}`;
   } catch (error) {
     fields.testResult.textContent = `Connection failed:\n${error.message}`;
   } finally {

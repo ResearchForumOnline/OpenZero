@@ -3,6 +3,7 @@ import {
   actionPreview,
   classifyBrowserAction,
   isHttpPage,
+  mergeEffectiveSettings,
   mergeSettings,
   normalizeApiBaseUrl,
   originPattern,
@@ -53,8 +54,11 @@ function withState(mutator) {
 }
 
 async function getSettings() {
-  const stored = await chrome.storage.local.get(SETTINGS_KEY);
-  return mergeSettings(stored[SETTINGS_KEY]);
+  const [stored, managed] = await Promise.all([
+    chrome.storage.local.get(SETTINGS_KEY),
+    chrome.storage.managed.get().catch(() => ({}))
+  ]);
+  return mergeEffectiveSettings(stored[SETTINGS_KEY], managed);
 }
 
 function tabKey(tabId) {

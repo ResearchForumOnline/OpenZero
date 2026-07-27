@@ -11,7 +11,7 @@ Never commit real `.env` files.
 | `OPENZERO_VERSION` | `5.4.0` | Version label. |
 | `OPENZERO_DOMAIN` | `https://openzero.talktoai.org` | Public download/domain reference. |
 | `SERVER_PORT` | `1024` | Panel/API port when configured. |
-| `ACTIVE_MODEL` | `gemma4:e4b` | Preferred local model. |
+| `ACTIVE_MODEL` | `openzerogemma:latest` | Preferred local model. |
 | `LOCAL_ENGINE` | `ollama` | Local engine selector. |
 | `COMP_MODE` | `hybrid` | Computation mode. |
 

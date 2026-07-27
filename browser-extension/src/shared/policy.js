@@ -1,7 +1,7 @@
 export const DEFAULT_SETTINGS = Object.freeze({
   apiBaseUrl: "http://127.0.0.1:1024",
   apiKey: "",
-  model: "openzerogemma",
+  model: "openzerogemma:latest",
   maxSteps: 12,
   requestTimeoutSeconds: 120,
   allowNavigation: true,
@@ -305,4 +305,14 @@ export function mergeSettings(saved = {}) {
     ? merged.openzeroSpark
     : "auto";
   return merged;
+}
+
+export function mergeEffectiveSettings(saved = {}, managed = {}) {
+  const allowedManaged = {};
+  for (const key of ["apiBaseUrl", "apiKey", "model"]) {
+    if (typeof managed?.[key] === "string" && managed[key].trim()) {
+      allowedManaged[key] = managed[key].trim();
+    }
+  }
+  return mergeSettings({ ...(saved || {}), ...allowedManaged });
 }

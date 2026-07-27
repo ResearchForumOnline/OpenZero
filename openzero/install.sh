@@ -12,10 +12,18 @@ ENABLE_KALI="false"
 ENABLE_ISO="false"
 ENABLE_VOICE="false"
 ENABLE_BITNET="false"
+ENABLE_TAB_PILOT="auto"
+SKIP_MODEL="false"
 INSTALL_DIR="${HOME}/openzero"
 RELEASE_URL="https://openzero.talktoai.org/openzero_release.zip"
+RELEASE_CHECKSUM_URL="https://openzero.talktoai.org/openzero_release.zip.sha256"
 TORRENT_URL="https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent"
-OPENZERO_DEFAULT_MODEL="gemma4:e4b"
+TAB_PILOT_URL="https://openzero.talktoai.org/tab-pilot.html"
+OPENZERO_DEFAULT_MODEL="openzerogemma:latest"
+OPENZERO_GEMMA_URL="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/resolve/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf?download=true"
+OPENZERO_GEMMA_FILE="Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf"
+OPENZERO_GEMMA_SHA256="84fd62ff6c5f0abe14dd2c6135e56800df4bc4a0b9d4cd8d9f26c36b28aa190b"
+OPENZERO_GEMMA_SIZE="5865235584"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -26,6 +34,9 @@ while [[ $# -gt 0 ]]; do
         --iso) ENABLE_ISO="true" ;;
         --voice) ENABLE_VOICE="true" ;;
         --bitnet) ENABLE_BITNET="true" ;;
+        --tab-pilot) ENABLE_TAB_PILOT="true" ;;
+        --no-tab-pilot) ENABLE_TAB_PILOT="false" ;;
+        --skip-model) SKIP_MODEL="true" ;;
         --dir)
             INSTALL_DIR="$2"
             shift
@@ -45,7 +56,7 @@ echo "  ███   █████   ██████  ██  ██"
 echo " ███    ██      ██   ██ ██  ██"
 echo "███████ ███████ ██   ██ ██████"
 echo -e "${NC}"
-echo -e "${CYAN}>>> OPENZERO 5.4 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^}${NC}"
+echo -e "${CYAN}>>> OPENZERO 5.4 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^} // SKIP_MODEL=${SKIP_MODEL^^}${NC}"
 
 ensure_linux_packages() {
     if [ -f /etc/debian_version ]; then
@@ -66,6 +77,59 @@ ensure_linux_packages() {
     fi
 }
 
+install_openzero_gemma() {
+    local model_dir="${INSTALL_DIR}/models"
+    local target="${model_dir}/${OPENZERO_GEMMA_FILE}"
+    local partial="${target}.part"
+    local model_file
+    local actual_size
+
+    mkdir -p "${model_dir}"
+    if [[ -f "${target}" ]] &&
+       [[ "$(stat -c %s "${target}")" == "${OPENZERO_GEMMA_SIZE}" ]] &&
+       echo "${OPENZERO_GEMMA_SHA256}  ${target}" | sha256sum -c - >/dev/null 2>&1; then
+        echo -e "${GREEN}Verified OpenZero Gemma package already exists.${NC}"
+    else
+        if [[ -f "${target}" ]]; then
+            local invalid_target="${target}.invalid-$(date -u +%Y%m%dT%H%M%SZ)"
+            mv "${target}" "${invalid_target}"
+            echo -e "${GOLD}Moved an unverified existing package to ${invalid_target}.${NC}"
+        fi
+
+        echo -e "${CYAN}Downloading the verified OpenZero Gemma default (about 5.5 GiB)...${NC}"
+        if ! curl --fail --location --retry 5 --retry-all-errors --continue-at - \
+            --output "${partial}" "${OPENZERO_GEMMA_URL}"; then
+            echo -e "${RED}OpenZero Gemma download failed. The resumable partial file was retained.${NC}"
+            return 1
+        fi
+
+        actual_size="$(stat -c %s "${partial}")"
+        if [[ "${actual_size}" != "${OPENZERO_GEMMA_SIZE}" ]]; then
+            echo -e "${RED}OpenZero Gemma size mismatch: received ${actual_size}, expected ${OPENZERO_GEMMA_SIZE}.${NC}"
+            return 1
+        fi
+        if ! echo "${OPENZERO_GEMMA_SHA256}  ${partial}" | sha256sum -c -; then
+            echo -e "${RED}OpenZero Gemma SHA-256 verification failed.${NC}"
+            return 1
+        fi
+        if [[ "$(head -c 4 "${partial}")" != "GGUF" ]]; then
+            echo -e "${RED}OpenZero Gemma file header is not GGUF.${NC}"
+            return 1
+        fi
+        mv "${partial}" "${target}"
+    fi
+
+    model_file="$(mktemp)"
+    printf 'FROM %s\n' "${target}" > "${model_file}"
+    if ! ollama create openzerogemma -f "${model_file}"; then
+        rm -f "${model_file}"
+        return 1
+    fi
+    rm -f "${model_file}"
+    OPENZERO_DEFAULT_MODEL="openzerogemma:latest"
+    return 0
+}
+
 install_ollama() {
     echo -e "${CYAN}Refreshing Ollama with the official Linux installer...${NC}"
     curl -fsSL https://ollama.com/install.sh | sh
@@ -80,28 +144,78 @@ install_ollama() {
         sleep 2
     done
 
-    echo -e "${CYAN}Pulling the preferred Gemma local track...${NC}"
-    if ollama pull gemma4:e4b; then
-        OPENZERO_DEFAULT_MODEL="gemma4:e4b"
-    elif ollama pull gemma4:e2b; then
-        OPENZERO_DEFAULT_MODEL="gemma4:e2b"
-    elif ollama pull gemma3:12b; then
-        OPENZERO_DEFAULT_MODEL="gemma3:12b"
-    elif ollama pull gemma3:4b; then
-        OPENZERO_DEFAULT_MODEL="gemma3:4b"
+    if [[ "${SKIP_MODEL}" == "true" ]]; then
+        echo -e "${GOLD}Skipping the default model download by request.${NC}"
+        return 0
+    fi
+
+    if install_openzero_gemma; then
+        echo -e "${GREEN}OpenZero Gemma is installed as the default local model.${NC}"
     else
-        echo -e "${RED}Automatic Gemma pull failed.${NC}"
-        echo -e "${GOLD}OpenZero will still install, but you should use the panel's Update Ollama / Repair Local Brain tools after first boot.${NC}"
+        echo -e "${GOLD}Verified OpenZero Gemma install failed; trying a stock Gemma compatibility fallback.${NC}"
+        if ollama pull gemma4:e4b; then
+            OPENZERO_DEFAULT_MODEL="gemma4:e4b"
+        elif ollama pull gemma4:e2b; then
+            OPENZERO_DEFAULT_MODEL="gemma4:e2b"
+        elif ollama pull gemma3:4b; then
+            OPENZERO_DEFAULT_MODEL="gemma3:4b"
+        else
+            echo -e "${RED}Automatic local model installation failed.${NC}"
+            echo -e "${GOLD}OpenZero will still install. Use the animated model cards in the panel after first boot.${NC}"
+        fi
     fi
 }
 
 prepare_release() {
-    mkdir -p "${INSTALL_DIR}"
-    cd "${INSTALL_DIR}"
-    rm -rf brain hivemind knowledge moltbot static templates uploads zeromath openzero_watchdog.py openzero-kali.sh openzero_doctor.py security
-    curl -fsSL -o openzero_release.zip "${RELEASE_URL}"
-    unzip -o -q openzero_release.zip
-    rm -f openzero_release.zip
+    local stage
+    local payload
+    local backup
+    stage="$(mktemp -d)"
+    payload="${stage}/payload"
+    backup="${INSTALL_DIR}/backups/update-$(date -u +%Y%m%dT%H%M%SZ)"
+    mkdir -p "${payload}" "${INSTALL_DIR}"
+
+    curl -fsSL -o "${stage}/openzero_release.zip" "${RELEASE_URL}"
+    curl -fsSL -o "${stage}/openzero_release.zip.sha256" "${RELEASE_CHECKSUM_URL}"
+    (
+        cd "${stage}"
+        sha256sum -c openzero_release.zip.sha256
+    )
+    unzip -q "${stage}/openzero_release.zip" -d "${payload}"
+
+    python3 - "${payload}" "${INSTALL_DIR}" "${backup}" <<'PY'
+from pathlib import Path
+import shutil
+import sys
+
+payload = Path(sys.argv[1]).resolve()
+target = Path(sys.argv[2]).resolve()
+backup = Path(sys.argv[3]).resolve()
+
+if not (payload / "brain" / "app.py").is_file() or not (payload / "install.sh").is_file():
+    raise SystemExit("Release payload is missing required OpenZero files.")
+
+managed = [path for path in payload.rglob("*") if path.is_file()]
+for source in managed:
+    relative = source.relative_to(payload)
+    destination = target / relative
+    if destination.exists() and destination.is_file():
+        backup_path = backup / relative
+        backup_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(destination, backup_path)
+
+for source in managed:
+    relative = source.relative_to(payload)
+    destination = target / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+
+print(f"Updated {len(managed)} managed files.")
+if backup.exists():
+    print(f"Rollback copy: {backup}")
+PY
+
+    rm -rf "${stage}"
 }
 
 install_python_dependencies() {
@@ -141,6 +255,7 @@ from pathlib import Path
 defaults = {
     "OPENZERO_VERSION": "5.4.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
+    "OPENZERO_TAB_PILOT_URL": "${TAB_PILOT_URL}",
     "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
     "OPENZERO_HIVE_MODE": "standalone",
     "OPENZERO_HIVE_MIRRORS": "",
@@ -156,6 +271,8 @@ defaults = {
     "OPENZERO_LOCAL_LEARNING_ENABLED": "true",
     "OPENZERO_LOCAL_LEARNING_TERMINAL": "false",
     "OPENZERO_AUTOMATION_ENABLED": "true",
+    "OPENZERO_BIND_HOST": "127.0.0.1",
+    "OPENZERO_ALLOW_PUBLIC_BIND": "false",
     "OPENZERO_LOW_CPU_MODE": "true",
     "OPENZERO_CPU_PROFILE": "balanced",
     "OPENZERO_OLLAMA_THREADS": "0",
@@ -210,6 +327,21 @@ if env_path.exists():
 for key, value in defaults.items():
     current.setdefault(key, value)
 
+legacy_defaults = {
+    "gemma2",
+    "gemma2:2b",
+    "gemma2:9b",
+    "gemma4:e2b",
+    "gemma4:e4b",
+    "gemma3:4b",
+    "gemma3:12b",
+}
+if "${OPENZERO_DEFAULT_MODEL}" == "openzerogemma:latest":
+    if current.get("ACTIVE_MODEL", "") in legacy_defaults:
+        current["ACTIVE_MODEL"] = "openzerogemma:latest"
+    if current.get("NODE_RECOMMENDED_MODEL", "") in legacy_defaults:
+        current["NODE_RECOMMENDED_MODEL"] = "openzerogemma:latest"
+
 env_path.write_text("\n".join(f"{key}={value}" for key, value in sorted(current.items())) + "\n", encoding="utf-8")
 PY
     if [ "${ENABLE_VOICE}" = "true" ]; then
@@ -220,7 +352,7 @@ PY
 
 install_services() {
     cd "${INSTALL_DIR}"
-    chmod +x ignite.sh janitor.sh openzero-kali.sh setup_service.sh update.sh install_bitnet.sh
+    chmod +x ignite.sh janitor.sh openzero-kali.sh setup_service.sh update.sh install_bitnet.sh install-tab-pilot.sh
     python3 openzero_doctor.py --json >/dev/null || true
     python3 openzero_doctor.py --repair-runtime --quiet >/dev/null || true
     ./setup_service.sh "${MODE}"
@@ -260,7 +392,19 @@ fi
 install_iso_bonus
 start_openzero
 
+if [[ "${ENABLE_TAB_PILOT}" != "false" ]] && \
+   { command -v brave-browser-stable >/dev/null 2>&1 || command -v brave-browser >/dev/null 2>&1; }; then
+    if ! "${INSTALL_DIR}/install-tab-pilot.sh" --dir "${INSTALL_DIR}"; then
+        echo -e "${GOLD}Tab Pilot automatic setup did not complete. Use ${TAB_PILOT_URL} for guided setup.${NC}"
+    fi
+fi
+
 echo -e "${GREEN}>>> OPENZERO 5.4 ONLINE${NC}"
 echo -e "${CYAN}Super Panel: http://localhost:1024${NC}"
 echo -e "${CYAN}Manual: https://openzero.talktoai.org/manual${NC}"
+echo -e "${CYAN}Brave Tab Pilot guided setup: ${TAB_PILOT_URL}${NC}"
 echo -e "${CYAN}Offline builder: ${INSTALL_DIR}/build_offline_release.sh${NC}"
+
+if [[ "${MODE}" == "desktop" ]] && [[ "${ENABLE_TAB_PILOT}" != "false" ]] && command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "${TAB_PILOT_URL}" >/dev/null 2>&1 || true
+fi

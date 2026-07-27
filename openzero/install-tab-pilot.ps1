@@ -1,16 +1,18 @@
 [CmdletBinding()]
 param(
     [string]$InstallRoot = (Join-Path $env:LOCALAPPDATA 'OpenZero\TabPilot'),
+    [string]$OpenZeroSshHost = '',
+    [switch]$ConfigureTunnel,
     [switch]$NoLaunch
 )
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Version = '0.1.0'
+$Version = '0.2.0'
 $ArchiveName = "OpenZero-Tab-Pilot-Brave-v$Version.zip"
 $ArchiveUrl = "https://openzero.talktoai.org/downloads/$ArchiveName"
-$ExpectedSha256 = '8ec8f18384f17dc2dc0f64a2609d1ab67e79bee9ff1560b0da191459a58ea1ff'
+$ExpectedSha256 = '732fa09c2cc13fcd285675a1500dc690968f03286e0962b01ff85744670c21d9'
 $Target = Join-Path $InstallRoot $Version
 
 function Find-Brave {
@@ -26,6 +28,55 @@ function Find-Brave {
         }
     }
     return $null
+}
+
+function Install-OpenZeroTunnel {
+    param([Parameter(Mandatory)][string]$SshHost)
+
+    if ($SshHost -notmatch '^(?:[A-Za-z0-9._-]+@)?[A-Za-z0-9._-]+$') {
+        throw 'OpenZeroSshHost must be a hostname or user@hostname containing only letters, numbers, dots, underscores, and hyphens.'
+    }
+
+    $Ssh = Get-Command ssh.exe -ErrorAction SilentlyContinue
+    if (-not $Ssh) {
+        throw 'Windows OpenSSH client was not found. Install it or configure the tunnel manually.'
+    }
+
+    $TunnelRoot = Join-Path $env:LOCALAPPDATA 'OpenZero\TabPilot'
+    $TunnelScript = Join-Path $TunnelRoot 'start-openzero-tunnel.ps1'
+    $StartupRoot = [Environment]::GetFolderPath('Startup')
+    $ShortcutPath = Join-Path $StartupRoot 'OpenZero Tab Pilot Tunnel.lnk'
+    $PowerShell = Join-Path $PSHOME 'powershell.exe'
+    if (-not (Test-Path -LiteralPath $PowerShell -PathType Leaf)) {
+        $PowerShell = (Get-Command powershell.exe -ErrorAction Stop).Source
+    }
+
+    New-Item -ItemType Directory -Path $TunnelRoot -Force | Out-Null
+    $TunnelBody = @"
+`$ErrorActionPreference = 'Continue'
+while (`$true) {
+    & '$($Ssh.Source)' -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=4 -L '1024:127.0.0.1:1024' '$SshHost'
+    Start-Sleep -Seconds 5
+}
+"@
+    Set-Content -LiteralPath $TunnelScript -Value $TunnelBody -Encoding UTF8
+
+    $Shell = New-Object -ComObject WScript.Shell
+    $Shortcut = $Shell.CreateShortcut($ShortcutPath)
+    $Shortcut.TargetPath = $PowerShell
+    $Shortcut.Arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$TunnelScript`""
+    $Shortcut.WorkingDirectory = $TunnelRoot
+    $Shortcut.Description = 'Keep the OpenZero Tab Pilot loopback SSH tunnel connected'
+    $Shortcut.Save()
+
+    Write-Host "Automatic loopback tunnel configured for Windows sign-in: $SshHost" -ForegroundColor Green
+    Write-Host "Startup shortcut: $ShortcutPath"
+    Start-Process -FilePath $PowerShell -ArgumentList @(
+        '-NoProfile',
+        '-WindowStyle', 'Hidden',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', $TunnelScript
+    )
 }
 
 Write-Host "OpenZero Tab Pilot $Version setup" -ForegroundColor Cyan
@@ -66,6 +117,13 @@ if (Test-Path -LiteralPath (Join-Path $Target 'manifest.json') -PathType Leaf) {
             Remove-Item -LiteralPath $TempRoot -Recurse -Force
         }
     }
+}
+
+if ($ConfigureTunnel) {
+    if ([string]::IsNullOrWhiteSpace($OpenZeroSshHost)) {
+        throw 'Use -OpenZeroSshHost with -ConfigureTunnel, for example: -OpenZeroSshHost user@server -ConfigureTunnel'
+    }
+    Install-OpenZeroTunnel -SshHost $OpenZeroSshHost
 }
 
 if (-not $NoLaunch) {

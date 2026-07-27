@@ -25,18 +25,18 @@ RUNTIME_STATE_PATH = os.path.join(BASE_DIR, "security", "runtime_state.json")
 RUNTIME_OLLAMA_TAGS_URL = "http://127.0.0.1:11434/api/tags"
 BITNET_INSTALL_SCRIPT = os.path.join(BASE_DIR, "install_bitnet.sh")
 BITNET_DEFAULT_ALIAS = "bitnet-b1.58-2b-4t"
-LOCAL_MODEL_CANDIDATES_SMALL = ["gemma4:e2b", "gemma3:4b", "gemma4:e4b", "gemma3:12b"]
-LOCAL_MODEL_CANDIDATES_BASE = ["gemma4:e4b", "gemma4:e2b", "gemma3:12b", "gemma3:4b"]
-LOCAL_MODEL_CANDIDATES_HEAVY = ["gemma4:26b", "gemma4:e4b", "gemma3:12b", "gemma4:e2b"]
-LOCAL_MODEL_CANDIDATES_ULTRA = ["gemma4:31b", "gemma4:26b", "gemma4:e4b", "gemma3:12b"]
+LOCAL_MODEL_CANDIDATES_SMALL = ["openzerogemma:latest", "gemma4:e2b", "gemma3:4b", "gemma4:e4b"]
+LOCAL_MODEL_CANDIDATES_BASE = ["openzerogemma:latest", "gemma4:e4b", "gemma4:e2b", "gemma3:12b"]
+LOCAL_MODEL_CANDIDATES_HEAVY = ["openzerogemma:latest", "gemma4:26b", "gemma4:e4b", "gemma3:12b"]
+LOCAL_MODEL_CANDIDATES_ULTRA = ["openzerogemma:latest", "gemma4:31b", "gemma4:26b", "gemma4:e4b"]
 LEGACY_LOCAL_MODEL_MAP = {
-    "gemma2": "gemma4:e4b",
-    "gemma2:2b": "gemma4:e2b",
-    "gemma2:9b": "gemma4:e4b",
-    "qwen2.5:14b": "gemma4:e4b",
-    "qwen2.5:32b": "gemma4:e4b",
-    "qwenq8": "gemma4:e4b",
-    "qwenq8:latest": "gemma4:e4b",
+    "gemma2": "openzerogemma:latest",
+    "gemma2:2b": "openzerogemma:latest",
+    "gemma2:9b": "openzerogemma:latest",
+    "qwen2.5:14b": "openzerogemma:latest",
+    "qwen2.5:32b": "openzerogemma:latest",
+    "qwenq8": "openzerogemma:latest",
+    "qwenq8:latest": "openzerogemma:latest",
 }
 LOCAL_MODEL_HINT_PREFIXES = ("gemma", "qwenq8", "phi", "mistral", "llama", "deepseek", "codestral", "bitnet")
 CLOUD_MODEL_HINT_PREFIXES = ("groq/", "openai/", "qwen/", "meta/", "gemini", "claude", "gpt", "compound")

@@ -87,9 +87,9 @@ if env_path.exists():
 
 current["LOCAL_ENGINE"] = "ollama"
 current["BITNET_ENABLED"] = "false"
-current.setdefault("ACTIVE_MODEL", "gemma4:e4b")
+current.setdefault("ACTIVE_MODEL", "openzerogemma:latest")
 if (current.get("ACTIVE_MODEL") or "").lower().startswith("bitnet"):
-    current["ACTIVE_MODEL"] = "gemma4:e4b"
+    current["ACTIVE_MODEL"] = "openzerogemma:latest"
 
 env_path.parent.mkdir(parents=True, exist_ok=True)
 env_path.write_text("\n".join(f"{key}={value}" for key, value in sorted(current.items())) + "\n", encoding="utf-8")

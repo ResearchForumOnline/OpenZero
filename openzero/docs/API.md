@@ -11,7 +11,7 @@ intentionally rejected when the request arrives through a proxy or remote client
 The key is displayed once.
 
 ```http
-Authorization: Bearer ztapi_your_key_here
+Authorization: Bearer oz_your_key_here
 ```
 
 ## OpenAI-Compatible Chat
@@ -24,10 +24,10 @@ Example:
 
 ```bash
 curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
-  -H "Authorization: Bearer ztapi_your_key_here" \
+  -H "Authorization: Bearer oz_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemma4:e4b",
+    "model": "openzerogemma:latest",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}
     ],
@@ -47,6 +47,20 @@ GET /v1/models
 
 This authenticated route returns the local Ollama models currently available to
 OpenAI-compatible clients. It uses the same bearer key as chat completions.
+
+## Brave Tab Pilot
+
+Tab Pilot uses a separate scoped bearer token. It can list models and call the
+browser planner, but it cannot call general chat completions.
+
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/api/tab-pilot/key` | POST | Direct-loopback create/rotate/revoke of a scoped Tab Pilot token. |
+| `/v1/browser/plan` | POST | Return one validated browser action from a bounded task and untrusted page snapshot. |
+
+The Linux `install-tab-pilot.sh` helper rotates this scoped token and delivers
+it through Brave managed storage. The planner uses a browser-only prompt and
+performs at most one repair attempt when model output is malformed.
 
 ## Config
 
@@ -99,6 +113,24 @@ OpenAI-compatible clients. It uses the same bearer key as chat completions.
 | `/api/hive/share_last` | POST | Share last chat when enabled. |
 | `/api/hive/pause` | POST | Pause Hive. |
 | `/api/hive/resume` | POST | Resume Hive. |
+
+## Bounded Autonomous Runs
+
+These routes require either a direct loopback request without proxy forwarding
+headers or a valid OpenZero bearer key.
+
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/api/agent/runs` | POST | Create a durable, budgeted autonomous run. |
+| `/api/agent/runs` | GET | List redacted autonomous run states for the Super Panel. |
+| `/api/agent/runs/<run-id>` | GET | Read one run, its bounded trace tail, pending action, budgets, and control links. |
+| `/api/agent/runs/<run-id>/stop` | POST | Request a safe-boundary stop. |
+| `/api/agent/runs/<run-id>/resume` | POST | Resume an eligible run, optionally with new explicit budgets. |
+| `/api/agent/runs/<run-id>/revoke` | POST | Permanently revoke this run's authority. |
+| `/api/agent/runs/<run-id>/approve` | POST | Confirm one exact pending-action fingerprint for a short time. |
+
+See [AUTONOMOUS_RUNS.md](AUTONOMOUS_RUNS.md) for restart recovery, budget caps,
+confirmation behavior, run states, and examples.
 
 ## Uploads And Memory
 

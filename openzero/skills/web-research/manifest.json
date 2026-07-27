@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "id": "web-research",
+  "name": "Web Research",
+  "description": "Research current public information with source checks and evidence-linked conclusions. Use for latest facts, release notes, documentation, prices, comparisons, downloads, citations, or any answer that may have changed.",
+  "version": "1.0.0",
+  "risk_class": "low",
+  "risk_summary": "Public read-only network access; external representation remains outside the grant.",
+  "summary": "Search, open primary sources, cross-check important claims, and distinguish verified facts from inference.",
+  "triggers": [
+    "citations",
+    "compare",
+    "current",
+    "documentation",
+    "downloads",
+    "latest",
+    "pricing",
+    "research"
+  ],
+  "entrypoint": "SKILL.md",
+  "tools": [
+    "web_search",
+    "fetch_url",
+    "moltbot_browse",
+    "browse",
+    "osint"
+  ],
+  "tool_schemas": [
+    {
+      "action": "web_search",
+      "required": ["query"],
+      "optional": ["max_results"]
+    },
+    {
+      "action": "fetch_url",
+      "required": ["url"],
+      "optional": []
+    },
+    {
+      "action": "browse",
+      "required": ["url"],
+      "optional": []
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "network.read"
+    ],
+    "task_scoped": [
+      "filesystem.write"
+    ],
+    "confirm": [
+      "credentials.use",
+      "external.publish",
+      "external.submit"
+    ]
+  },
+  "budgets": {
+    "max_steps": 8,
+    "max_tool_calls": 14,
+    "max_seconds": 240,
+    "max_output_chars": 16000
+  },
+  "completion": {
+    "required_evidence": [
+      "Open at least one source that directly supports each important current claim.",
+      "Label inference and unresolved conflicts."
+    ],
+    "stop_when": [
+      "The question is answered with traceable evidence.",
+      "Required sources are inaccessible and the limitation is reported."
+    ]
+  },
+  "references": [
+    "references/source-verification.md"
+  ],
+  "limitations": [
+    "Search snippets are discovery aids, not proof.",
+    "Reading public sources does not authorize posting, submitting, or signing in."
+  ]
+}

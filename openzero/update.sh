@@ -7,6 +7,10 @@ ENABLE_KALI="false"
 ENABLE_ISO="false"
 ENABLE_VOICE="false"
 ENABLE_BITNET="false"
+ENABLE_TAB_PILOT="auto"
+SKIP_MODEL="false"
+INSTALLER_URL="https://openzero.talktoai.org/install.sh"
+INSTALLER_CHECKSUM_URL="https://openzero.talktoai.org/install.sh.sha256"
 
 if [[ -f "./ignite.sh" && -f "./openzero_doctor.py" && -d "./brain" ]]; then
     INSTALL_DIR="$(pwd)"
@@ -20,6 +24,9 @@ while [[ $# -gt 0 ]]; do
         --iso) ENABLE_ISO="true" ;;
         --voice) ENABLE_VOICE="true" ;;
         --bitnet) ENABLE_BITNET="true" ;;
+        --tab-pilot) ENABLE_TAB_PILOT="true" ;;
+        --no-tab-pilot) ENABLE_TAB_PILOT="false" ;;
+        --skip-model) SKIP_MODEL="true" ;;
         --dir)
             INSTALL_DIR="$2"
             shift
@@ -40,9 +47,17 @@ if [[ "${ENABLE_BITNET}" != "true" && -f "${ENV_FILE}" ]]; then
 fi
 
 TMP_INSTALL_SCRIPT="$(mktemp)"
-trap 'rm -f "${TMP_INSTALL_SCRIPT}"' EXIT
+TMP_INSTALL_CHECKSUM="$(mktemp)"
+trap 'rm -f "${TMP_INSTALL_SCRIPT}" "${TMP_INSTALL_CHECKSUM}"' EXIT
 
-curl -fsSL https://openzero.talktoai.org/install.sh -o "${TMP_INSTALL_SCRIPT}"
+curl -fsSL "${INSTALLER_URL}" -o "${TMP_INSTALL_SCRIPT}"
+curl -fsSL "${INSTALLER_CHECKSUM_URL}" -o "${TMP_INSTALL_CHECKSUM}"
+EXPECTED_INSTALLER_SHA="$(awk '{print $1}' "${TMP_INSTALL_CHECKSUM}")"
+if [[ ! "${EXPECTED_INSTALLER_SHA}" =~ ^[a-fA-F0-9]{64}$ ]]; then
+    echo "Invalid installer checksum response."
+    exit 1
+fi
+echo "${EXPECTED_INSTALLER_SHA}  ${TMP_INSTALL_SCRIPT}" | sha256sum -c -
 chmod +x "${TMP_INSTALL_SCRIPT}"
 
 ARGS=( "--${MODE}" "--dir" "${INSTALL_DIR}" )
@@ -57,6 +72,14 @@ if [[ "${ENABLE_VOICE}" == "true" ]]; then
 fi
 if [[ "${ENABLE_BITNET}" == "true" ]]; then
     ARGS+=( "--bitnet" )
+fi
+if [[ "${ENABLE_TAB_PILOT}" == "true" ]]; then
+    ARGS+=( "--tab-pilot" )
+elif [[ "${ENABLE_TAB_PILOT}" == "false" ]]; then
+    ARGS+=( "--no-tab-pilot" )
+fi
+if [[ "${SKIP_MODEL}" == "true" ]]; then
+    ARGS+=( "--skip-model" )
 fi
 
 exec bash "${TMP_INSTALL_SCRIPT}" "${ARGS[@]}"

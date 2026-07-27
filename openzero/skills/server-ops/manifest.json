@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "id": "server-ops",
+  "name": "Server Operations",
+  "description": "Diagnose, maintain, and deploy to explicitly named servers over SSH with exact-target backups and live verification. Use for service health, logs, configuration, releases, remote file transfer, restarts, incident checks, or bounded production fixes.",
+  "version": "1.0.0",
+  "risk_class": "high",
+  "risk_summary": "Remote changes can affect production; exact targets, rollback, and action-boundary confirmation govern consequential work.",
+  "summary": "Resolve the host, inspect live state, back up exact targets, make the requested change, and verify service and user-facing health.",
+  "triggers": [
+    "deploy",
+    "incident",
+    "logs",
+    "production",
+    "restart",
+    "server",
+    "service",
+    "ssh"
+  ],
+  "entrypoint": "SKILL.md",
+  "tools": [
+    "ssh_command",
+    "scp_get",
+    "scp_put",
+    "fetch_url",
+    "bash"
+  ],
+  "tool_schemas": [
+    {
+      "action": "ssh_command",
+      "required": ["host", "user", "command"],
+      "optional": ["port"]
+    },
+    {
+      "action": "scp_put",
+      "required": ["host", "user", "source", "destination"],
+      "optional": ["port"]
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "filesystem.read",
+      "network.read",
+      "remote.read"
+    ],
+    "task_scoped": [
+      "filesystem.write",
+      "process.run",
+      "remote.restart",
+      "remote.write"
+    ],
+    "confirm": [
+      "credentials.change",
+      "destructive.delete",
+      "destructive.overwrite",
+      "permissions.change"
+    ]
+  },
+  "budgets": {
+    "max_steps": 12,
+    "max_tool_calls": 20,
+    "max_seconds": 900,
+    "max_output_chars": 18000
+  },
+  "completion": {
+    "required_evidence": [
+      "Verify the intended host and exact changed targets.",
+      "Check service state and the real health or user path after the change."
+    ],
+    "stop_when": [
+      "The requested server outcome is verified with a rollback point.",
+      "Host identity, authority, or safe rollback cannot be established."
+    ]
+  },
+  "references": [
+    "references/production-checks.md"
+  ],
+  "limitations": [
+    "An SSH exit code alone does not prove application health.",
+    "Configured SSH access does not broaden the server scope named by the user."
+  ]
+}

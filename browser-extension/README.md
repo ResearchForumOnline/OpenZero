@@ -1,17 +1,18 @@
 # OpenZero Tab Pilot for Brave
 
-OpenZero Tab Pilot is an unpacked Chromium Manifest V3 extension that lets a
+OpenZero Tab Pilot is a signed Chromium Manifest V3 extension that lets a
 person explicitly grant **one normal Brave tab** to OpenZero for visible,
 step-by-step browser work.
 
-This is a local development prototype. It has not been published to an
-extension store and has not been deployed to a production OpenZero server.
+This is an early-access self-hosted extension. Linux OpenZero installs and
+updates can configure it through Brave managed policy; a verified ZIP and
+guided Windows setup helper remain available.
 
 ## What it can do
 
 - inspect a bounded, privacy-reduced text/element snapshot of the granted tab;
-- ask OpenZero for one strict JSON action at a time through the existing
-  authenticated `POST /v1/chat/completions` API;
+- ask OpenZero for one strict JSON action at a time through the dedicated
+  authenticated `POST /v1/browser/plan` API;
 - navigate, click an inspected element, type into ordinary fields, choose a
   select option, scroll, wait, go back, and go forward;
 - show a persistent in-page status card plus a Brave toolbar badge while access
@@ -41,17 +42,33 @@ extension store and has not been deployed to a production OpenZero server.
 The inspected OpenZero source exposes:
 
 - authenticated `GET /v1/models`;
-- authenticated `POST /v1/chat/completions`;
+- authenticated `POST /v1/browser/plan`;
 - Moltbot on loopback for a separate, headless Chrome instance.
 
-Moltbot does not control the user's existing Brave tabs. This extension uses the
-first two routes for planning and keeps all tab authority inside Brave. It does
-not require a production OpenZero patch or a new public command endpoint.
+Moltbot does not control the user's existing Brave tabs. This extension uses
+model discovery plus the strict planner route and keeps all tab authority inside
+Brave. The browser-planner token cannot call general chat completions.
 
-The default model name is `openzerogemma`. It must be installed and returned by
+The default model name is `openzerogemma:latest`. It must be installed and returned by
 `/v1/models`; otherwise select any installed OpenZero model in the options page.
 
 ## Install in Brave
+
+### Linux: automatic managed install
+
+The normal OpenZero installer and updater detect Brave and run:
+
+```bash
+./install-tab-pilot.sh
+```
+
+That helper verifies the hosted update endpoints, rotates a scoped Tab Pilot
+token through loopback, writes `/etc/brave/policies/managed/openzero-tab-pilot.json`,
+and lets Brave install/update extension ID
+`bjjhckhjkjodankbndllgloanjnfmlmo`. Use `--no-tab-pilot` on the main installer
+or updater to opt out.
+
+### Windows: verified unpacked install
 
 1. Keep this folder somewhere only your Windows account can modify.
 2. Open `brave://extensions`.
@@ -64,7 +81,7 @@ The default model name is `openzerogemma`. It must be installed and returned by
 No build step and no `npm install` are required.
 
 For the deterministic ZIP handoff, extract
-`dist/OpenZero-Tab-Pilot-Brave-v0.1.0.zip` first, then select the extracted
+`dist/OpenZero-Tab-Pilot-Brave-v0.2.0.zip` first, then select the extracted
 folder in **Load unpacked**. Brave cannot load the ZIP directly.
 
 ## Connect to OpenZero safely
@@ -85,11 +102,11 @@ ssh -N -L 1024:127.0.0.1:1024 your-user@your-openzero-server
 
 Then keep the extension API origin set to `http://127.0.0.1:1024`.
 
-Create or rotate an OpenZero API key from a direct local administrator session
-on the OpenZero host. Paste the one-time value into the options page. The key is
-stored in `chrome.storage.local`, never injected into page JavaScript, never
-shown in the popup, and sent only as a bearer header to the exact API origin
-approved in Brave.
+Managed Linux installs use a separate browser-planner-only token delivered
+through Brave managed storage. Manual installs can still use an OpenZero API key
+created from a direct local administrator session. Tokens are never injected
+into page JavaScript or shown in the popup, and are sent only as bearer headers
+to the exact approved API origin.
 
 ## Use
 
@@ -159,10 +176,11 @@ messages, account changes, or production data.
   make model output inherently trustworthy.
 - The current risk classifier is intentionally conservative and may ask for
   approval more often than necessary.
-- Browser store signing, managed-enterprise policy, localization, accessibility
-  audit, and full end-to-end Brave automation remain release work.
+- Browser-store publication, localization, accessibility audit, and broader
+  end-to-end Brave automation remain release work.
 
 ## Project status
 
-Version `0.1.0` is an isolated prototype intended for review and local unpacked
-testing only. No production deployment was performed.
+Version `0.2.0` is self-hosted as a signed CRX with managed Linux installation
+and updates. Windows unpacked installation still requires deliberate Brave
+approval.

@@ -50,7 +50,7 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H "Authorization: Bearer ztapi_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemma4:e4b",
+    "model": "openzerogemma:latest",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}
     ],

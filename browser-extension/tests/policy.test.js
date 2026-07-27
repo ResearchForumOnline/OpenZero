@@ -2,11 +2,33 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   classifyBrowserAction,
+  mergeEffectiveSettings,
   normalizeApiBaseUrl,
   normalizeBrowserAction,
   originPattern,
   sameOrigin
 } from "../src/shared/policy.js";
+
+test("managed connection settings override local values without weakening safety settings", () => {
+  const settings = mergeEffectiveSettings(
+    {
+      apiBaseUrl: "http://localhost:1024",
+      apiKey: "local-key",
+      model: "other:latest",
+      requireRiskApproval: false
+    },
+    {
+      apiBaseUrl: "http://127.0.0.1:1024",
+      apiKey: "managed-key",
+      model: "openzerogemma:latest",
+      requireRiskApproval: false
+    }
+  );
+  assert.equal(settings.apiBaseUrl, "http://127.0.0.1:1024");
+  assert.equal(settings.apiKey, "managed-key");
+  assert.equal(settings.model, "openzerogemma:latest");
+  assert.equal(settings.requireRiskApproval, false);
+});
 
 const settings = {
   allowNavigation: true,

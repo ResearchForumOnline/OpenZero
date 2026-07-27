@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
-OUTPUT = DIST / "OpenZero-Tab-Pilot-Brave-v0.1.0.zip"
+OUTPUT = DIST / "OpenZero-Tab-Pilot-Brave-v0.2.0.zip"
 CHECKSUM = OUTPUT.with_suffix(OUTPUT.suffix + ".sha256")
 FIXED_TIME = (2026, 1, 1, 0, 0, 0)
 FILES = [

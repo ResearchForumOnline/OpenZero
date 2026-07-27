@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
+  <app appid="bjjhckhjkjodankbndllgloanjnfmlmo">
+    <updatecheck
+      codebase="https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx"
+      version="0.2.0"
+    />
+  </app>
+</gupdate>
