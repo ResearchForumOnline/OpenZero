@@ -1,0 +1,94 @@
+# OPENZERO NODE CONFIGURATION // SHAF BRADY
+# ---------------------------------------------------
+
+# 1. SECURITY: Hide Directory Lists (Privacy)
+# Prevents strangers from seeing a list of your files if they guess a folder name.
+Options -Indexes
+
+# 2. ERROR HANDLING: Glitch Mode
+# Links your custom 404.html so errors look cool.
+ErrorDocument 404 /404.html
+
+# 3. REWRITE ENGINE (Clean URLs)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block stale backup artifacts and internal archive bundles
+    RewriteRule ^openzerobkup\.zip$ - [F,L,NC]
+    RewriteRule .*\.(bak|old|dist|log|sql|sqlite)$ - [F,L,NC]
+    RewriteRule ^(app|build_node|zero_core)\.py$ - [F,L,NC]
+    RewriteRule ^(requirements\.txt|Dockerfile|No)$ - [F,L,NC]
+    RewriteRule ^(hive_bootstrap|db_setup)\.php$ - [F,L,NC]
+
+    # Force HTTPS (Sovereign Security)
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Normalize extension URLs to clean public paths
+    RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+    RewriteRule ^index\.html$ / [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+install\.sh[\s?] [NC]
+    RewriteRule ^install\.sh$ /install [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+install_offline\.sh[\s?] [NC]
+    RewriteRule ^install_offline\.sh$ /install-offline [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+build_offline_release\.sh[\s?] [NC]
+    RewriteRule ^build_offline_release\.sh$ /build-offline [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+OFFLINE_RELEASE_GUIDE\.txt[\s?] [NC]
+    RewriteRule ^OFFLINE_RELEASE_GUIDE\.txt$ /offline-guide [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+manual\.html[\s?] [NC]
+    RewriteRule ^manual\.html$ /manual [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+research\.html[\s?] [NC]
+    RewriteRule ^research\.html$ /research [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+tab-pilot\.html[\s?] [NC]
+    RewriteRule ^tab-pilot\.html$ /tab-pilot [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+freewebpanel-aios\.html[\s?] [NC]
+    RewriteRule ^freewebpanel-aios\.html$ /freewebpanel-aios [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+hive_status\.php[\s?] [NC]
+    RewriteRule ^hive_status\.php$ /hive-monitor [L,R=301]
+
+    RewriteCond %{THE_REQUEST} \s/+api_hive\.php[\s?] [NC]
+    RewriteRule ^api_hive\.php$ /api/hive [L,R=301]
+
+    # Map clean public URLs
+    RewriteRule ^install/?$ install.sh [L]
+    RewriteRule ^install-offline/?$ install_offline.sh [L]
+    RewriteRule ^build-offline/?$ build_offline_release.sh [L]
+    RewriteRule ^offline-guide/?$ OFFLINE_RELEASE_GUIDE.txt [L]
+    RewriteRule ^research/?$ research.html [L]
+    RewriteRule ^tab-pilot/?$ tab-pilot.html [L]
+    RewriteRule ^freewebpanel-aios/?$ freewebpanel-aios.html [L]
+
+    RewriteRule ^manual/?$ manual.html [L]
+    RewriteRule ^hive-monitor/?$ hive_status.php [L]
+    RewriteRule ^api/hive/status/?$ api_hive.php?action=status [L,QSA]
+    RewriteRule ^api/hive/search/?$ api_hive.php?action=search [L,QSA]
+    RewriteRule ^api/hive/register/?$ api_hive.php?action=register [L,QSA]
+    RewriteRule ^api/hive/contribute/?$ api_hive.php?action=contribute [L,QSA]
+    RewriteRule ^api/hive/?$ api_hive.php [L]
+
+    # Block access to dotfiles (like .git or .env) for safety
+    # (Excluding .well-known for SSL renewal)
+    RewriteRule "(^|/)\.(?!well-known)" - [F]
+</IfModule>
+
+# 4. BROWSER CACHING (Performance)
+# Makes the particles and neon loads instant on return visits.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+</IfModule>

@@ -37,7 +37,7 @@ consequential actions, and personal-data entry require local approval;
 passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and
 arbitrary JavaScript are blocked.
 
-- [Tab Pilot product and setup page](https://openzero.talktoai.org/tab-pilot.html)
+- [Tab Pilot product and setup page](https://openzero.talktoai.org/tab-pilot)
 - [Extension source and security documentation](browser-extension/README.md)
 - [Verified Brave extension ZIP](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.zip)
 - [Signed Brave extension CRX](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx)
@@ -52,10 +52,17 @@ path, where Brave deliberately requires the final **Load unpacked** approval.
 The Super Panel also shows two optional Qwen3 8B builds. They are never
 downloaded or selected during a normal install:
 
-- [`Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf`](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) — compact Q5 experiment, installed as `openzeroqwen3-q5`;
-- [`Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf`](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) — larger F16 experiment, installed as `openzeroqwen3-f16`.
+| Release | OpenZero runtime name | Role |
+| --- | --- | --- |
+| [Zero-Gemma4 E4B OpenZero](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) | `openzerogemma:latest` | Default |
+| [Zero-Qwen3 8B OpenZero Q5_K_M](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) | `openzeroqwen3-q5:latest` | Optional |
+| [Zero-Qwen3 8B OpenZero F16](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) | `openzeroqwen3-f16:latest` | Optional |
 
-`openzerogemma:latest` remains the verified default.
+`openzerogemma:latest` remains the verified default. See the
+[verified model guide](openzero/docs/MODELS.md) for filenames, sizes,
+SHA-256 digests, direct Ollama commands, and the automatic-install boundary.
+All three artifacts are also grouped in the
+[Agentic GGUF Models collection](https://huggingface.co/collections/shafire/agentic-gguf-models).
 
 ## What You Can Build With It
 
@@ -109,12 +116,13 @@ http://localhost:1024
 | GitHub releases | [OpenZero releases](https://github.com/ResearchForumOnline/OpenZero/releases) |
 | ZeroMint OS GitHub release | [zeromint-os-v1.0](https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0) |
 | Hosted installer | [openzero.talktoai.org/install.sh](https://openzero.talktoai.org/install.sh) |
-| Brave Tab Pilot page | [openzero.talktoai.org/tab-pilot.html](https://openzero.talktoai.org/tab-pilot.html) |
+| Brave Tab Pilot page | [openzero.talktoai.org/tab-pilot](https://openzero.talktoai.org/tab-pilot) |
 | Brave extension ZIP | [Download v0.2.0](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.zip) |
 | Signed Brave extension | [Download v0.2.0 CRX](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx) |
 | OpenZero Gemma GGUF | [Hugging Face model](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) |
 | Optional Qwen3 8B Q5 | [Hugging Face GGUF](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) |
 | Optional Qwen3 8B F16 | [Hugging Face GGUF](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) |
+| Verified model guide | [openzero/docs/MODELS.md](openzero/docs/MODELS.md) |
 | Update script | [openzero/update.sh](openzero/update.sh) |
 | ZeroMint OS v1.0 ISO | [Download ISO](https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso) |
 | ZeroMint OS torrent | [Download torrent](https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent) |
