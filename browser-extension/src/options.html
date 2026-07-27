@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenZero Tab Pilot settings</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">OpenZero Tab Pilot</p>
+        <h1>Connection &amp; safety settings</h1>
+        <p>
+          The API key stays in Brave extension-local storage and is sent only to the exact
+          OpenZero origin you approve.
+        </p>
+      </header>
+
+      <form id="settings-form">
+        <section class="card">
+          <h2>OpenZero connection</h2>
+          <label for="api-url">API origin</label>
+          <input id="api-url" type="url" required spellcheck="false" placeholder="http://127.0.0.1:1024">
+          <p class="help">
+            Plain HTTP is accepted only on loopback. For a remote server, use HTTPS or an SSH
+            tunnel to <code>127.0.0.1</code>.
+          </p>
+
+          <label for="api-key">OpenZero API key</label>
+          <input
+            id="api-key"
+            type="password"
+            autocomplete="new-password"
+            spellcheck="false"
+            placeholder="Leave blank to keep the saved key"
+          >
+          <label class="check">
+            <input id="clear-key" type="checkbox">
+            Clear the saved API key
+          </label>
+
+          <label for="model">Default model</label>
+          <input id="model" type="text" required spellcheck="false" value="openzerogemma">
+          <p class="help">
+            This prototype defaults to <code>openzerogemma</code>. The model must appear in
+            OpenZero's authenticated <code>/v1/models</code> response.
+          </p>
+
+          <label for="spark">OpenZero Z-Spark</label>
+          <select id="spark">
+            <option value="auto">Auto</option>
+            <option value="off">Off</option>
+            <option value="force">Force</option>
+          </select>
+
+          <div class="actions">
+            <button id="test" type="button" class="secondary">Test connection &amp; list models</button>
+          </div>
+          <pre id="test-result" class="result" aria-live="polite">Not tested yet.</pre>
+        </section>
+
+        <section class="card">
+          <h2>Run limits</h2>
+          <div class="grid">
+            <div>
+              <label for="max-steps">Maximum actions per run</label>
+              <input id="max-steps" type="number" min="1" max="30" value="12">
+            </div>
+            <div>
+              <label for="timeout">Model timeout in seconds</label>
+              <input id="timeout" type="number" min="15" max="300" value="120">
+            </div>
+          </div>
+          <p class="help">
+            A step limit prevents a bad plan from looping forever. The extension re-inspects the
+            page before every model-planned action.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Action permissions</h2>
+          <label class="check">
+            <input id="allow-navigation" type="checkbox" checked>
+            Allow same-site navigation; every new site pauses for consent
+          </label>
+          <label class="check">
+            <input id="allow-clicking" type="checkbox" checked>
+            Allow clicks on inspected elements
+          </label>
+          <label class="check">
+            <input id="allow-typing" type="checkbox" checked>
+            Allow typing into ordinary fields
+          </label>
+          <label class="check">
+            <input id="risk-approval" type="checkbox" checked>
+            Require a one-time human approval for consequential or personal-data actions
+          </label>
+          <p class="warning">
+            Password, payment, secret/token, file-upload, CAPTCHA, arbitrary JavaScript, raw CSS
+            selector, and browser-internal page control remain blocked regardless of these settings.
+          </p>
+        </section>
+
+        <div class="save-row">
+          <button id="save" type="submit" class="primary">Save settings</button>
+          <span id="save-result" aria-live="polite"></span>
+        </div>
+      </form>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

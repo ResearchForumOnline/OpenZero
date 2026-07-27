@@ -1,0 +1,16 @@
+{
+  "name": "openzero-brave-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Consent-first Manifest V3 tab control extension for OpenZero and Brave.",
+  "scripts": {
+    "test": "node --test",
+    "validate": "node scripts/validate.mjs",
+    "check": "npm run validate && npm test",
+    "package": "python scripts/package.py"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

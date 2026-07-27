@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenZero Tab Pilot</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand">
+          <span id="status-dot" class="status-dot off" aria-hidden="true"></span>
+          <div>
+            <h1>OpenZero Tab Pilot</h1>
+            <p id="headline">Loading tab status…</p>
+          </div>
+        </div>
+        <button id="refresh" class="icon-button" type="button" title="Refresh status" aria-label="Refresh status">↻</button>
+      </header>
+
+      <section class="panel page-panel" aria-labelledby="page-heading">
+        <div class="section-title">
+          <h2 id="page-heading">This tab</h2>
+          <span id="grant-badge" class="badge neutral">Not granted</span>
+        </div>
+        <p id="page-title" class="strong">No supported page</p>
+        <p id="page-origin" class="muted wrap">—</p>
+        <div class="button-row">
+          <button id="grant" class="primary" type="button">Grant this tab</button>
+          <button id="revoke" class="danger hidden" type="button">Stop &amp; revoke</button>
+        </div>
+        <button id="forget-site" class="text-button hidden" type="button">Forget saved access to this site</button>
+      </section>
+
+      <section id="pending-site" class="panel warning hidden" aria-labelledby="pending-site-heading">
+        <h2 id="pending-site-heading">New site needs consent</h2>
+        <p id="pending-site-text" class="wrap"></p>
+        <p class="micro">Brave will show its own origin permission prompt. The task stays paused until you act.</p>
+        <div class="button-stack">
+          <button id="allow-site" class="warning-button" type="button">Allow destination &amp; continue</button>
+          <button class="deny-pending secondary" type="button">Deny and ask for another path</button>
+        </div>
+      </section>
+
+      <section id="pending-risk" class="panel warning hidden" aria-labelledby="pending-risk-heading">
+        <h2 id="pending-risk-heading">Action needs your approval</h2>
+        <p id="pending-risk-text" class="wrap strong"></p>
+        <p class="micro">Approval is one-time, exact, and expires. It does not turn off future safety checks.</p>
+        <div class="button-stack">
+          <button id="approve-risk" class="warning-button" type="button">Approve once</button>
+          <button class="deny-pending secondary" type="button">Deny and ask for another path</button>
+        </div>
+      </section>
+
+      <section class="panel task-panel" aria-labelledby="task-heading">
+        <div class="section-title">
+          <h2 id="task-heading">Task</h2>
+          <span id="step-badge" class="badge neutral">Idle</span>
+        </div>
+        <label for="task">Tell OpenZero what to do only in this granted tab</label>
+        <textarea
+          id="task"
+          rows="5"
+          maxlength="3000"
+          placeholder="Example: Find the support page and summarize the available contact methods. Do not send anything."
+        ></textarea>
+        <div class="button-row">
+          <button id="start" class="primary" type="button">Start controlled work</button>
+          <button id="stop" class="danger hidden" type="button">Stop run</button>
+        </div>
+        <p id="run-message" class="muted wrap" aria-live="polite">Grant this tab before starting.</p>
+      </section>
+
+      <section class="safety" aria-label="Safety summary">
+        <span>One tab</span>
+        <span>One site at a time</span>
+        <span>Risky actions pause</span>
+        <span>Passwords &amp; payments blocked</span>
+      </section>
+
+      <footer>
+        <button id="options" class="text-button" type="button">OpenZero connection &amp; safety settings</button>
+        <p id="api-state" class="micro wrap"></p>
+      </footer>
+
+      <p id="notice" class="notice hidden" role="alert"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

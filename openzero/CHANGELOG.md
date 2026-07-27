@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-27
+
+- Documented `openzerogemma:latest` and the public Zero-Gemma4-E4B-OpenZero GGUF release.
+- Added the OpenZero Tab Pilot Manifest V3 extension for explicitly granted Brave tabs.
+- Added per-tab and per-origin consent, visible stop/revoke controls, bounded action schemas, and confirmation gates for consequential actions and personal-data entry.
+- Added a checksum-verifying Windows setup helper plus a public extension download and setup page.
+
 ## 2026-07-12
 
 - Added authenticated OpenAI-compatible local model discovery at `GET /v1/models`.

@@ -22,6 +22,29 @@ Docs: [docs.talktoai.org/openzero-user-manual](https://docs.talktoai.org/openzer
 
 ZeroThink bridge: [zerothink.talktoai.org](https://zerothink.talktoai.org/)
 
+## New: OpenZero Gemma + Brave Tab Pilot
+
+The current OpenZero model release is
+[`shafire/Zero-Gemma4-E4B-OpenZero-GGUF`](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF).
+On a configured node it is exposed as `openzerogemma:latest` and is the
+recommended default for the OpenZero browser workflow.
+
+**OpenZero Tab Pilot** is a consent-first Manifest V3 extension for Brave. It
+lets OpenZero inspect and operate one explicitly granted browser tab while the
+model plans one bounded action at a time. Navigation, clicking, typing,
+selection, scrolling, waiting, and browser history are supported. New origins,
+consequential actions, and personal-data entry require local approval;
+passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and
+arbitrary JavaScript are blocked.
+
+- [Tab Pilot product and setup page](https://openzero.talktoai.org/tab-pilot.html)
+- [Extension source and security documentation](browser-extension/README.md)
+- [Verified Brave extension ZIP](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.1.0.zip)
+- [Windows setup helper](openzero/install-tab-pilot.ps1)
+
+The helper verifies the published ZIP and prepares the extension folder, but
+Brave intentionally keeps the final **Load unpacked** approval manual.
+
 ## What You Can Build With It
 
 OpenZero lets a user or business install a private AI node on a server, VPS, desktop Linux box, lab machine, or local network host, then use it for:
@@ -74,6 +97,9 @@ http://localhost:1024
 | GitHub releases | [OpenZero releases](https://github.com/ResearchForumOnline/OpenZero/releases) |
 | ZeroMint OS GitHub release | [zeromint-os-v1.0](https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0) |
 | Hosted installer | [openzero.talktoai.org/install.sh](https://openzero.talktoai.org/install.sh) |
+| Brave Tab Pilot page | [openzero.talktoai.org/tab-pilot.html](https://openzero.talktoai.org/tab-pilot.html) |
+| Brave extension ZIP | [Download v0.1.0](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.1.0.zip) |
+| OpenZero Gemma GGUF | [Hugging Face model](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) |
 | Update script | [openzero/update.sh](openzero/update.sh) |
 | ZeroMint OS v1.0 ISO | [Download ISO](https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso) |
 | ZeroMint OS torrent | [Download torrent](https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent) |
@@ -94,6 +120,7 @@ http://localhost:1024
 | OpenAI-compatible API | `/v1/chat/completions` for local model calls with OpenZero API keys. |
 | ZeroThink bridge | Create a machine API key in OpenZero and paste it into ZeroThink Neural Vault to route suitable work through your own node. |
 | Moltbot | Local page inspection and text extraction path for research, webpage reading, and agent actions. |
+| Brave Tab Pilot | Explicit per-tab control using the local Brave extension, bounded OpenZero planning, visible status, stop/revoke controls, and confirmation gates. |
 | Voice | Piper offline speech by default; optional Voicebox backend for richer local voice workflows. |
 | CallChat bot | Matrix room agent bridge for CallChat using OpenZero as the local brain and Voicebox for optional speech. |
 | BitNet | Optional Microsoft BitNet-style 1-bit CPU lane for low-power experiments. |
@@ -158,7 +185,7 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H "Authorization: Bearer ztapi_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemma4:e4b",
+    "model": "openzerogemma:latest",
     "openzero_spark": "auto",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}
@@ -200,6 +227,7 @@ Start from `openzero/.env.example` and keep real `.env` files out of Git.
 - `openzero/brain/` - Flask app, local API, model routing, runtime checks, security helpers, and Z-Spark logic.
 - `openzero/templates/` - Super Panel UI.
 - `openzero/moltbot/` - local browser/page-reading support.
+- `browser-extension/` - Brave Manifest V3 Tab Pilot source, tests, policy, privacy, and security documentation.
 - `openzero/hivemind/` - public local federation/client-side boundary code.
 - `openzero/docs/` - install, API, architecture, CPU runtime, bridge, voice, security, troubleshooting, and roadmap docs.
 - `docs/` - public release, security model, and private Hive boundary notes for this GitHub repo.
