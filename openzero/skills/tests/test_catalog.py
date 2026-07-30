@@ -21,6 +21,7 @@ from skills.catalog import (  # noqa: E402
     permission_decision,
     runtime_skill_budgets,
     search_catalog,
+    select_skill_ids,
     skill_catalog_payload,
     tool_permission_decision,
 )
@@ -56,6 +57,13 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(search_catalog("broken docx upload")[0]["id"], "document-reading")
         self.assertEqual(search_catalog("create an OpenZero skill manifest")[0]["id"], "files-code")
         self.assertEqual(search_catalog("give OpenZero better skills")[0]["id"], "files-code")
+
+    def test_plain_conversation_does_not_bind_unrelated_skills(self):
+        self.assertEqual(
+            select_skill_ids("What is OpenZero? Answer in one short sentence."),
+            [],
+        )
+        self.assertEqual(select_skill_ids("hello"), [])
 
     def test_permission_contract(self):
         skill = get_skill_detail("files-code")

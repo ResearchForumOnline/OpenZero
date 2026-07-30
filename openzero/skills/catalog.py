@@ -14,6 +14,42 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
 CATALOG_ROOT = Path(__file__).resolve().parent
 TOKEN_RE = re.compile(r"[a-z0-9]+")
+SEARCH_STOP_WORDS = {
+    "a",
+    "an",
+    "and",
+    "answer",
+    "are",
+    "can",
+    "could",
+    "do",
+    "explain",
+    "for",
+    "how",
+    "i",
+    "in",
+    "is",
+    "it",
+    "me",
+    "of",
+    "on",
+    "one",
+    "openzero",
+    "please",
+    "sentence",
+    "short",
+    "tell",
+    "that",
+    "the",
+    "this",
+    "to",
+    "what",
+    "who",
+    "why",
+    "with",
+    "you",
+    "your",
+}
 
 TOOL_CAPABILITIES = {
     "list_dir": ("filesystem.read",),
@@ -153,7 +189,7 @@ def _search_score(skill: Mapping[str, Any], query: str) -> int:
     query_clean = str(query or "").strip().lower()
     if not query_clean:
         return 1
-    query_tokens = _tokens(query_clean)
+    query_tokens = _tokens(query_clean) - SEARCH_STOP_WORDS
     skill_id = str(skill.get("id") or "").lower()
     name = str(skill.get("name") or "").lower()
     triggers = " ".join(str(item) for item in skill.get("triggers") or []).lower()
