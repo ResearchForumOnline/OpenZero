@@ -130,6 +130,16 @@ label + textarea {
   line-height: 1.45;
 }
 
+.grant-disclosure {
+  margin-top: 9px;
+  padding: 9px 10px;
+  border-left: 3px solid #22d3ee;
+  color: #dbeafe;
+  background: #071426;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .wrap {
   overflow-wrap: anywhere;
 }
