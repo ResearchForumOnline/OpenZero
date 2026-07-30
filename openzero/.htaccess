@@ -49,6 +49,9 @@ ErrorDocument 404 /404.html
     RewriteCond %{THE_REQUEST} \s/+tab-pilot\.html[\s?] [NC]
     RewriteRule ^tab-pilot\.html$ /tab-pilot [L,R=301]
 
+    RewriteCond %{THE_REQUEST} \s/+tab-pilot-privacy\.html[\s?] [NC]
+    RewriteRule ^tab-pilot-privacy\.html$ /tab-pilot-privacy [L,R=301]
+
     RewriteCond %{THE_REQUEST} \s/+freewebpanel-aios\.html[\s?] [NC]
     RewriteRule ^freewebpanel-aios\.html$ /freewebpanel-aios [L,R=301]
 
@@ -65,6 +68,7 @@ ErrorDocument 404 /404.html
     RewriteRule ^offline-guide/?$ OFFLINE_RELEASE_GUIDE.txt [L]
     RewriteRule ^research/?$ research.html [L]
     RewriteRule ^tab-pilot/?$ tab-pilot.html [L]
+    RewriteRule ^tab-pilot-privacy/?$ tab-pilot-privacy.html [L]
     RewriteRule ^freewebpanel-aios/?$ freewebpanel-aios.html [L]
 
     RewriteRule ^manual/?$ manual.html [L]

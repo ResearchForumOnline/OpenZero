@@ -8,7 +8,8 @@
     "test": "node --test",
     "validate": "node scripts/validate.mjs",
     "check": "npm run validate && npm test",
-    "package": "python scripts/package.py"
+    "package": "python scripts/package.py",
+    "package:store": "python scripts/package_store.py"
   },
   "engines": {
     "node": ">=20"

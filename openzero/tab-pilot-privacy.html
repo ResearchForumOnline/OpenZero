@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenZero Tab Pilot Privacy Policy</title>
+  <meta name="description" content="Privacy policy for the OpenZero Tab Pilot browser extension.">
+  <link rel="canonical" href="https://openzero.talktoai.org/tab-pilot-privacy">
+  <meta name="theme-color" content="#030303">
+  <style>
+    :root{--bg:#030303;--panel:#0b0f0d;--text:#e8f5ec;--muted:#a9c0b0;--green:#00ff6a;--gold:#f4d35e;--line:#22402e}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 75% 0,#0b2417 0,transparent 34%),var(--bg);color:var(--text);font:16px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}
+    main{width:min(900px,calc(100% - 28px));margin:auto;padding:48px 0 72px}article{border:1px solid var(--line);background:rgba(7,14,10,.94);padding:clamp(22px,5vw,48px)}
+    h1{font-size:clamp(2rem,7vw,4.2rem);line-height:1;margin:.2em 0 .35em;text-transform:uppercase}h2{margin-top:2em;color:var(--green)}a{color:var(--green)}.eyebrow{color:var(--green);letter-spacing:.12em;font-weight:800}.muted{color:var(--muted)}.notice{border-left:4px solid var(--gold);padding:12px 18px;background:#171506;color:#f6eabb}
+  </style>
+</head>
+<body>
+<main>
+  <article>
+    <p class="eyebrow">OPENZERO // TAB PILOT</p>
+    <h1>Privacy Policy</h1>
+    <p class="muted">Effective 30 July 2026</p>
+    <p>OpenZero Tab Pilot is a consent-controlled browser extension that connects one explicitly granted tab to the OpenZero API origin configured by the user. It has no analytics, advertising, telemetry, or third-party tracking integration.</p>
+
+    <h2>Data processed for the feature</h2>
+    <p>For each model-planning step, Tab Pilot sends the configured OpenZero API the user-written task, current page URL and title, a bounded visible-text snapshot, bounded headings and interactive-element labels, and recent action-result summaries. Visible page text can contain personal information, so users should grant only pages whose visible content may be sent to their configured OpenZero node.</p>
+
+    <h2>Data deliberately excluded</h2>
+    <p>Tab Pilot does not intentionally read or send cookies, browser history, screenshots, content from other tabs, input or textarea values, passwords, payment-card information, authentication information, secrets or tokens, one-time codes, CAPTCHA answers, file-upload values, or file contents.</p>
+
+    <h2>Storage and retention</h2>
+    <p>The configured OpenZero API origin, model, safety settings, and API token are stored in extension-local browser storage until the user changes them, clears the token, or removes the extension. The token is sent only as an authorization header to the exact OpenZero API origin approved by the user and is never injected into page JavaScript.</p>
+    <p>Tab grants, tasks, pending approvals, and recent action summaries are held in browser session storage and clear on a full browser restart or extension reload. Optional site permissions can persist until the user removes them through Tab Pilot or browser settings. Retention on the user's OpenZero node is controlled by that node's owner and configuration.</p>
+
+    <h2>Sharing and sale</h2>
+    <p>OpenZero Tab Pilot does not sell personal information. It does not use data for advertising, profiling, credit decisions, or purposes unrelated to its single browser-control feature. Task and page context is transferred only to the OpenZero API origin selected by the user.</p>
+
+    <h2>User control</h2>
+    <p>Users can stop and revoke a tab immediately, forget saved access to a site, clear the saved API token, remove optional site permissions, or uninstall the extension. New origins and consequential actions pause for explicit review.</p>
+
+    <h2>Security</h2>
+    <p>Use loopback, valid HTTPS, a private VPN, or an SSH tunnel for the OpenZero API. Tab Pilot refuses plain remote HTTP. The extension bundles its executable code and does not load remote code.</p>
+
+    <h2>Contact</h2>
+    <p>Privacy or security questions can be filed privately through the guidance in the <a href="https://github.com/ResearchForumOnline/OpenZero/blob/main/SECURITY.md">OpenZero security policy</a>. General support is available through <a href="https://github.com/ResearchForumOnline/OpenZero/issues">OpenZero issues</a>.</p>
+
+    <p class="notice">This policy describes the Tab Pilot extension itself. A user-operated OpenZero node may have separate retention or access controls chosen by its owner.</p>
+    <p><a href="/tab-pilot">← Tab Pilot</a> · <a href="/">OpenZero home</a></p>
+  </article>
+</main>
+</body>
+</html>

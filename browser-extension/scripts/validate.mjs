@@ -9,6 +9,7 @@ const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 
 assert.equal(manifest.manifest_version, 3, "Manifest must be V3.");
 assert.equal(manifest.background?.type, "module", "Service worker must be an ES module.");
+assert.ok(manifest.description.length <= 132, "Store description must be at most 132 characters.");
 assert.ok(manifest.permissions.includes("activeTab"), "activeTab is required.");
 assert.ok(manifest.permissions.includes("scripting"), "scripting is required.");
 assert.ok(!manifest.permissions.includes("debugger"), "debugger permission is forbidden.");
@@ -29,6 +30,8 @@ const referencedFiles = [
   manifest.background.service_worker,
   manifest.action.default_popup,
   manifest.options_page,
+  ...Object.values(manifest.icons || {}),
+  ...Object.values(manifest.action.default_icon || {}),
   "src/content.js",
   "src/popup.js",
   "src/popup.css",
