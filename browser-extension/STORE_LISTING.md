@@ -68,12 +68,38 @@ Handled only to provide the user-facing feature:
 - recent action-result summaries;
 - extension settings and the configured OpenZero API token.
 
+Dashboard data-type selections:
+
+- Personally identifiable information
+- Authentication information
+- Personal communications
+- Website content
+- Web history
+- User activity
+- User-generated content
+
+Do not select financial/payment information or health information: Tab Pilot
+does not intentionally read those fields, and password, payment, secret,
+one-time-code, and file-upload fields are blocked. Website content can still
+contain personal information, which is why the broader website-content and
+personally-identifiable-information disclosures are selected.
+
+Remote code: select **No, I am not using remote code**. All executable extension
+code is bundled in the submitted package. The configured OpenZero node returns
+strict JSON action data, not executable JavaScript.
+
 The extension does not sell data, use data for advertising or credit decisions,
 or transfer data to unrelated third parties. It sends task and page context only
 to the exact OpenZero API origin configured by the user. It does not intentionally
 collect cookies, browsing history, screenshots, values from inputs or textareas,
 passwords, payment details, authentication information, secrets, one-time codes,
 or file contents.
+
+Limited Use certifications: select every certification. The extension uses data
+only for its disclosed single purpose, transfers it only to the user-configured
+OpenZero origin, does not use it for advertising or sale, and does not permit
+human reading except with user consent for support, for security, when required
+by law, or after aggregation and anonymisation.
 
 ## Reviewer test instructions
 
