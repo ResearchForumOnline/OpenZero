@@ -76,7 +76,6 @@ Dashboard data-type selections:
 - Website content
 - Web history
 - User activity
-- User-generated content
 
 Do not select financial/payment information or health information: Tab Pilot
 does not intentionally read those fields, and password, payment, secret,
