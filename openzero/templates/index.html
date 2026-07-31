@@ -324,7 +324,7 @@
                         <div class="featured-model-top">
                             <div>
                                 <h4>OPENZERO QWEN3 8B Q5_K_M</h4>
-                                <div class="featured-model-meta"><code>openzeroqwen3-q5:latest</code> · OPTIONAL · 5.5 GiB</div>
+                                <div class="featured-model-meta"><code>zero-qwen3-q5:latest</code> · OPTIONAL · 5.5 GiB</div>
                             </div>
                             <span class="featured-model-badge">OPTIONAL QWEN</span>
                         </div>
@@ -341,7 +341,7 @@
                         <div class="featured-model-top">
                             <div>
                                 <h4>OPENZERO QWEN3 8B F16</h4>
-                                <div class="featured-model-meta"><code>openzeroqwen3-f16:latest</code> · OPTIONAL · 13.8 GiB</div>
+                                <div class="featured-model-meta"><code>zero-qwen3-f16:latest</code> · OPTIONAL · 13.8 GiB</div>
                             </div>
                             <span class="featured-model-badge">HIGH PRECISION</span>
                         </div>
@@ -362,27 +362,11 @@
                 </div>
 
                 <div class="flex-row" style="margin-top:10px;">
-                    <button class="action-btn" style="border-color:var(--green); color:var(--green);" onclick="installLocalModel('gemma4:e2b')">INSTALL GEMMA 4 E2B</button>
-                    <button class="action-btn" style="border-color:var(--green); color:var(--green);" onclick="installLocalModel('gemma4:e4b')">INSTALL GEMMA 4 E4B</button>
-                </div>
-                <div class="flex-row" style="margin-top:10px;">
-                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="installLocalModel('gemma4:26b')">INSTALL GEMMA 4 26B</button>
-                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="installLocalModel('gemma3:12b')">INSTALL GEMMA 3 12B</button>
-                </div>
-                <div class="flex-row" style="margin-top:10px;">
                     <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan);" onclick="upgradeOllama()">UPDATE OLLAMA</button>
                     <button class="action-btn" style="border-color:var(--neon); color:var(--neon);" onclick="repairLocalBrain()">REPAIR LOCAL BRAIN</button>
-                </div>
-                <div class="flex-row" style="margin-top:10px;">
-                    <button class="action-btn" style="border-color:#9effd6; color:#9effd6;" onclick="installBitnet()">INSTALL BITNET</button>
-                    <button class="action-btn" style="border-color:#7ad3ff; color:#7ad3ff;" onclick="repairBitnet()">REPAIR BITNET</button>
-                </div>
-                <div class="flex-row" style="margin-top:10px;">
-                    <button class="action-btn delete-btn" onclick="removeBitnet()">REMOVE BITNET</button>
-                    <button class="action-btn" style="border-color:#7fbfff; color:#7fbfff;" onclick="installLocalModel('gemma3:4b')">INSTALL GEMMA 3 4B</button>
                     <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="refreshModelInventory()">REFRESH MODELS</button>
                 </div>
-                <div class="hint">OpenZero Gemma is the default lane. The two Qwen packages, stock Gemma presets, and Microsoft BitNet are optional alternatives and never replace the default unless the operator explicitly selects one.</div>
+                <div class="hint">The local model selector is intentionally limited to your three current OpenZero releases: OpenZero Gemma plus the Qwen3 Q5 and F16 variants.</div>
 
                 <label>CPU Performance Profile</label>
                 <select id="cfg_cpu_profile">
@@ -1258,22 +1242,16 @@
                     select.appendChild(opt);
                 });
 
-                if ((bitnet.ready || bitnet.selected) && !Array.from(select.options).some(opt => opt.value === (bitnet.model_alias || 'bitnet-b1.58-2b-4t'))) {
-                    const opt = document.createElement('option');
-                    opt.value = bitnet.model_alias || 'bitnet-b1.58-2b-4t';
-                    opt.innerText = `Local: ${bitnet.model_alias || 'bitnet-b1.58-2b-4t'} // Microsoft BitNet 1-bit`;
-                    select.appendChild(opt);
-                }
 
                 // Fetch current active config to pre-select the right option
                 fetch('/api/config').then(r => r.json()).then(cfg => {
                     runtimeConfig = cfg;
                     const effectiveModel = cfg.ACTIVE_MODEL_EFFECTIVE || cfg.ACTIVE_MODEL;
-                    // If the model in .env isn't in the list (rare), add it so the dropdown doesn't break
-                    if (!Array.from(select.options).some(opt => opt.value === effectiveModel)) {
+                    // Preserve cloud selections, but never resurrect deleted/stale local aliases.
+                    if (cloudModels.some(model => model.val === effectiveModel) && !Array.from(select.options).some(opt => opt.value === effectiveModel)) {
                         const opt = document.createElement('option');
                         opt.value = effectiveModel;
-                        opt.innerText = `Resolved Local: ${effectiveModel}`;
+                        opt.innerText = `Cloud: ${effectiveModel}`;
                         select.appendChild(opt);
                     }
                     
