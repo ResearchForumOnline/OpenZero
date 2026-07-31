@@ -1406,6 +1406,8 @@ def local_reply_token_budget(prompt: str, agent_mode: str = "chat") -> int:
     )
     if any(marker in text for marker in concise_markers):
         return 96
+    if "**[moltbot browser]**" in text:
+        return 192
     return 1024 if str(agent_mode or "").lower() == "terminal" else 768
 
 
@@ -4911,6 +4913,14 @@ def voice_transcribe():
     return jsonify(result)
 
 
+def autonomous_checkpoint_tool_result(action: Dict[str, object]) -> str:
+    """Keep browser evidence useful without overflowing the local model context."""
+
+    result = str(action.get("result") or "")
+    if str(action.get("tool") or "") == "moltbot_browse" and len(result) > 5000:
+        return result[:5000].rstrip() + "\n...[browser result compacted for local summary]..."
+    return result
+
 def deterministic_browser_inspection_reply(state: Dict[str, object]) -> str:
     """Return the initial read-only browser action without spending a model call."""
 
@@ -5309,7 +5319,7 @@ def execute_autonomous_run(
 
             state = AUTONOMOUS_RUN_STORE.checkpoint_action_result(
                 run_id,
-                current_prompt=f"Tool proposal/result:\n{action_result}",
+                current_prompt=f"Tool proposal/result:\n{autonomous_checkpoint_tool_result(action)}",
                 last_safe_result=action_result,
                 usage_delta={
                     "tool_calls": 0
