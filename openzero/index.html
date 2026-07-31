@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenZero 5.4 | OpenZero Gemma, Brave Tab Pilot, and Local-First AI</title>
+    <title>OpenZero 7.1 | Ultra-16 Agents, Brave Tab Pilot, and Local-First AI</title>
     <meta name="description" content="Run OpenZero Gemma locally and connect one explicitly approved Brave tab with the OpenZero Tab Pilot extension, alongside Hive coordination, local learning, offline operation, and self-healing services.">
     <link rel="canonical" href="https://openzero.talktoai.org/">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="OpenZero 5.4 | Sovereign AI Node">
+    <meta property="og:title" content="OpenZero 7.1 | Sovereign AI Node">
     <meta property="og:description" content="Run OpenZero Gemma locally and use the consent-first Brave Tab Pilot extension for visible, bounded browser work.">
     <meta property="og:image" content="https://openzero.talktoai.org/zero_og_image.png">
     <meta property="og:url" content="https://openzero.talktoai.org/">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="OpenZero 5.4">
+    <meta name="twitter:title" content="OpenZero 7.1">
     <meta name="twitter:description" content="OpenZero Gemma plus a consent-first Brave Tab Pilot extension for visible, bounded browser work.">
     <meta name="twitter:image" content="https://openzero.talktoai.org/zero_og_image.png">
     <meta name="theme-color" content="#000000">
@@ -24,7 +24,7 @@
       "name": "OpenZero",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Linux",
-      "softwareVersion": "5.4",
+      "softwareVersion": "7.1",
       "url": "https://openzero.talktoai.org/",
       "downloadUrl": "https://openzero.talktoai.org/install",
       "description": "Local-first sovereign AI node with compact agent skills, Moltbot web vision, private local learning, Hive coordination, self-healing install scripts, Gemma 4 by default, optional Microsoft BitNet, RAM-aware scaling, and optional offline voice.",
@@ -115,7 +115,7 @@
             color: #fff;
         }
         .glitch::before, .glitch::after {
-            content: "OPENZERO 5.4";
+            content: "OPENZERO 7.1";
             position: absolute;
             top: 0;
             left: 0;
@@ -398,7 +398,7 @@
 <div class="container">
     <header>
         <div class="tagline">LOCAL-FIRST SOVEREIGN AI NODE</div>
-        <h1 class="glitch">OPENZERO 5.4</h1>
+        <h1 class="glitch">OPENZERO 7.1</h1>
         <div style="margin-top:20px; color: #666; font-size: 0.9em;">
             [ BRAIN STATUS: <span style="color:var(--neon)">IGNITED</span> ] &nbsp;//&nbsp;
             [ ARCHITECT: <span style="color:#fff">SHAF BRADY</span> ]
@@ -469,7 +469,7 @@
         <h2 style="color:var(--neon);">LET YOUR LOCAL OPENZERO NODE WORK INSIDE ONE TAB YOU APPROVE.</h2>
         <p style="text-transform:none;">OpenZero Tab Pilot is an early-access Manifest V3 extension for Brave. It uses authenticated OpenZero planning while tab control stays inside the browser: inspect, navigate, click, type, select, scroll, wait, back, and forward. Every tab requires an explicit grant, new origins require Brave permission, and consequential actions or personal-data entry pause for one-time approval.</p>
         <p style="text-transform:none;">The verified default model is <code>openzerogemma:latest</code>, based on the public Zero-Gemma4-E4B-OpenZero GGUF release. Passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and arbitrary JavaScript are blocked by the extension.</p>
-        <p style="text-transform:none;">On Linux, the normal OpenZero install and update flow now detects Brave, provisions a planner-only token, installs the signed extension through managed policy, and registers automatic CRX updates. Use <code>--no-tab-pilot</code> to opt out.</p>
+        <p style="text-transform:none;">On desktop Linux, OpenZero 7.1 installs Brave from Brave's official installer when needed, provisions a planner-only token, installs the signed extension through managed policy, and registers automatic CRX updates. Headless servers stay browser-free unless <code>--brave</code> is requested. Use <code>--no-tab-pilot</code> to opt out.</p>
         <div class="nav-grid" style="margin-top:22px;">
             <a href="/tab-pilot" class="btn-large btn-neon">TAB PILOT SETUP</a>
             <a href="/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx" class="btn-large">SIGNED EXTENSION v0.2</a>
@@ -580,7 +580,7 @@
         </div>
         <div class="card">
             <h3>SELF-HEALING WATCHDOG</h3>
-            <p>OpenZero 5.4 checks PM2 services, Janitor cleanup, integrity state, and config drift using a watchdog plus doctor toolkit.</p>
+            <p>OpenZero 7.1 checks PM2 services, Janitor cleanup, integrity state, and config drift using a watchdog plus doctor toolkit.</p>
             <code style="color:var(--neon)">python3 openzero_doctor.py --json</code>
         </div>
         <div class="card">
@@ -618,7 +618,7 @@
 
     <div class="hive-banner" style="margin-top:24px; border-left-color:var(--neon); border-color:var(--neon); background:rgba(0,255,65,0.04);">
         <h2 style="color: var(--neon); margin-top: 0;">HIVE HQ // FEDERATION // LOCAL CONTINUITY</h2>
-        <p style="text-transform:none;">OpenZero 5.4 now separates the node from the coordination layer. A node can run against one Hive HQ, fan out to backup federation mirrors, or keep recording continuity data locally until a new Hive comes online. If one operator disappears, the nodes do not become worthless bricks.</p>
+        <p style="text-transform:none;">OpenZero 7.1 separates the node from the coordination layer. A node can run against one Hive HQ, fan out to backup federation mirrors, or keep recording continuity data locally until a new Hive comes online. If one operator disappears, the nodes do not become worthless bricks.</p>
         <div class="grid-system" style="margin-top:20px;">
             <div class="card" style="padding:22px;">
                 <h3>STANDALONE</h3>
@@ -645,7 +645,7 @@
             <thead>
                 <tr>
                     <th>METRIC</th>
-                    <th>OPENZERO 5.4</th>
+                    <th>OPENZERO 7.1</th>
                     <th>COMMERCIAL AI</th>
                 </tr>
             </thead>
@@ -695,7 +695,7 @@
         <div>
             <h3 style="color: #ff3333; margin: 0 0 10px 0; font-size: 1.2em;">WARNING: HIGH-RISK AUTONOMY</h3>
             <p style="color: #cc5555; font-size: 0.9em; margin: 0; line-height: 1.6; text-transform: none;">
-                OpenZero can operate with elevated local privileges. Version 5.4 adds tamper-evident ethics locks, encrypted local vault files, and signed Hive contributions, but a system owner with full disk access can still replace files. Treat the platform as hardened and auditable, not magically immutable.
+                OpenZero can operate with elevated local privileges. Version 7.1 retains tamper-evident ethics locks, encrypted local vault files, and signed Hive contributions, but a system owner with full disk access can still replace files. Treat the platform as hardened and auditable, not magically immutable.
             </p>
         </div>
     </div>
@@ -705,7 +705,7 @@
     </div>
 
     <footer>
-        OPENZERO 5.4 // ARCHITECT: SHAF BRADY // 2026<br>
+        OPENZERO 7.1 // ARCHITECT: SHAF BRADY // 2026<br>
         <span style="color:#666">LOCAL-FIRST SOVEREIGN CODEBASE // openzero.talktoai.org</span>
     </footer>
 </div>
@@ -841,7 +841,7 @@
     }
     animate();
 
-    console.log("%c  OPENZERO 5.4  ", "color: #00ff41; background: #000; font-size: 40px; font-weight: bold; padding: 10px; border: 2px solid #00ff41;");
+    console.log("%c  OPENZERO 7.1  ", "color: #00ff41; background: #000; font-size: 40px; font-weight: bold; padding: 10px; border: 2px solid #00ff41;");
     console.log("%c// SOVEREIGN INTELLIGENCE LATTICE ESTABLISHED", "color: #d4af37; font-family: monospace; font-size: 14px;");
     console.log("%c// ARCHITECT: SHAF BRADY", "color: #888; font-family: monospace;");
 </script>

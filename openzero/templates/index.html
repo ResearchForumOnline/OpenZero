@@ -147,7 +147,7 @@
     <div class="sidebar">
         <div class="header-brand">
             <h1>OPEN<span>ZERO</span></h1>
-            <div style="color:#666; font-size:0.8em; margin-top:5px;">SOVEREIGN LATTICE NODE // 5.4 CONTROL PANEL</div>
+            <div style="color:#666; font-size:0.8em; margin-top:5px;">SOVEREIGN LATTICE NODE // 7.1 CONTROL PANEL</div>
         </div>
 
         <div class="telemetry">
@@ -160,6 +160,7 @@
             <div class="telemetry-row"><span>LOOKUP:</span> <span class="val" id="sys-hive-lookup" style="color:var(--gold)">--</span></div>
             <div class="telemetry-row"><span>CHAT SHARE:</span> <span class="val" id="sys-hive-share" style="color:var(--gold)">--</span></div>
             <div class="telemetry-row"><span>ENGINE:</span> <span class="val" id="sys-mode" style="color:var(--gold)">--</span></div>
+            <div class="telemetry-row"><span>AUTONOMY:</span> <span class="val" id="sys-autonomy" style="color:var(--neon)">--</span></div>
             <div class="telemetry-row"><span>NODE_ID:</span> <span class="val" id="sys-id" style="color:#888">--</span></div>
             <div class="telemetry-row"><span>TIER:</span> <span class="val" id="sys-tier" style="color:var(--gold)">--</span></div>
             <div class="telemetry-row"><span>MODEL:</span> <span class="val" id="sys-model" style="color:var(--cyan)">--</span></div>
@@ -274,6 +275,24 @@
                     <button id="mode-terminal" class="action-btn" onclick="setAgentMode('terminal')" style="flex: 1; border-color: #888; color: #888; padding: 5px; font-size: 0.8em;">TERMINAL</button>
                 </div>
                 <div class="hint">Terminal mode now has a stronger local operator lane: real file reads/writes, directory trees, archive create/extract, web fetch/search, OSINT, and SSH/SCP-style remote ops, with raw tool calls hidden from the main stream unless there is useful text to show.</div>
+
+                <label>Autonomy Profile</label>
+                <select id="cfg_autonomy_profile">
+                    <option value="standard">STANDARD (BOUNDED)</option>
+                    <option value="ultra">ULTRA (MAXIMUM BOUNDED PERSISTENCE)</option>
+                </select>
+                <div class="hint">Ultra doubles skill run budgets within the same hard caps. It never expands tool allowlists, bypasses confirmations, exposes secrets, or permits recursive agents.</div>
+
+                <label>Concurrent Root Agents</label>
+                <select id="cfg_autonomous_workers">
+                    <option value="1">1 WORKER</option>
+                    <option value="2">2 WORKERS</option>
+                    <option value="3">3 WORKERS</option>
+                    <option value="4">4 WORKERS</option>
+                    <option value="8">8 WORKERS</option>
+                    <option value="16">16 WORKERS (HARD MAX)</option>
+                </select>
+                <div class="hint">Local model inference remains serialized to protect RAM while independent tool work can progress concurrently.</div>
 
                 <label>Active Model</label>
                 <select id="cfg_model">
@@ -1301,6 +1320,8 @@
                     document.getElementById('cfg_voicebox_personality').value = cfg.VOICEBOX_PERSONALITY || 'false';
                     document.getElementById('cfg_voicebox_fallback').value = cfg.VOICEBOX_FALLBACK_PIPER || 'true';
                     if(cfg.COMP_MODE) document.getElementById('cfg_comp_mode').value = cfg.COMP_MODE;
+                    document.getElementById('cfg_autonomy_profile').value = cfg.OPENZERO_AUTONOMY_PROFILE === 'ultra' ? 'ultra' : 'standard';
+                    document.getElementById('cfg_autonomous_workers').value = ['1', '2', '3', '4', '8', '16'].includes(String(cfg.OPENZERO_AUTONOMOUS_MAX_WORKERS)) ? String(cfg.OPENZERO_AUTONOMOUS_MAX_WORKERS) : (cfg.OPENZERO_AUTONOMY_PROFILE === 'ultra' ? '16' : '2');
                     
                     if(cfg.HAS_GROQ) document.getElementById('cfg_groq').placeholder = "•••••••• (Key Saved)";
                     if(cfg.HAS_SERPER) document.getElementById('cfg_serper').placeholder = "•••••••• (Key Saved)";
@@ -1458,7 +1479,8 @@
             socket.emit('user_message', { 
                 message: msg, 
                 comp_mode: compMode,
-                agent_mode: currentAgentMode
+                agent_mode: currentAgentMode,
+                autonomy_profile: document.getElementById('cfg_autonomy_profile').value
             });
         }
 
@@ -1541,6 +1563,8 @@
                 FEE_OZ_COINS: currentFee,
                 FEE_ZERO_COINS: currentFee,
                 COMP_MODE: document.getElementById('cfg_comp_mode').value,
+                OPENZERO_AUTONOMY_PROFILE: document.getElementById('cfg_autonomy_profile').value,
+                OPENZERO_AUTONOMOUS_MAX_WORKERS: document.getElementById('cfg_autonomous_workers').value,
                 P_GOOD_THRESHOLD: currentThreshold,
                 OZ_TOKEN_CA: document.getElementById('cfg_oz_ca').value.trim(),
                 PAID_HIVE_ENABLED: document.getElementById('cfg_paid_hive').value,
@@ -1660,6 +1684,7 @@
                 document.getElementById('sys-hive-lookup').innerText = data.hive_lookup || '--';
                 document.getElementById('sys-hive-share').innerText = (data.hive_share_mode || 'manual').toUpperCase();
                 document.getElementById('sys-mode').innerText = data.mode;
+                document.getElementById('sys-autonomy').innerText = `${(data.autonomy_profile || 'standard').toUpperCase()} / ${data.max_concurrent_workers || 2}`;
                 document.getElementById('sys-id').innerText = data.identity;
                 document.getElementById('sys-tier').innerText = data.node_tier || '--';
                 document.getElementById('sys-model').innerText = data.active_model || '--';

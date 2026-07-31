@@ -13,8 +13,14 @@ trace, and operator-controlled stop/revoke controls.
   inserted as a fabricated `USER` or `ASSISTANT` turn.
 - Model calls, tool proposals, steps, elapsed time, and consecutive errors are
   bounded. User-supplied values are clamped to hard limits.
-- A run cannot create, fork, or schedule another autonomous run. At most two
-  root runs execute concurrently.
+- A run cannot create, fork, or schedule another autonomous run. Root worker
+  concurrency is configurable from one to four. Local model inference remains
+  serialized so concurrent tool work cannot multiply model memory use.
+- Future-action prose such as "I will now click" is not completion. OpenZero
+  retries until it receives an executable action or a factual final result.
+- An explicit browser objective cannot complete from a refusal or unsupported
+  factual claim. A successful browser inspection is required, and a requested
+  click/type requires separately recorded post-action evidence.
 - Raw shell, remote commands, remote uploads, deletion, audible speech, and
   writes to persistent-access/startup locations pause before execution.
 - A paused consequential action needs a fresh, short-lived confirmation tied
@@ -73,6 +79,7 @@ Content-Type: application/json
   "objective": "Inspect the local service, repair safe files, and verify health.",
   "agent_mode": "terminal",
   "comp_mode": "local",
+  "autonomy_profile": "standard",
   "auto_resume": true,
   "budgets": {
     "max_steps": 12,
@@ -92,6 +99,24 @@ The response is `202 Accepted` and includes:
 
 Hard caps are 32 steps, 32 model calls, 24 tool calls, four elapsed hours, and
 five consecutive errors. Lower positive values are supported.
+
+`autonomy_profile` is immutable for a run:
+
+- `standard` preserves the original skill budgets.
+- `ultra` doubles selected skill budgets while retaining the same global hard
+  caps, tool allowlists, confirmations, redaction, stop/revoke behavior, and
+  anti-recursion controls.
+
+Moltbot actions use a fresh `snapshot_id` and inspected element IDs. Every
+successful action invalidates the old snapshot and returns a new inspection.
+
+Every Moltbot navigation, inspection, and action is also bound to the owning
+32-character run ID. Browser runs are serialized around the shared headless
+page. A click or type counts as completed only when its post-action inspection
+shows an observable state change, the final URL remains compatible with the
+objective, and the inspected element label matches an explicit click target.
+A dispatched action with no observable change ends as an error and is never
+replayed automatically.
 
 ## Inspect Runs
 
@@ -149,6 +174,15 @@ Content-Type: application/json
 Approval lasts for at most ten minutes, is valid for that exact fingerprint,
 and is consumed by the first matching proposal. If the model changes the action,
 OpenZero pauses again for a new confirmation.
+
+For Moltbot actions, OpenZero reserves that run's browser snapshot during the
+same short confirmation window. Approval resumes the exact run and snapshot;
+an expired pending action releases the browser and must be inspected again.
+
+Server-side Moltbot is separate from the Brave Tab Pilot extension. An objective
+that explicitly names Brave, Tab Pilot, or an existing/current tab pauses with
+`tab_pilot_bridge_unavailable` until a live extension task/evidence bridge is
+available. It is never reported as completed from Moltbot-only evidence.
 
 ## Deterministic Validation
 

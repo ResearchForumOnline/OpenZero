@@ -34,7 +34,14 @@ from autonomous_runtime import (  # noqa: E402
     AutonomousRunStore,
     action_fingerprint,
     action_policy,
+    browser_text_digest,
+    browser_target_matches,
+    incomplete_action_promise_reason,
+    objective_browser_target,
+    required_operator_evidence_reason,
+    requires_tab_pilot_evidence,
     normalize_budgets,
+    normalize_autonomy_profile,
     redact_text,
 )
 from integrity import ensure_integrity_state, integrity_status, seal_json  # noqa: E402
@@ -129,7 +136,14 @@ RUN_STATE: Dict[str, Dict[str, object]] = {}
 AUTONOMOUS_RUN_STORE = AutonomousRunStore(AUTONOMOUS_RUN_ROOT)
 AUTONOMOUS_WORKER_LOCK = threading.Lock()
 AUTONOMOUS_WORKERS: Dict[str, threading.Thread] = {}
-AUTONOMOUS_MAX_WORKERS = 2
+LOCAL_MODEL_SEMAPHORE = threading.Semaphore(1)
+MOLTBOT_RUN_LOCK = threading.Lock()
+MOLTBOT_OWNER_STATE_LOCK = threading.Lock()
+MOLTBOT_RECONCILE_LOCK = threading.RLock()
+MOLTBOT_RUN_OWNER = ""
+MOLTBOT_RELEASE_IN_PROGRESS = ""
+MOLTBOT_RESERVATION_SECONDS = 600
+MOLTBOT_RESERVATION_TIMERS: Dict[str, threading.Timer] = {}
 FEATURED_MODEL_JOB_LOCK = threading.Lock()
 FEATURED_MODEL_JOBS: Dict[str, Dict[str, object]] = {}
 LAST_RUNTIME_SELF_HEAL_AT = 0.0
@@ -237,7 +251,10 @@ Mission:
 
 Available operator tool tags:
 - <tool>{"action":"list_dir","path":"."}</tool> for structured local operator actions.
-- Structured tool actions available: list_dir, tree, read_file, write_file, append_file, replace_text, search, mkdir, remove_path, zip_list, zip_extract, zip_create, fetch_url, web_search, ssh_command, scp_put, scp_get.
+- <tool>{"action":"moltbot_browse","url":"https://example.com"}</tool> for a fresh browser inspection.
+- <tool>{"action":"moltbot_click","snapshot_id":"...","element_id":"e1"}</tool> for one inspected click.
+- <tool>{"action":"moltbot_type","snapshot_id":"...","element_id":"e2","text":"...","clear":true}</tool> for one inspected non-sensitive field.
+- Structured tool actions available: list_dir, tree, read_file, write_file, append_file, replace_text, search, mkdir, remove_path, zip_list, zip_extract, zip_create, fetch_url, web_search, moltbot_browse, moltbot_click, moltbot_type, ssh_command, scp_put, scp_get.
 - <bash>command</bash> for terminal actions.
 - <osint>target</osint> for Serper-backed recon when configured.
 - <browse>url</browse> for Moltbot webpage text extraction.
@@ -278,6 +295,8 @@ Prefer the structured operator tool channel first:
 - <tool>{"action":"fetch_url","url":"https://example.com"}</tool>
 - <tool>{"action":"web_search","query":"best zero trust docs"}</tool>
 - <tool>{"action":"moltbot_browse","url":"https://example.com"}</tool>
+- <tool>{"action":"moltbot_click","snapshot_id":"...","element_id":"e1"}</tool>
+- <tool>{"action":"moltbot_type","snapshot_id":"...","element_id":"e2","text":"...","clear":true}</tool>
 - <tool>{"action":"skills","query":"web or server task"}</tool>
 - <tool>{"action":"ssh_command","host":"example.com","user":"root","port":22,"command":"uname -a"}</tool>
 - <tool>{"action":"scp_put","host":"example.com","user":"root","port":22,"source":"local.file","destination":"/remote/path"}</tool>
@@ -313,6 +332,8 @@ SUPPORTED_STRUCTURED_ACTIONS = {
     "fetch_url",
     "web_search",
     "moltbot_browse",
+    "moltbot_click",
+    "moltbot_type",
     "skills",
     "ssh_command",
     "scp_put",
@@ -561,6 +582,12 @@ def bitnet_status(config: Optional[Dict[str, str]] = None) -> Dict[str, object]:
 def effective_local_context_window(config: Dict[str, str], profile: Dict[str, object]) -> int:
     if local_engine_from(config) == "bitnet":
         return bitnet_context_window(config)
+    try:
+        configured = int(float(config.get("OPENZERO_OLLAMA_CONTEXT_WINDOW") or 0))
+    except (TypeError, ValueError, OverflowError):
+        configured = 0
+    if configured > 0:
+        return max(2048, min(configured, 32768))
     return int(profile["context_window"])
 
 
@@ -950,6 +977,22 @@ def current_config() -> Dict[str, str]:
         return dict(RUNTIME["config"])
 
 
+def configured_autonomy_profile(requested: str = "") -> str:
+    value = str(requested or "").strip() or str(current_config().get("OPENZERO_AUTONOMY_PROFILE") or "")
+    return normalize_autonomy_profile(value)
+
+
+def autonomous_worker_limit() -> int:
+    config = current_config()
+    profile = configured_autonomy_profile()
+    default = 16 if profile == "ultra" else 2
+    try:
+        requested = int(config.get("OPENZERO_AUTONOMOUS_MAX_WORKERS") or default)
+    except (TypeError, ValueError):
+        requested = default
+    return max(1, min(requested, 16))
+
+
 def current_voice() -> VoiceStack:
     with RUNTIME_LOCK:
         return RUNTIME["voice"]
@@ -987,7 +1030,7 @@ def apply_config_updates(updates: Dict[str, str]) -> Dict[str, str]:
         normalized_model = normalize_local_model_name(active_model)
         if is_bitnet_model(normalized_model):
             pending["LOCAL_ENGINE"] = "bitnet"
-        elif model_is_localish(normalized_model):
+        elif normalized_model and not is_cloud_model(normalized_model):
             pending["LOCAL_ENGINE"] = "ollama"
     with RUNTIME_LOCK:
         config = save_env_values(BASE_DIR, pending)
@@ -1064,7 +1107,11 @@ def bind_run_skills(run_id: str, query: str = "", skill_id: str = "") -> List[st
         selected = select_skill_ids(query, limit=2)
     if not selected:
         return []
-    budgets = runtime_skill_budgets(selected, requested=state.get("budgets"))
+    budgets = runtime_skill_budgets(
+        selected,
+        requested=state.get("budgets"),
+        profile=normalize_autonomy_profile(state.get("autonomy_profile")),
+    )
     AUTONOMOUS_RUN_STORE.update(run_id, skill_ids=selected, budgets=budgets)
     AUTONOMOUS_RUN_STORE.append_trace(run_id, "skills_selected", skill_ids=selected, budgets=budgets)
     return selected
@@ -2035,7 +2082,308 @@ def web_search_result(query: str, api_key: str, max_results: int = 6) -> str:
     return format_operator_result(source_label, "\n\n".join(lines))
 
 
-def moltbot_browse_result(url: str) -> str:
+def moltbot_snapshot_body(data: Dict[str, object]) -> str:
+    interactive = data.get("interactive") if isinstance(data.get("interactive"), list) else []
+    lines = [
+        f"URL: {data.get('url') or ''}",
+        f"Title: {data.get('title') or ''}",
+        f"Snapshot: {data.get('snapshot_id') or '[none]'}",
+        f"Screenshot: {data.get('screenshot') or 'static/vision.png'}",
+        "",
+        str(data.get("content") or ""),
+    ]
+    if interactive:
+        lines.extend(["", "Inspected elements:"])
+        for element in interactive[:120]:
+            if not isinstance(element, dict):
+                continue
+            label = element.get("label") or element.get("text") or "(unlabelled)"
+            details = [
+                str(element.get("id") or ""),
+                str(element.get("tag") or ""),
+                f"label={label}",
+                f"risk={element.get('risk') or 'normal'}",
+            ]
+            if element.get("href"):
+                details.append(f"href={element.get('href')}")
+            lines.append(" | ".join(details))
+    return "\n".join(lines)
+
+
+def moltbot_remote_owner() -> Optional[str]:
+    """Read Node's run owner; None means the service could not be verified."""
+
+    try:
+        response = requests.get("http://127.0.0.1:3000/status", timeout=5)
+        response.raise_for_status()
+        data = response.json()
+    except Exception:
+        return None
+    owner = str(data.get("owner_run_id") or "").strip().lower()
+    if not owner:
+        return ""
+    return owner if re.fullmatch(r"[a-f0-9]{32}", owner) else None
+
+
+def moltbot_owner_is_reserved(run_id: str) -> bool:
+    state = AUTONOMOUS_RUN_STORE.get(str(run_id or ""))
+    if not state:
+        return False
+    if autonomous_worker_is_active(str(run_id or "")):
+        return True
+    status = str(state.get("status") or "")
+    if status in {"running", "stopping"}:
+        return True
+    now = time.time()
+    if status == "awaiting_confirmation":
+        pending = dict(state.get("pending_action") or {})
+        try:
+            requested_at = float(pending.get("requested_at_epoch") or 0.0)
+        except (TypeError, ValueError, OverflowError):
+            requested_at = 0.0
+        return 0 < requested_at <= now and now - requested_at <= MOLTBOT_RESERVATION_SECONDS
+    if status in {"paused", "queued"}:
+        approval = dict(state.get("approval") or {})
+        try:
+            expires_at = float(approval.get("expires_at_epoch") or 0.0)
+        except (TypeError, ValueError, OverflowError):
+            expires_at = 0.0
+        return bool(approval and not approval.get("consumed") and expires_at > now)
+    return False
+
+
+def clear_local_moltbot_owner(run_id: str) -> None:
+    owner = str(run_id or "").strip()
+    if not owner:
+        return
+    global MOLTBOT_RELEASE_IN_PROGRESS, MOLTBOT_RUN_OWNER
+    with MOLTBOT_OWNER_STATE_LOCK:
+        if MOLTBOT_RUN_OWNER != owner:
+            return
+        MOLTBOT_RUN_OWNER = ""
+        if MOLTBOT_RELEASE_IN_PROGRESS == owner:
+            MOLTBOT_RELEASE_IN_PROGRESS = ""
+        timer = MOLTBOT_RESERVATION_TIMERS.pop(owner, None)
+    if timer:
+        timer.cancel()
+    try:
+        MOLTBOT_RUN_LOCK.release()
+    except RuntimeError:
+        pass
+
+
+def moltbot_remote_release(run_id: str) -> bool:
+    owner = str(run_id or "").strip()
+    if not owner:
+        return False
+    try:
+        response = requests.post(
+            "http://127.0.0.1:3000/release",
+            json={"run_id": owner},
+            timeout=5,
+        )
+        data = response.json()
+        if response.ok and data.get("status") == "success":
+            return True
+    except Exception:
+        pass
+    return moltbot_remote_owner() == ""
+
+
+def reconcile_moltbot_owner(requested_run_id: str) -> bool:
+    """Recover safely when Flask and the Node browser restart independently."""
+
+    requested = str(requested_run_id or "").strip()
+    if not requested:
+        return False
+    with MOLTBOT_RECONCILE_LOCK:
+        with MOLTBOT_OWNER_STATE_LOCK:
+            if MOLTBOT_RELEASE_IN_PROGRESS:
+                return False
+        remote_owner = moltbot_remote_owner()
+        if remote_owner is None:
+            return False
+        with MOLTBOT_OWNER_STATE_LOCK:
+            local_owner = MOLTBOT_RUN_OWNER
+        if not remote_owner:
+            if local_owner and local_owner != requested:
+                if moltbot_owner_is_reserved(local_owner):
+                    return False
+                clear_local_moltbot_owner(local_owner)
+            return True
+        if remote_owner == requested:
+            return True
+        if moltbot_owner_is_reserved(remote_owner):
+            return False
+        if not moltbot_remote_release(remote_owner):
+            return False
+        clear_local_moltbot_owner(remote_owner)
+        return True
+
+
+def acquire_moltbot_run(run_id: str, *, wait: bool = False) -> bool:
+    """Try to serialize one whole browser workflow without consuming a worker slot."""
+
+    owner = str(run_id or "").strip()
+    if not owner:
+        return False
+    global MOLTBOT_RUN_OWNER
+    while True:
+        state = AUTONOMOUS_RUN_STORE.get(owner)
+        if not state or state.get("stop_requested") or state.get("revoked"):
+            return False
+        with MOLTBOT_OWNER_STATE_LOCK:
+            release_in_progress = bool(MOLTBOT_RELEASE_IN_PROGRESS)
+            if not release_in_progress and MOLTBOT_RUN_OWNER == owner:
+                timer = MOLTBOT_RESERVATION_TIMERS.pop(owner, None)
+                if timer:
+                    timer.cancel()
+                return True
+        if release_in_progress:
+            if not wait:
+                return False
+            time.sleep(0.05)
+            continue
+        if not reconcile_moltbot_owner(owner):
+            if not wait:
+                return False
+            time.sleep(0.25)
+            continue
+        with MOLTBOT_OWNER_STATE_LOCK:
+            release_in_progress = bool(MOLTBOT_RELEASE_IN_PROGRESS)
+            if not release_in_progress and MOLTBOT_RUN_OWNER == owner:
+                timer = MOLTBOT_RESERVATION_TIMERS.pop(owner, None)
+                if timer:
+                    timer.cancel()
+                return True
+        if release_in_progress:
+            if not wait:
+                return False
+            time.sleep(0.05)
+            continue
+        acquired = (
+            MOLTBOT_RUN_LOCK.acquire(timeout=1)
+            if wait
+            else MOLTBOT_RUN_LOCK.acquire(blocking=False)
+        )
+        if not acquired:
+            return False
+        if not reconcile_moltbot_owner(owner):
+            MOLTBOT_RUN_LOCK.release()
+            if not wait:
+                return False
+            time.sleep(0.25)
+            continue
+        with MOLTBOT_OWNER_STATE_LOCK:
+            MOLTBOT_RUN_OWNER = owner
+            timer = MOLTBOT_RESERVATION_TIMERS.pop(owner, None)
+            if timer:
+                timer.cancel()
+        return True
+
+
+def _release_moltbot_run_locked(
+    run_id: str,
+    *,
+    expected_timer: Optional[threading.Timer] = None,
+) -> bool:
+    owner = str(run_id or "").strip()
+    if not owner:
+        return False
+    global MOLTBOT_RELEASE_IN_PROGRESS, MOLTBOT_RUN_OWNER
+    with MOLTBOT_OWNER_STATE_LOCK:
+        if (
+            expected_timer is not None
+            and MOLTBOT_RESERVATION_TIMERS.get(owner) is not expected_timer
+        ):
+            return False
+        if MOLTBOT_RELEASE_IN_PROGRESS:
+            return False
+        local_owner_matches = MOLTBOT_RUN_OWNER == owner
+        if expected_timer is not None and not local_owner_matches:
+            return False
+        if local_owner_matches:
+            MOLTBOT_RELEASE_IN_PROGRESS = owner
+            timer = MOLTBOT_RESERVATION_TIMERS.pop(owner, None)
+        else:
+            timer = None
+    if timer and timer is not expected_timer:
+        timer.cancel()
+    released = moltbot_remote_release(owner)
+    if not released:
+        with MOLTBOT_OWNER_STATE_LOCK:
+            if MOLTBOT_RELEASE_IN_PROGRESS == owner:
+                MOLTBOT_RELEASE_IN_PROGRESS = ""
+        return False
+    if local_owner_matches:
+        clear_local_moltbot_owner(owner)
+    return True
+
+
+def release_moltbot_run(
+    run_id: str,
+    *,
+    expected_timer: Optional[threading.Timer] = None,
+) -> bool:
+    with MOLTBOT_RECONCILE_LOCK:
+        return _release_moltbot_run_locked(
+            run_id,
+            expected_timer=expected_timer,
+        )
+
+
+def reserve_moltbot_confirmation(run_id: str) -> None:
+    """Keep one inspected snapshot alive only for the short approval window."""
+
+    owner = str(run_id or "").strip()
+    if not owner:
+        return
+
+    def expire() -> None:
+        state = AUTONOMOUS_RUN_STORE.get(owner)
+        status = str((state or {}).get("status") or "")
+        approval = dict((state or {}).get("approval") or {})
+        if status in {"running", "stopping"}:
+            return
+        if status in {"paused", "queued"} and approval and not approval.get("consumed"):
+            remaining = float(approval.get("expires_at_epoch") or 0.0) - time.time()
+            if remaining > 0:
+                timer = threading.Timer(min(remaining, 60), expire)
+                timer.daemon = True
+                with MOLTBOT_OWNER_STATE_LOCK:
+                    if MOLTBOT_RUN_OWNER != owner:
+                        return
+                    MOLTBOT_RESERVATION_TIMERS[owner] = timer
+                timer.start()
+                return
+        released = release_moltbot_run(
+            owner,
+            expected_timer=threading.current_thread(),
+        )
+        if released:
+            start_next_queued_run()
+
+    timer = threading.Timer(MOLTBOT_RESERVATION_SECONDS, expire)
+    timer.daemon = True
+    with MOLTBOT_OWNER_STATE_LOCK:
+        if MOLTBOT_RUN_OWNER != owner:
+            return
+        previous = MOLTBOT_RESERVATION_TIMERS.pop(owner, None)
+        MOLTBOT_RESERVATION_TIMERS[owner] = timer
+    if previous:
+        previous.cancel()
+    timer.start()
+
+
+def moltbot_result_value(result: str, label: str) -> str:
+    match = re.search(
+        rf"(?m)^{re.escape(str(label or ''))}:\s*(.+?)\s*$",
+        str(result or ""),
+    )
+    return str(match.group(1) if match else "").strip()
+
+
+def moltbot_browse_result(url: str, run_id: str) -> str:
     config = current_config()
     if not env_bool(config, "VISION_ENABLED", True):
         return format_operator_result("MOLTBOT OFFLINE", "Moltbot Vision is disabled in the panel. Enable Voice & Vision > Moltbot Vision.")
@@ -2043,19 +2391,287 @@ def moltbot_browse_result(url: str) -> str:
     if not target:
         return format_operator_result("MOLTBOT ERROR", "Missing or unsupported URL. Use http:// or https://.")
     try:
-        response = requests.post("http://127.0.0.1:3000/goto", json={"url": target}, timeout=45)
+        response = requests.post(
+            "http://127.0.0.1:3000/goto",
+            json={"url": target, "run_id": str(run_id or "")},
+            timeout=45,
+        )
         response.raise_for_status()
         data = response.json()
         if data.get("status") == "success":
-            screenshot = data.get("screenshot") or "static/vision.png"
-            body = f"URL: {target}\nScreenshot: {screenshot}\n\n{data.get('content', '')}"
-            return format_operator_result("MOLTBOT BROWSER", body)
+            return format_operator_result("MOLTBOT BROWSER", moltbot_snapshot_body(data))
         return format_operator_result("MOLTBOT FAILED", data.get("content", "Unknown browser error."))
     except Exception as error:
         return format_operator_result(
             "MOLTBOT FAILED",
             f"{error}\nTry `pm2 restart zero-vision` or use fetch_url/web_search while the browser service recovers.",
         )
+
+
+def moltbot_element_descriptor(snapshot_id: str, element_id: str, run_id: str) -> Dict[str, object]:
+    if not snapshot_id or not re.fullmatch(r"e[1-9]\d{0,3}", str(element_id or "")):
+        raise ValueError("A current Moltbot snapshot_id and inspected element_id are required.")
+    response = requests.get(
+        f"http://127.0.0.1:3000/element/{element_id}",
+        params={"snapshot_id": snapshot_id, "run_id": str(run_id or "")},
+        timeout=10,
+    )
+    try:
+        data = response.json()
+    except Exception as error:
+        raise ValueError(f"Moltbot returned an invalid element response: {error}") from error
+    if response.status_code >= 400 or data.get("status") != "success":
+        raise ValueError(str(data.get("content") or "Moltbot element snapshot is stale."))
+    element = data.get("element")
+    if not isinstance(element, dict):
+        raise ValueError("Moltbot did not return an inspected element descriptor.")
+    return dict(element)
+
+
+def _moltbot_action_outcome(
+    result: str,
+    *,
+    ambiguous: bool = False,
+    blocked: bool = False,
+    dispatched: bool = False,
+    evidence: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    return {
+        "result": str(result or ""),
+        "ambiguous_action": bool(ambiguous),
+        "blocked": bool(blocked),
+        "dispatched": bool(dispatched),
+        "browser_evidence": dict(evidence or {}),
+    }
+
+
+def moltbot_action_result(
+    action_name: str,
+    payload: Dict[str, object],
+    *,
+    run_id: str,
+    confirmed: bool = False,
+) -> Dict[str, object]:
+    config = current_config()
+    if not env_bool(config, "VISION_ENABLED", True):
+        return _moltbot_action_outcome(
+            format_operator_result("MOLTBOT OFFLINE", "Moltbot Vision is disabled."),
+            blocked=True,
+        )
+    endpoint = "click" if action_name == "moltbot_click" else "type"
+    request_payload = {
+        "snapshot_id": str(payload.get("snapshot_id") or ""),
+        "element_id": str(payload.get("element_id") or ""),
+        "confirmed": bool(confirmed),
+        "run_id": str(run_id or ""),
+    }
+    requested_text = ""
+    if endpoint == "type":
+        requested_text = str(payload.get("text") or "")
+        if len(requested_text) > 4000:
+            return _moltbot_action_outcome(
+                format_operator_result(
+                    "MOLTBOT BLOCKED",
+                    "Typing is limited to 4,000 characters.",
+                ),
+                blocked=True,
+            )
+        request_payload["text"] = requested_text
+        request_payload["clear"] = bool(payload.get("clear", True))
+    try:
+        response = requests.post(
+            f"http://127.0.0.1:3000/{endpoint}",
+            json=request_payload,
+            timeout=45,
+        )
+        try:
+            data = response.json()
+        except Exception as error:
+            return _moltbot_action_outcome(
+                format_operator_result(
+                    "MOLTBOT ACTION OUTCOME UNKNOWN",
+                    (
+                        f"Invalid Moltbot response after dispatch: {error}. "
+                        "The action will not be retried automatically; inspect the target first."
+                    ),
+                ),
+                ambiguous=True,
+                dispatched=True,
+            )
+        if response.status_code >= 400 or data.get("status") != "success":
+            dispatched = data.get("dispatched") is True
+            ambiguous = dispatched or data.get("outcome_ambiguous") is True
+            label = (
+                "MOLTBOT ACTION OUTCOME UNKNOWN"
+                if ambiguous
+                else "MOLTBOT ACTION BLOCKED"
+            )
+            detail = str(data.get("content") or f"Moltbot {endpoint} failed.")
+            if ambiguous:
+                detail += (
+                    "\nThe action may have executed. OpenZero will not retry it "
+                    "automatically; inspect the target first."
+                )
+            return _moltbot_action_outcome(
+                format_operator_result(label, detail),
+                ambiguous=ambiguous,
+                blocked=not ambiguous,
+                dispatched=dispatched,
+            )
+        action = str(data.get("action") or f"Moltbot {endpoint} completed.")
+        acted_element = (
+            data.get("acted_element")
+            if isinstance(data.get("acted_element"), dict)
+            else {}
+        )
+        acted_label = str(acted_element.get("label") or acted_element.get("text") or "")
+        acted_risk = str(acted_element.get("risk") or "")
+        acted_href = str(acted_element.get("href") or "")
+        verification_signals = (
+            dict(data.get("verification_signals"))
+            if isinstance(data.get("verification_signals"), dict)
+            else {}
+        )
+        before_hash = str(data.get("before_hash") or "").lower()
+        initial_after_hash = str(data.get("initial_after_hash") or "").lower()
+        after_hash = str(data.get("after_hash") or "").lower()
+        proof_hashes = (before_hash, initial_after_hash, after_hash)
+        hashes_valid = all(re.fullmatch(r"[a-f0-9]{64}", item) for item in proof_hashes)
+        allowed_signals = (
+            {
+                "navigation_observed",
+                "url_changed",
+                "target_disconnected",
+                "target_state_changed",
+                "click_event_page_change",
+            }
+            if endpoint == "click"
+            else {
+                "value_changed",
+                "navigation_observed",
+                "url_changed",
+                "target_disconnected",
+            }
+        )
+        causal_signal = any(
+            verification_signals.get(name) is True for name in allowed_signals
+        )
+        state_changed = data.get("state_changed") is True
+        input_length = int(data.get("input_length") or 0) if endpoint == "type" else 0
+        input_sha256 = str(data.get("input_sha256") or "").lower()
+        expected_input_sha256 = (
+            hashlib.sha256(requested_text.encode("utf-8")).hexdigest()
+            if endpoint == "type"
+            else ""
+        )
+        input_bound = endpoint != "type" or (
+            input_length == len(requested_text)
+            and hmac.compare_digest(input_sha256, expected_input_sha256)
+        )
+        acted_id = str(acted_element.get("id") or "")
+        element_bound = bool(
+            acted_id
+            and hmac.compare_digest(
+                acted_id,
+                str(request_payload.get("element_id") or ""),
+            )
+        )
+        source_snapshot_id = str(request_payload.get("snapshot_id") or "")
+        post_snapshot_id = str(data.get("snapshot_id") or "")
+        final_url = str(data.get("url") or "")
+        inspection_bound = bool(
+            source_snapshot_id
+            and post_snapshot_id
+            and source_snapshot_id != post_snapshot_id
+            and objective_browser_target(final_url)
+        )
+        dispatch_bound = bool(
+            data.get("dispatched") is True
+            and data.get("outcome_ambiguous") is False
+        )
+        if not (
+            dispatch_bound
+            and state_changed
+            and causal_signal
+            and hashes_valid
+            and input_bound
+            and element_bound
+            and inspection_bound
+        ):
+            return _moltbot_action_outcome(
+                format_operator_result(
+                "MOLTBOT ACTION UNVERIFIED",
+                (
+                    f"{action}\n"
+                        "The action was dispatched, but its causal proof was incomplete or "
+                        "did not match the requested element/input. OpenZero will not retry "
+                        "this mutation automatically."
+                ),
+                ),
+                ambiguous=True,
+                dispatched=True,
+            )
+        evidence: Dict[str, object] = {
+            "source": "moltbot",
+            "kind": "action",
+            "browser_owner_run_id": str(run_id or ""),
+            "action_name": action_name,
+            "element_id": str(request_payload.get("element_id") or ""),
+            "element_label": acted_label[:180],
+            "element_risk": acted_risk,
+            "element_href": acted_href,
+            "source_snapshot_id": source_snapshot_id,
+            "final_url": final_url,
+            "snapshot_id": post_snapshot_id,
+            "verification": "post_action_inspection",
+            "state_changed": True,
+            "verification_signals": verification_signals,
+            "before_hash": before_hash,
+            "initial_after_hash": initial_after_hash,
+            "after_hash": after_hash,
+        }
+        if endpoint == "type":
+            evidence["input_length"] = input_length
+            evidence["input_sha256"] = input_sha256
+            evidence["typed_text_length"] = len(requested_text)
+            evidence["typed_text_digest"] = browser_text_digest(requested_text)
+        return _moltbot_action_outcome(
+            format_operator_result(
+                "MOLTBOT ACTION",
+                (
+                    f"{action}\n"
+                    "State changed: true\n\n"
+                    f"Action element label: {acted_label or '[none]'}\n"
+                    f"Action element risk: {acted_risk or '[none]'}\n"
+                    f"Action element href: {acted_href or '[none]'}\n"
+                    f"Verification signals: {json.dumps(verification_signals, sort_keys=True)}\n\n"
+                    f"POST-ACTION INSPECTION\n{moltbot_snapshot_body(data)}"
+                ),
+            ),
+            dispatched=True,
+            evidence=evidence,
+        )
+    except Exception as error:
+        return _moltbot_action_outcome(
+            format_operator_result(
+                "MOLTBOT ACTION OUTCOME UNKNOWN",
+                (
+                    f"{error}\nThe request may have reached Moltbot. OpenZero will "
+                    "not retry this mutation automatically; inspect the target first."
+                ),
+            ),
+            ambiguous=True,
+            dispatched=True,
+        )
+
+
+def action_confirmation_consumed(run_id: str, fingerprint: str) -> bool:
+    state = AUTONOMOUS_RUN_STORE.get(run_id) if run_id else {}
+    approval = dict(state.get("approval") or {}) if state else {}
+    return bool(
+        approval.get("consumed")
+        and hmac.compare_digest(str(approval.get("fingerprint") or ""), str(fingerprint or ""))
+    )
 
 
 def ssh_target(host: str, user: str = "") -> str:
@@ -2183,11 +2799,20 @@ def autonomous_action_gate(
     capabilities = {
         item for item in str(skill_outcome.get("capabilities") or "").split(",") if item
     }
+    ultra_browser_action = (
+        normalize_autonomy_profile(state.get("autonomy_profile")) == "ultra"
+        and capabilities
+        and capabilities <= {"browser.interact", "browser.navigate", "browser.type_nonsensitive"}
+        and str((payload or {}).get("_element", {}).get("risk") or "normal") == "normal"
+        if isinstance(payload, dict)
+        else False
+    )
     if (
         action_name != "skills"
         and str(state.get("agent_mode") or "").lower() == "chat"
         and capabilities - read_only_capabilities
         and policy != "blocked"
+        and not ultra_browser_action
     ):
         policy = "confirmation_required"
         reason = "Chat mode is read-only by default; this action needs fresh confirmation or Terminal mode"
@@ -2314,6 +2939,10 @@ def run_tool_action(raw_reply: str, session_id: str = "", run_id: str = "") -> D
             "vision": "moltbot_browse",
             "open_page": "moltbot_browse",
             "read_live_page": "moltbot_browse",
+            "click": "moltbot_click",
+            "click_element": "moltbot_click",
+            "type": "moltbot_type",
+            "type_text": "moltbot_type",
             "skill": "skills",
             "capabilities": "skills",
             "ssh": "ssh_command",
@@ -2335,6 +2964,34 @@ def run_tool_action(raw_reply: str, session_id: str = "", run_id: str = "") -> D
                 "retryable_model_error": True,
             }
         emit_agent_log(f"Preparing operator action: {action_name or 'unknown'}", session_id)
+        if action_name in {"moltbot_browse", "moltbot_click", "moltbot_type"}:
+            if not acquire_moltbot_run(run_id):
+                return {
+                    "tool": action_name,
+                    "result": format_operator_result(
+                        "MOLTBOT BUSY",
+                        "The serialized browser lane is unavailable or this run was stopped.",
+                    ),
+                    "blocked": True,
+                }
+        if action_name in {"moltbot_click", "moltbot_type"}:
+            try:
+                descriptor = moltbot_element_descriptor(
+                    str(payload.get("snapshot_id") or ""),
+                    str(payload.get("element_id") or ""),
+                    run_id,
+                )
+            except ValueError as error:
+                return {
+                    "tool": action_name,
+                    "result": format_operator_result(
+                        "MOLTBOT STALE SNAPSHOT",
+                        f"{error} Re-inspect the page before proposing another action.",
+                    ),
+                    "blocked": True,
+                }
+            payload = dict(payload)
+            payload["_element"] = descriptor
         action_summary = json.dumps(
             {
                 key: value
@@ -2344,6 +3001,7 @@ def run_tool_action(raw_reply: str, session_id: str = "", run_id: str = "") -> D
             ensure_ascii=False,
             sort_keys=True,
         )
+        fingerprint = action_fingerprint(action_name, payload)
         gate = autonomous_action_gate(
             run_id,
             action_name,
@@ -2352,11 +3010,12 @@ def run_tool_action(raw_reply: str, session_id: str = "", run_id: str = "") -> D
         )
         if gate:
             return gate
+        freshly_confirmed = action_confirmation_consumed(run_id, fingerprint)
         if run_id:
             AUTONOMOUS_RUN_STORE.mark_action_started(
                 run_id,
                 action_name,
-                action_fingerprint(action_name, payload),
+                fingerprint,
                 action_summary,
             )
 
@@ -2417,7 +3076,32 @@ def run_tool_action(raw_reply: str, session_id: str = "", run_id: str = "") -> D
             }
         if action_name == "moltbot_browse":
             target_url = str(payload.get("url") or payload.get("target") or payload.get("page") or "")
-            return {"tool": action_name, "result": moltbot_browse_result(target_url)}
+            result = moltbot_browse_result(target_url, run_id)
+            evidence = {}
+            snapshot_id = moltbot_result_value(result, "Snapshot")
+            if "**[MOLTBOT BROWSER]**" in result and snapshot_id not in {"", "[none]"}:
+                evidence = {
+                    "source": "moltbot",
+                    "kind": "inspection",
+                    "browser_owner_run_id": run_id,
+                    "requested_url": objective_browser_target(target_url),
+                    "final_url": moltbot_result_value(result, "URL"),
+                    "snapshot_id": snapshot_id,
+                    "verification": "observed_snapshot",
+                }
+            return {
+                "tool": action_name,
+                "result": result,
+                "browser_evidence": evidence,
+            }
+        if action_name in {"moltbot_click", "moltbot_type"}:
+            outcome = moltbot_action_result(
+                action_name,
+                payload,
+                run_id=run_id,
+                confirmed=freshly_confirmed,
+            )
+            return {"tool": action_name, **outcome}
         if action_name == "skills":
             query = str(payload.get("query") or "")
             requested_id = str(payload.get("id") or payload.get("skill_id") or "")
@@ -2552,7 +3236,7 @@ def run_tool_action(raw_reply: str, session_id: str = "", run_id: str = "") -> D
                 action_fingerprint("browse", browse_payload),
                 browse_summary,
             )
-        return {"tool": "browse", "result": moltbot_browse_result(url)}
+        return {"tool": "browse", "result": moltbot_browse_result(url, run_id)}
 
     match = re.search(r"<speak>(.*?)</speak>", raw_reply, re.DOTALL)
     if match:
@@ -3229,6 +3913,9 @@ def stats():
             "cpu": psutil.cpu_percent(),
             "ram": psutil.virtual_memory().percent,
             "mode": config.get("COMP_MODE", "hybrid").upper(),
+            "version": config.get("OPENZERO_VERSION", "7.1.0"),
+            "autonomy_profile": configured_autonomy_profile(),
+            "max_concurrent_workers": autonomous_worker_limit(),
             "hive": hive_label,
             "identity": HOSTNAME,
             "cwd": BASE_DIR,
@@ -4230,6 +4917,7 @@ def autonomous_step_prompt(state: Dict[str, object]) -> str:
     usage = dict(state.get("usage") or {})
     budgets = dict(state.get("budgets") or {})
     skill_ids = [str(item) for item in state.get("skill_ids") or [] if str(item).strip()]
+    autonomy_profile = normalize_autonomy_profile(state.get("autonomy_profile"))
     try:
         skill_context = runtime_skill_context(skill_ids) if skill_ids else (
             "No operator skill matched automatically. If this is a greeting, question, explanation, or other "
@@ -4238,9 +4926,30 @@ def autonomous_step_prompt(state: Dict[str, object]) -> str:
         )
     except CatalogError as error:
         skill_context = f"Skill catalog unavailable: {error}. Do not propose another operator tool."
+    browser_directive = ""
+    completion_evidence = dict(state.get("completion_evidence") or {})
+    objective_text = str(state.get("objective") or "")
+    target_url = objective_browser_target(objective_text)
+    explicit_tab_pilot = requires_tab_pilot_evidence(objective_text)
+    inspection_ready = bool(
+        completion_evidence.get("browser_source") == "moltbot"
+        and completion_evidence.get("browser_snapshot_id")
+        and target_url
+        and browser_target_matches(
+            target_url, str(completion_evidence.get("browser_requested_url") or "")
+        )
+    )
+    if "browser-tabs" in skill_ids and not explicit_tab_pilot and not inspection_ready:
+        if target_url:
+            browser_directive = (
+                "\n\nBROWSER PROOF REQUIRED FOR THIS TURN:\n"
+                "Return exactly this one tool tag with no prose:\n"
+                f'<tool>{{"action":"moltbot_browse","url":{json.dumps(target_url)}}}</tool>'
+            )
     return (
         "[AUTONOMOUS RUN CHECKPOINT]\n"
         f"Run id: {state.get('id')}\n"
+        f"Autonomy profile: {autonomy_profile.upper()} (larger budgets never expand tool authority).\n"
         f"Steps: {usage.get('steps', 0)}/{budgets.get('max_steps', 0)}; "
         f"model calls: {usage.get('model_calls', 0)}/{budgets.get('max_model_calls', 0)}; "
         f"tool calls: {usage.get('tool_calls', 0)}/{budgets.get('max_tool_calls', 0)}.\n\n"
@@ -4255,6 +4964,7 @@ def autonomous_step_prompt(state: Dict[str, object]) -> str:
         "For greetings, casual conversation, explanations, or objectives that need no external action, answer directly "
         "in plain text without a tool. `text_generation` is not a tool. Use only the documented operator tool names. "
         "Never repeat or expose this checkpoint. Do not create, fork, or schedule another autonomous run."
+        f"{browser_directive}"
     )
 
 
@@ -4274,11 +4984,13 @@ def autonomous_model_reply(
     if comp_mode == "cloud":
         return ask_groq(prompt, context=context, agent_mode=agent_mode, history=history)
     if comp_mode == "local":
-        return ask_local(prompt, context=context, agent_mode=agent_mode, history=history)
+        with LOCAL_MODEL_SEMAPHORE:
+            return ask_local(prompt, context=context, agent_mode=agent_mode, history=history)
     active_model = config.get("ACTIVE_MODEL", "")
     if is_cloud_model(active_model):
         return ask_groq(prompt, context=context, agent_mode=agent_mode, history=history)
-    return ask_local(prompt, context=context, agent_mode=agent_mode, history=history)
+    with LOCAL_MODEL_SEMAPHORE:
+        return ask_local(prompt, context=context, agent_mode=agent_mode, history=history)
 
 
 def execute_autonomous_run(
@@ -4313,6 +5025,21 @@ def execute_autonomous_run(
         config = current_config()
         direct_reply = direct_conversation_reply(objective)
         has_skill_contract = bool(state.get("skill_ids"))
+        if has_skill_contract and requires_tab_pilot_evidence(objective):
+            final_status = "paused"
+            final_reply = (
+                "This OpenZero server has no live Tab Pilot job/evidence bridge. "
+                "Use the installed Brave Tab Pilot popup on the granted tab; server-side "
+                "Moltbot cannot prove or control that existing Brave tab."
+            )
+            AUTONOMOUS_RUN_STORE.finish(
+                run_id,
+                final_status,
+                final_reply,
+                reason="tab_pilot_bridge_unavailable",
+            )
+            emit_run_reply(session_id, f"**[PAUSED]**\n{final_reply}", "system")
+            return
         cached = hive.search_hive_knowledge(objective, minimum_p_good=float(config.get("P_GOOD_THRESHOLD", "0.10")))
         if cached and has_skill_contract and not direct_reply and config.get("HIVE_MIND_ENABLED", "false") == "true":
             emit_run_reply(session_id, f"**[HIVE CACHE]**\n{cached}", "system")
@@ -4383,6 +5110,8 @@ def execute_autonomous_run(
                 continue
 
             retry_reason = model_reply_retry_reason(reply)
+            if not retry_reason and state.get("skill_ids"):
+                retry_reason = incomplete_action_promise_reason(reply)
             if retry_reason:
                 state = AUTONOMOUS_RUN_STORE.checkpoint(
                     run_id,
@@ -4393,7 +5122,7 @@ def execute_autonomous_run(
                     last_safe_result=retry_reason,
                 )
                 AUTONOMOUS_RUN_STORE.append_trace(run_id, "model_format_retry", reason=retry_reason)
-                emit_agent_log("The local model echoed internal control text, so OpenZero is retrying cleanly.", session_id)
+                emit_agent_log("The model did not provide a completed result or executable action, so OpenZero is retrying.", session_id)
                 continue
 
             usage = dict(state.get("usage") or {})
@@ -4417,6 +5146,28 @@ def execute_autonomous_run(
                 break
 
             action = run_tool_action(reply, session_id=session_id, run_id=run_id)
+            if not action:
+                state = AUTONOMOUS_RUN_STORE.get(run_id)
+                evidence_reason = required_operator_evidence_reason(
+                    objective,
+                    state.get("skill_ids"),
+                    state.get("completion_evidence"),
+                    expected_run_id=run_id,
+                )
+                if evidence_reason:
+                    state = AUTONOMOUS_RUN_STORE.checkpoint(
+                        run_id,
+                        current_prompt=(
+                            f"Completion-evidence correction: {evidence_reason} "
+                            "Use a documented browser tool and inspect its real result before answering."
+                        ),
+                        last_safe_result=evidence_reason,
+                    )
+                    AUTONOMOUS_RUN_STORE.append_trace(
+                        run_id, "completion_evidence_retry", reason=evidence_reason
+                    )
+                    emit_agent_log("The browser objective has no verified browser result yet, so OpenZero is retrying.", session_id)
+                    continue
             visible_reply = visible_reply_text(reply)
             display_reply = visible_reply or (str(reply).strip() if not action else "")
             if display_reply:
@@ -4432,9 +5183,102 @@ def execute_autonomous_run(
                 break
 
             action_result = str(action.get("result") or "")
-            if AUTONOMOUS_RUN_STORE.get(run_id).get("inflight_action"):
-                AUTONOMOUS_RUN_STORE.clear_inflight_action(run_id)
-            state = AUTONOMOUS_RUN_STORE.checkpoint(
+            state = AUTONOMOUS_RUN_STORE.get(run_id)
+            tool_name = str(action.get("tool") or "")
+            browser_result = action.get("browser_evidence")
+            completion_evidence = None
+            if isinstance(browser_result, dict) and browser_result.get("snapshot_id"):
+                browser_evidence_kind = str(browser_result.get("kind") or "")
+                evidence = dict(state.get("completion_evidence") or {})
+                action_ledger = list(evidence.get("browser_actions") or [])
+                evidence["browser_inspection"] = True
+                if browser_evidence_kind == "action":
+                    evidence["browser_action"] = True
+                    evidence["browser_action_name"] = str(
+                        browser_result.get("action_name") or ""
+                    )
+                    evidence["browser_element_id"] = str(
+                        browser_result.get("element_id") or ""
+                    )
+                    evidence["browser_element_label"] = str(
+                        browser_result.get("element_label") or ""
+                    )
+                    evidence["browser_element_risk"] = str(
+                        browser_result.get("element_risk") or ""
+                    )
+                    evidence["browser_element_href"] = str(
+                        browser_result.get("element_href") or ""
+                    )
+                    evidence["browser_state_changed"] = (
+                        browser_result.get("state_changed") is True
+                    )
+                    evidence["browser_verification_signals"] = dict(
+                        browser_result.get("verification_signals") or {}
+                    )
+                    evidence["browser_before_hash"] = str(
+                        browser_result.get("before_hash") or ""
+                    )
+                    evidence["browser_initial_after_hash"] = str(
+                        browser_result.get("initial_after_hash") or ""
+                    )
+                    evidence["browser_after_hash"] = str(
+                        browser_result.get("after_hash") or ""
+                    )
+                    ledger_entry = {
+                        key: browser_result.get(key)
+                        for key in (
+                            "action_name",
+                            "element_id",
+                            "element_label",
+                            "element_risk",
+                            "element_href",
+                            "source_snapshot_id",
+                            "snapshot_id",
+                            "final_url",
+                            "verification",
+                            "state_changed",
+                            "verification_signals",
+                            "before_hash",
+                            "initial_after_hash",
+                            "after_hash",
+                            "typed_text_length",
+                            "typed_text_digest",
+                        )
+                        if browser_result.get(key) is not None
+                    }
+                    ledger_entry["owner_run_id"] = str(run_id)
+                    action_ledger.append(ledger_entry)
+                    evidence["browser_actions"] = action_ledger[-16:]
+                    evidence["browser_source_snapshot_id"] = str(
+                        browser_result.get("source_snapshot_id") or ""
+                    )
+                    evidence["browser_typed_text_length"] = browser_result.get(
+                        "typed_text_length"
+                    )
+                    evidence["browser_typed_text_digest"] = str(
+                        browser_result.get("typed_text_digest") or ""
+                    )
+                if browser_result.get("requested_url"):
+                    evidence["browser_requested_url"] = str(
+                        browser_result.get("requested_url") or ""
+                    )
+                evidence["browser_final_url"] = str(
+                    browser_result.get("final_url") or ""
+                )
+                evidence["browser_snapshot_id"] = str(
+                    browser_result.get("snapshot_id") or ""
+                )
+                evidence["browser_verification"] = str(
+                    browser_result.get("verification") or ""
+                )
+                evidence["browser_source"] = str(browser_result.get("source") or "")
+                evidence["browser_owner_run_id"] = str(
+                    browser_result.get("browser_owner_run_id") or ""
+                )
+                evidence["last_tool"] = tool_name
+                completion_evidence = evidence
+
+            state = AUTONOMOUS_RUN_STORE.checkpoint_action_result(
                 run_id,
                 current_prompt=f"Tool proposal/result:\n{action_result}",
                 last_safe_result=action_result,
@@ -4443,7 +5287,17 @@ def execute_autonomous_run(
                     if action.get("approval_required") or action.get("blocked")
                     else 1
                 },
+                completion_evidence=completion_evidence,
+                clear_inflight=not bool(action.get("ambiguous_action")),
+                preserve_approved_queue=bool(action.get("approval_required")),
             )
+            if completion_evidence is not None:
+                AUTONOMOUS_RUN_STORE.append_trace(
+                    run_id,
+                    "completion_evidence_recorded",
+                    kind=str(browser_result.get("kind") or ""),
+                    tool=tool_name,
+                )
             AUTONOMOUS_RUN_STORE.append_trace(
                 run_id,
                 "tool_result",
@@ -4456,6 +5310,17 @@ def execute_autonomous_run(
                 emit_agent_log("The local model requested an unknown tool, so OpenZero is retrying cleanly.", session_id)
                 continue
             emit_run_reply(session_id, action_result, "system")
+
+            if action.get("ambiguous_action"):
+                final_status = "error"
+                final_reply = action_result
+                AUTONOMOUS_RUN_STORE.finish(
+                    run_id,
+                    final_status,
+                    final_reply,
+                    reason="browser_action_outcome_unverified",
+                )
+                break
 
             if action.get("approval_required"):
                 final_status = "awaiting_confirmation"
@@ -4493,14 +5358,34 @@ def execute_autonomous_run(
                     "system",
                 )
     except Exception as error:
-        final_status = "error"
-        final_reply = f"{type(error).__name__}: {error}"
+        current = AUTONOMOUS_RUN_STORE.get(run_id)
+        if current.get("revoked") or current.get("status") == "revoked":
+            final_status = "revoked"
+            final_reply = "Run authority was revoked before another action started."
+            failure_reason = "revoked"
+        elif current.get("stop_requested") or current.get("status") == "stopping":
+            final_status = "stopped"
+            final_reply = "Stopped by operator before another action started."
+            failure_reason = "stop_requested"
+        else:
+            final_status = "error"
+            final_reply = f"{type(error).__name__}: {error}"
+            failure_reason = "runtime_exception"
         try:
-            AUTONOMOUS_RUN_STORE.finish(run_id, "error", final_reply, reason="runtime_exception")
-            AUTONOMOUS_RUN_STORE.append_trace(run_id, "runtime_exception", error=final_reply)
+            AUTONOMOUS_RUN_STORE.finish(
+                run_id,
+                final_status,
+                final_reply,
+                reason=failure_reason,
+            )
+            AUTONOMOUS_RUN_STORE.append_trace(
+                run_id,
+                failure_reason,
+                error=final_reply,
+            )
         except Exception:
             pass
-        emit_run_reply(session_id, f"**[ERROR]**\n{final_reply}", "system")
+        emit_run_reply(session_id, f"**[{final_status.upper()}]**\n{final_reply}", "system")
         emit_agent_log(f"Agent Zero hit an error: {final_reply}", session_id)
     finally:
         if session_id:
@@ -4523,6 +5408,20 @@ def _autonomous_worker_entry(
     original_session_prompt: str,
 ) -> None:
     try:
+        state = AUTONOMOUS_RUN_STORE.get(run_id)
+        needs_browser_lane = "browser-tabs" in {
+            str(item or "").strip() for item in (state.get("skill_ids") or [])
+        }
+        if needs_browser_lane and not acquire_moltbot_run(run_id):
+            current = AUTONOMOUS_RUN_STORE.get(run_id)
+            if current and current.get("stop_requested") and not current.get("revoked"):
+                AUTONOMOUS_RUN_STORE.finish(
+                    run_id,
+                    "stopped",
+                    "Run stopped while waiting for the serialized browser lane.",
+                    reason="stop_requested",
+                )
+            return
         execute_autonomous_run(
             run_id,
             session_id=session_id,
@@ -4531,9 +5430,27 @@ def _autonomous_worker_entry(
             original_session_prompt=original_session_prompt,
         )
     finally:
+        state = AUTONOMOUS_RUN_STORE.get(run_id)
+        pending = dict((state or {}).get("pending_action") or {})
+        if (
+            (
+                str((state or {}).get("status") or "") == "awaiting_confirmation"
+                or bool((state or {}).get("approval"))
+            )
+            and str(pending.get("action") or "") in {"moltbot_click", "moltbot_type"}
+        ):
+            reserve_moltbot_confirmation(run_id)
+        else:
+            release_moltbot_run(run_id)
         with AUTONOMOUS_WORKER_LOCK:
             AUTONOMOUS_WORKERS.pop(run_id, None)
         start_next_queued_run()
+
+
+def autonomous_worker_is_active(run_id: str) -> bool:
+    with AUTONOMOUS_WORKER_LOCK:
+        worker = AUTONOMOUS_WORKERS.get(str(run_id or ""))
+        return bool(worker and worker.is_alive())
 
 
 def start_autonomous_worker(
@@ -4548,6 +5465,12 @@ def start_autonomous_worker(
         return False
     if state.get("status") == "awaiting_confirmation" and not state.get("approval"):
         return False
+    needs_browser_lane = "browser-tabs" in {
+        str(item or "").strip() for item in (state.get("skill_ids") or [])
+    }
+    if needs_browser_lane and not acquire_moltbot_run(run_id):
+        return False
+
     with AUTONOMOUS_WORKER_LOCK:
         for worker_id, worker in list(AUTONOMOUS_WORKERS.items()):
             if not worker.is_alive():
@@ -4555,7 +5478,7 @@ def start_autonomous_worker(
         existing = AUTONOMOUS_WORKERS.get(run_id)
         if existing and existing.is_alive():
             return False
-        if len(AUTONOMOUS_WORKERS) >= AUTONOMOUS_MAX_WORKERS:
+        if len(AUTONOMOUS_WORKERS) >= autonomous_worker_limit():
             return False
         worker = threading.Thread(
             target=_autonomous_worker_entry,
@@ -4569,10 +5492,31 @@ def start_autonomous_worker(
 
 
 def start_next_queued_run() -> None:
-    for state in AUTONOMOUS_RUN_STORE.list(limit=200):
-        if state.get("status") == "queued" and state.get("auto_resume"):
-            if not start_autonomous_worker(str(state.get("id") or "")):
-                break
+    states = [
+        state
+        for state in AUTONOMOUS_RUN_STORE.list(limit=200)
+        if state.get("status") == "queued"
+        and state.get("auto_resume")
+        and not state.get("revoked")
+        and not state.get("stop_requested")
+    ]
+    with MOLTBOT_OWNER_STATE_LOCK:
+        browser_owner = MOLTBOT_RUN_OWNER
+    states.sort(
+        key=lambda state: (
+            0 if str(state.get("id") or "") == browser_owner else 1,
+            float(state.get("created_at_epoch") or 0.0),
+        )
+    )
+    for state in states:
+        with AUTONOMOUS_WORKER_LOCK:
+            live_workers = sum(
+                1 for worker in AUTONOMOUS_WORKERS.values() if worker.is_alive()
+            )
+        if live_workers >= autonomous_worker_limit():
+            return
+        start_autonomous_worker(str(state.get("id") or ""))
+
 
 
 def recover_autonomous_runs() -> int:
@@ -4621,13 +5565,17 @@ def create_autonomous_run():
         return jsonify({"status": "error", "error": "comp_mode must be local, cloud, or hybrid."}), 400
     if agent_mode not in {"chat", "terminal"}:
         return jsonify({"status": "error", "error": "agent_mode must be chat or terminal."}), 400
+    autonomy_profile = configured_autonomy_profile(str(data.get("autonomy_profile") or ""))
     skill_ids = select_skill_ids(objective, limit=2)
-    skill_budgets = runtime_skill_budgets(skill_ids, requested=data.get("budgets"))
+    skill_budgets = runtime_skill_budgets(
+        skill_ids, requested=data.get("budgets"), profile=autonomy_profile
+    )
     state = AUTONOMOUS_RUN_STORE.create(
         objective,
         comp_mode=comp_mode,
         agent_mode=agent_mode,
         budgets=skill_budgets,
+        autonomy_profile=autonomy_profile,
         auto_resume=bool(data.get("auto_resume", True)),
     )
     state = AUTONOMOUS_RUN_STORE.update(state["id"], skill_ids=skill_ids)
@@ -4665,7 +5613,7 @@ def list_autonomous_runs():
             "runs": runs,
             "count": len(runs),
             "active_count": sum(1 for item in runs if item.get("status") in {"queued", "running", "stopping"}),
-            "max_concurrent_workers": AUTONOMOUS_MAX_WORKERS,
+            "max_concurrent_workers": autonomous_worker_limit(),
         }
     )
 
@@ -4699,13 +5647,27 @@ def stop_autonomous_run(run_id: str):
     if not autonomous_api_authorized():
         return autonomous_api_denied()
     try:
+        prior = AUTONOMOUS_RUN_STORE.get(run_id)
+        worker_active = autonomous_worker_is_active(run_id)
         state = AUTONOMOUS_RUN_STORE.request_stop(run_id)
     except (KeyError, ValueError) as error:
         return jsonify({"status": "error", "error": str(error)}), 404
+    if not worker_active and str((prior or {}).get("status") or "") not in {"completed", "stopped", "revoked", "error"}:
+        state = AUTONOMOUS_RUN_STORE.finish(
+            run_id,
+            "stopped",
+            "Stopped by operator while no worker was in flight.",
+            reason="stop_requested",
+        )
+        if release_moltbot_run(run_id):
+            start_next_queued_run()
     return jsonify(
         {
             "status": "accepted",
-            "message": "Stop requested. The run will halt at the next safe boundary.",
+            "message": (
+                "Stop requested. The run will halt at the next safe boundary."
+                if worker_active else "Run stopped before another worker or browser action started."
+            ),
             "run": AUTONOMOUS_RUN_STORE.public_state(state),
         }
     ), 202
@@ -4716,9 +5678,13 @@ def revoke_autonomous_run(run_id: str):
     if not autonomous_api_authorized():
         return autonomous_api_denied()
     try:
+        worker_active = autonomous_worker_is_active(run_id)
         state = AUTONOMOUS_RUN_STORE.revoke(run_id)
     except (KeyError, ValueError) as error:
         return jsonify({"status": "error", "error": str(error)}), 404
+    if not worker_active:
+        if release_moltbot_run(run_id):
+            start_next_queued_run()
     return jsonify(
         {
             "status": "success",
@@ -4735,16 +5701,10 @@ def approve_autonomous_run(run_id: str):
     data = request.json or {}
     fingerprint = str(data.get("fingerprint") or data.get("approval_token") or "").strip()
     try:
-        state = AUTONOMOUS_RUN_STORE.approve(run_id, fingerprint, int(data.get("ttl_seconds") or 300))
-        pending = dict(state.get("pending_action") or {})
-        AUTONOMOUS_RUN_STORE.update(
+        state = AUTONOMOUS_RUN_STORE.approve_and_queue(
             run_id,
-            current_prompt=(
-                "The operator freshly confirmed the exact pending action below. Reissue that same action only if it is "
-                "still required for the original objective; otherwise choose a safer path.\n"
-                f"Action: {pending.get('action')}\nFingerprint: {pending.get('fingerprint')}\n"
-                f"Summary: {pending.get('summary')}"
-            ),
+            fingerprint,
+            int(data.get("ttl_seconds") or 300),
         )
     except KeyError as error:
         return jsonify({"status": "error", "error": str(error)}), 404
@@ -4769,31 +5729,25 @@ def resume_autonomous_run(run_id: str):
     data = request.json or {}
     try:
         state = AUTONOMOUS_RUN_STORE.get(run_id)
-    except ValueError as error:
-        return jsonify({"status": "error", "error": str(error)}), 400
-    if not state:
-        return jsonify({"status": "error", "error": "Run not found."}), 404
-    if state.get("revoked"):
-        return jsonify({"status": "error", "error": "A revoked run cannot resume."}), 409
-    if state.get("status") == "completed":
-        return jsonify({"status": "error", "error": "A completed run cannot resume."}), 409
-    if state.get("status") == "awaiting_confirmation" and not state.get("approval"):
-        return jsonify(
-            {
-                "status": "error",
-                "error": "This run is waiting for fresh confirmation of its pending action.",
-                "pending_action": state.get("pending_action"),
-            }
-        ), 409
-    updates: Dict[str, object] = {"stop_requested": False, "auto_resume": bool(data.get("auto_resume", True))}
-    if isinstance(data.get("budgets"), dict):
-        updates["budgets"] = normalize_budgets(
-            runtime_skill_budgets(
+        if not state:
+            raise KeyError(f"Autonomous run not found: {run_id}")
+        requested_budgets = None
+        if isinstance(data.get("budgets"), dict):
+            autonomy_profile = normalize_autonomy_profile(state.get("autonomy_profile"))
+            requested_budgets = runtime_skill_budgets(
                 [str(item) for item in state.get("skill_ids") or []],
                 requested=data["budgets"],
+                profile=autonomy_profile,
             )
+        state = AUTONOMOUS_RUN_STORE.queue_for_resume(
+            run_id,
+            auto_resume=bool(data.get("auto_resume", True)),
+            budgets=requested_budgets,
         )
-    AUTONOMOUS_RUN_STORE.update(run_id, **updates)
+    except KeyError as error:
+        return jsonify({"status": "error", "error": str(error)}), 404
+    except (TypeError, ValueError) as error:
+        return jsonify({"status": "error", "error": str(error)}), 409
     started = start_autonomous_worker(run_id)
     state = AUTONOMOUS_RUN_STORE.get(run_id)
     return jsonify(
@@ -4818,13 +5772,17 @@ def handle_message(data):
     agent_mode = str((data or {}).get("agent_mode") or "chat").strip().lower()
     budgets = (data or {}).get("budgets")
     auto_resume = bool((data or {}).get("auto_resume", True))
+    autonomy_profile = configured_autonomy_profile(str((data or {}).get("autonomy_profile") or ""))
     skill_ids = select_skill_ids(message, limit=2)
-    skill_budgets = runtime_skill_budgets(skill_ids, requested=budgets)
+    skill_budgets = runtime_skill_budgets(
+        skill_ids, requested=budgets, profile=autonomy_profile
+    )
     state = AUTONOMOUS_RUN_STORE.create(
         message,
         comp_mode=comp_mode if comp_mode in {"local", "cloud", "hybrid"} else "hybrid",
         agent_mode=agent_mode if agent_mode in {"chat", "terminal"} else "chat",
         budgets=skill_budgets,
+        autonomy_profile=autonomy_profile,
         auto_resume=auto_resume,
         owner_session=session_id,
     )

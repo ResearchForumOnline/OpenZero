@@ -43,10 +43,10 @@ arbitrary JavaScript are blocked.
 - [Signed Brave extension CRX](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx)
 - [Windows setup helper](openzero/install-tab-pilot.ps1)
 
-On Linux, the normal OpenZero install and update scripts automatically configure
-the signed extension when Brave is present. They create a browser-planner-only
-token, install a managed Brave policy, and point Brave at the signed update
-feed. Use `--no-tab-pilot` to opt out. Windows keeps the verified unpacked helper
+On desktop Linux, OpenZero 7.1 installs Brave from Brave's official installer
+when needed, creates a browser-planner-only token, installs the signed extension
+with managed Brave policy, and registers automatic updates. Headless servers use
+`--brave` to opt in; `--no-tab-pilot` opts out. Windows keeps the verified helper
 path, where Brave deliberately requires the final **Load unpacked** approval.
 
 The Super Panel also shows two optional Qwen3 8B builds. They are never

@@ -7,6 +7,7 @@ ENABLE_KALI="false"
 ENABLE_ISO="false"
 ENABLE_VOICE="false"
 ENABLE_BITNET="false"
+ENABLE_BRAVE="auto"
 ENABLE_TAB_PILOT="auto"
 SKIP_MODEL="false"
 INSTALLER_URL="https://openzero.talktoai.org/install.sh"
@@ -26,6 +27,8 @@ while [[ $# -gt 0 ]]; do
         --bitnet) ENABLE_BITNET="true" ;;
         --tab-pilot) ENABLE_TAB_PILOT="true" ;;
         --no-tab-pilot) ENABLE_TAB_PILOT="false" ;;
+        --brave) ENABLE_BRAVE="true" ;;
+        --no-brave) ENABLE_BRAVE="false" ;;
         --skip-model) SKIP_MODEL="true" ;;
         --dir)
             INSTALL_DIR="$2"
@@ -77,6 +80,11 @@ if [[ "${ENABLE_TAB_PILOT}" == "true" ]]; then
     ARGS+=( "--tab-pilot" )
 elif [[ "${ENABLE_TAB_PILOT}" == "false" ]]; then
     ARGS+=( "--no-tab-pilot" )
+fi
+if [[ "${ENABLE_BRAVE}" == "true" ]]; then
+    ARGS+=( "--brave" )
+elif [[ "${ENABLE_BRAVE}" == "false" ]]; then
+    ARGS+=( "--no-brave" )
 fi
 if [[ "${SKIP_MODEL}" == "true" ]]; then
     ARGS+=( "--skip-model" )

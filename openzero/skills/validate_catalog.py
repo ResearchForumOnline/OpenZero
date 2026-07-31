@@ -45,6 +45,8 @@ KNOWN_TOOLS = {
     "list_dir",
     "mkdir",
     "moltbot_browse",
+    "moltbot_click",
+    "moltbot_type",
     "osint",
     "read_file",
     "remove_path",

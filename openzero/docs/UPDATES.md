@@ -1,5 +1,14 @@
 # OpenZero Updates
 
+## OpenZero 7.1
+
+- Reports one canonical `7.1.0` runtime version after both fresh installs and
+  in-place updates.
+- Raises the bounded root-run worker ceiling to 16; local model inference
+  remains serialized to avoid duplicate model loads.
+- Desktop installs can install Brave from Brave's official Linux installer and
+  then configure the signed Tab Pilot extension and its automatic update feed.
+
 Public-safe changelog for user-visible OpenZero changes. This file avoids API keys, private server paths, internal deployment notes, customer data, live logs, private Hive internals, and attacker-useful security detail.
 
 ## 2026-07-04 - Public Docs And Runtime Visibility

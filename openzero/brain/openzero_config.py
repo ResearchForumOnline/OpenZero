@@ -3,7 +3,7 @@ from typing import Dict
 
 
 DEFAULTS: Dict[str, str] = {
-    "OPENZERO_VERSION": "5.4.0",
+    "OPENZERO_VERSION": "7.1.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
     "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
     "OPENZERO_HIVE_MODE": "standalone",
@@ -25,11 +25,14 @@ DEFAULTS: Dict[str, str] = {
     "OPENZERO_LOCAL_LEARNING_ENABLED": "true",
     "OPENZERO_LOCAL_LEARNING_TERMINAL": "false",
     "OPENZERO_AUTOMATION_ENABLED": "true",
+    "OPENZERO_AUTONOMY_PROFILE": "standard",
+    "OPENZERO_AUTONOMOUS_MAX_WORKERS": "2",
     "OPENZERO_LOW_CPU_MODE": "true",
     "OPENZERO_CPU_PROFILE": "balanced",
     "OPENZERO_OLLAMA_THREADS": "0",
     "OPENZERO_OLLAMA_NUM_BATCH": "512",
     "OPENZERO_OLLAMA_KEEP_ALIVE": "10m",
+    "OPENZERO_OLLAMA_CONTEXT_WINDOW": "0",
     "OPENZERO_SPARK_MODE": "auto",
     "OPENZERO_SPARK_DRAFT_MODEL": "qwen2.5:0.5b",
     "OPENZERO_SPARK_CONFIDENCE_THRESHOLD": "0.58",

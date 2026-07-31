@@ -217,7 +217,7 @@ def show_status() -> None:
     voice_state = VOICE.status()
     integrity = integrity_status(BASE_DIR)
 
-    print(f"{Fore.GREEN}OpenZero 5.4 status{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}OpenZero 7.1 status{Style.RESET_ALL}")
     print(f"  Domain: {config.get('OPENZERO_DOMAIN')}")
     print(f"  Active model: {config.get('ACTIVE_MODEL')}")
     print(f"  Recommended model: {profile['recommended_model']}")
@@ -360,7 +360,7 @@ def main() -> None:
     threading.Thread(target=heartbeat_loop, daemon=True).start()
 
     print(f"{Fore.RED}███████ ███████ ██████  ██████{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}OPENZERO 5.4 // SOVEREIGN NODE ACTIVE{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}OPENZERO 7.1 // SOVEREIGN NODE ACTIVE{Style.RESET_ALL}")
     print(f"{Fore.MAGENTA}Local-first. Air-gapped ready. Hive aware. Voice optional.{Style.RESET_ALL}")
     print(f"{Fore.CYAN}Type !help for commands.{Style.RESET_ALL}\n")
 

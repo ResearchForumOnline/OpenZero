@@ -62,7 +62,7 @@
 
   <section class="card">
     <h2>Linux: installed and updated automatically</h2>
-    <p>When Brave is present, the normal OpenZero installer and updater configure the signed extension through Brave managed policy. They create a browser-planner-only token, keep the main API key untouched, and register the self-update feed. Opt out at any time with <code>--no-tab-pilot</code>.</p>
+    <p>On desktop Linux, OpenZero 7.1 installs Brave from Brave's official installer when it is missing, then configures the signed extension through Brave managed policy. It creates a browser-planner-only token, keeps the main API key untouched, and registers the self-update feed. Headless servers install no browser unless <code>--brave</code> is passed. Opt out with <code>--no-tab-pilot</code>.</p>
     <pre>curl -fsSL https://openzero.talktoai.org/install.sh | bash
 # Existing node:
 curl -fsSL https://openzero.talktoai.org/update.sh | bash</pre>

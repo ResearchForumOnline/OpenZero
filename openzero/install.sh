@@ -10,6 +10,7 @@ NC='\033[0m'
 MODE="server"
 ENABLE_KALI="false"
 ENABLE_ISO="false"
+ENABLE_BRAVE="auto"
 ENABLE_VOICE="false"
 ENABLE_BITNET="false"
 ENABLE_TAB_PILOT="auto"
@@ -35,6 +36,8 @@ while [[ $# -gt 0 ]]; do
         --voice) ENABLE_VOICE="true" ;;
         --bitnet) ENABLE_BITNET="true" ;;
         --tab-pilot) ENABLE_TAB_PILOT="true" ;;
+        --brave) ENABLE_BRAVE="true" ;;
+        --no-brave) ENABLE_BRAVE="false" ;;
         --no-tab-pilot) ENABLE_TAB_PILOT="false" ;;
         --skip-model) SKIP_MODEL="true" ;;
         --dir)
@@ -56,7 +59,7 @@ echo "  ███   █████   ██████  ██  ██"
 echo " ███    ██      ██   ██ ██  ██"
 echo "███████ ███████ ██   ██ ██████"
 echo -e "${NC}"
-echo -e "${CYAN}>>> OPENZERO 5.4 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^} // SKIP_MODEL=${SKIP_MODEL^^}${NC}"
+echo -e "${CYAN}>>> OPENZERO 7.1 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^} // SKIP_MODEL=${SKIP_MODEL^^}${NC}"
 
 ensure_linux_packages() {
     if [ -f /etc/debian_version ]; then
@@ -75,6 +78,36 @@ ensure_linux_packages() {
         echo -e "${RED}npm is not available after installing nodejs. Install a Node.js build that includes npm, then rerun OpenZero.${NC}"
         exit 1
     fi
+}
+
+install_brave_if_requested() {
+    if [[ "${ENABLE_TAB_PILOT}" == "false" ]] || [[ "${ENABLE_BRAVE}" == "false" ]]; then
+        return 0
+    fi
+    if command -v brave-browser-stable >/dev/null 2>&1 || command -v brave-browser >/dev/null 2>&1; then
+        echo -e "${GREEN}Brave is already installed.${NC}"
+        return 0
+    fi
+    if [[ "${ENABLE_BRAVE}" != "true" ]] && [[ "${MODE}" != "desktop" ]]; then
+        echo -e "${GOLD}Brave auto-install is skipped for a headless server. Use --brave to install it here.${NC}"
+        return 0
+    fi
+
+    local brave_installer
+    brave_installer="$(mktemp)"
+    echo -e "${CYAN}Downloading Brave's official Linux installer...${NC}"
+    if ! curl -fsS https://dl.brave.com/install.sh -o "${brave_installer}"; then
+        rm -f "${brave_installer}"
+        echo -e "${GOLD}Brave download failed; OpenZero installation will continue.${NC}"
+        return 1
+    fi
+    if ! sh "${brave_installer}"; then
+        rm -f "${brave_installer}"
+        echo -e "${GOLD}Brave installation failed; OpenZero installation will continue.${NC}"
+        return 1
+    fi
+    rm -f "${brave_installer}"
+    command -v brave-browser-stable >/dev/null 2>&1 || command -v brave-browser >/dev/null 2>&1
 }
 
 install_openzero_gemma() {
@@ -253,7 +286,7 @@ write_env_defaults() {
 from pathlib import Path
 
 defaults = {
-    "OPENZERO_VERSION": "5.4.0",
+    "OPENZERO_VERSION": "7.1.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
     "OPENZERO_TAB_PILOT_URL": "${TAB_PILOT_URL}",
     "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
@@ -342,6 +375,9 @@ if "${OPENZERO_DEFAULT_MODEL}" == "openzerogemma:latest":
     if current.get("NODE_RECOMMENDED_MODEL", "") in legacy_defaults:
         current["NODE_RECOMMENDED_MODEL"] = "openzerogemma:latest"
 
+# Version is release metadata, not a private user preference. Always migrate it.
+current["OPENZERO_VERSION"] = "7.1.0"
+
 env_path.write_text("\n".join(f"{key}={value}" for key, value in sorted(current.items())) + "\n", encoding="utf-8")
 PY
     if [ "${ENABLE_VOICE}" = "true" ]; then
@@ -391,6 +427,7 @@ fi
 
 install_iso_bonus
 start_openzero
+install_brave_if_requested || true
 
 if [[ "${ENABLE_TAB_PILOT}" != "false" ]] && \
    { command -v brave-browser-stable >/dev/null 2>&1 || command -v brave-browser >/dev/null 2>&1; }; then
@@ -399,7 +436,7 @@ if [[ "${ENABLE_TAB_PILOT}" != "false" ]] && \
     fi
 fi
 
-echo -e "${GREEN}>>> OPENZERO 5.4 ONLINE${NC}"
+echo -e "${GREEN}>>> OPENZERO 7.1 ONLINE${NC}"
 echo -e "${CYAN}Super Panel: http://localhost:1024${NC}"
 echo -e "${CYAN}Manual: https://openzero.talktoai.org/manual${NC}"
 echo -e "${CYAN}Brave Tab Pilot guided setup: ${TAB_PILOT_URL}${NC}"

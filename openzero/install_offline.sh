@@ -98,7 +98,7 @@ from pathlib import Path
 
 env_path = Path(r"${INSTALL_DIR}") / ".env"
 defaults = {
-    "OPENZERO_VERSION": "5.4.0",
+    "OPENZERO_VERSION": "7.1.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
     "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
     "OPENZERO_HIVE_MODE": "standalone",

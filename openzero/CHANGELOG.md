@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.1.0 - 2026-07-31
+
+- Added canonical 7.1.0 version migration for fresh installs and upgrades.
+- Raised the bounded Ultra root-run worker ceiling to 16 while retaining
+  serialized local-model inference.
+- Added Brave installation from Brave's official Linux installer for desktop
+  setups, plus explicit `--brave` and `--no-brave` controls.
+- Kept Tab Pilot consent boundaries, managed policy, scoped tokens, and signed
+  automatic extension updates.
+
 ## 2026-07-27
 
 - Documented `openzerogemma:latest` and the public Zero-Gemma4-E4B-OpenZero GGUF release.

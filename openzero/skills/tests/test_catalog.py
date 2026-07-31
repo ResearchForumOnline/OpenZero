@@ -64,6 +64,10 @@ class CatalogTests(unittest.TestCase):
             [],
         )
         self.assertEqual(select_skill_ids("hello"), [])
+        self.assertEqual(
+            select_skill_ids("Browse https://zmail.my using the browser and return its title."),
+            ["browser-tabs"],
+        )
 
     def test_permission_contract(self):
         skill = get_skill_detail("files-code")
@@ -109,6 +113,60 @@ class CatalogTests(unittest.TestCase):
         )
         self.assertEqual(not_selected["decision"], "deny")
 
+        browser_click = tool_permission_decision(
+            ["browser-tabs"],
+            "moltbot_click",
+            {"snapshot_id": "snap", "element_id": "e1"},
+            "browse the site and click Open my workspace",
+        )
+        self.assertEqual(browser_click["decision"], "allow")
+        self.assertEqual(browser_click["capability"], "browser.interact")
+
+        browser_choose = tool_permission_decision(
+            ["browser-tabs"],
+            "moltbot_click",
+            {"snapshot_id": "snap", "element_id": "e1"},
+            "browse the site and choose Open my workspace",
+        )
+        self.assertEqual(browser_choose["decision"], "allow")
+        self.assertEqual(browser_choose["capability"], "browser.interact")
+
+        browser_enter = tool_permission_decision(
+            ["browser-tabs"],
+            "moltbot_type",
+            {"snapshot_id": "snap", "element_id": "e2", "text": "hello"},
+            "browse the site and enter hello in the search field",
+        )
+        self.assertEqual(browser_enter["decision"], "allow")
+        self.assertEqual(
+            browser_enter["capability"],
+            "browser.type_nonsensitive",
+        )
+
+        ambiguous_open = tool_permission_decision(
+            ["browser-tabs"],
+            "moltbot_click",
+            {"snapshot_id": "snap", "element_id": "e1"},
+            "browse the site and open my workspace",
+        )
+        self.assertEqual(ambiguous_open["decision"], "confirm")
+
+        browse_only = tool_permission_decision(
+            ["browser-tabs"],
+            "moltbot_click",
+            {"snapshot_id": "snap", "element_id": "e1"},
+            "browse zmail.my and only report the title",
+        )
+        self.assertEqual(browse_only["decision"], "confirm")
+
+        explicitly_forbidden = tool_permission_decision(
+            ["browser-tabs"],
+            "moltbot_click",
+            {"snapshot_id": "snap", "element_id": "e1"},
+            "browse the page; do not click or type anything",
+        )
+        self.assertEqual(explicitly_forbidden["decision"], "confirm")
+
     def test_budget_stops_at_boundary(self):
         self.assertEqual(
             budget_decision(["web-research"], {"steps": 7, "tool_calls": 4, "elapsed_seconds": 10, "output_chars": 20})[
@@ -129,6 +187,15 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(budgets["max_steps"], 8)
         self.assertEqual(budgets["max_tool_calls"], 2)
         self.assertEqual(budgets["max_elapsed_seconds"], 240)
+
+        ultra = runtime_skill_budgets(
+            ["browser-tabs"],
+            {"max_steps": 99, "max_tool_calls": 99, "max_elapsed_seconds": 9999},
+            profile="ultra",
+        )
+        self.assertEqual(24, ultra["max_steps"])
+        self.assertEqual(24, ultra["max_tool_calls"])
+        self.assertEqual(1200, ultra["max_elapsed_seconds"])
 
     def test_legacy_shape_remains_available(self):
         catalog = legacy_skill_catalog()

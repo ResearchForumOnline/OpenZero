@@ -10,6 +10,7 @@
   "triggers": [
     "brave",
     "browser",
+    "browse",
     "click",
     "form",
     "navigate",
@@ -20,6 +21,8 @@
   "entrypoint": "SKILL.md",
   "tools": [
     "moltbot_browse",
+    "moltbot_click",
+    "moltbot_type",
     "fetch_url",
     "browse"
   ],
@@ -28,6 +31,16 @@
       "action": "moltbot_browse",
       "required": ["url"],
       "optional": []
+    },
+    {
+      "action": "moltbot_click",
+      "required": ["snapshot_id", "element_id"],
+      "optional": []
+    },
+    {
+      "action": "moltbot_type",
+      "required": ["snapshot_id", "element_id", "text"],
+      "optional": ["clear"]
     },
     {
       "action": "fetch_url",

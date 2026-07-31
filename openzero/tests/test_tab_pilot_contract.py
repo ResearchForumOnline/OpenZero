@@ -6,6 +6,7 @@ OPENZERO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 APP_SOURCE = (OPENZERO_ROOT / "brain" / "app.py").read_text(encoding="utf-8")
 CONFIG_SOURCE = (OPENZERO_ROOT / "brain" / "openzero_config.py").read_text(encoding="utf-8")
 INSTALLER_SOURCE = (OPENZERO_ROOT / "install.sh").read_text(encoding="utf-8")
+UPDATER_SOURCE = (OPENZERO_ROOT / "update.sh").read_text(encoding="utf-8")
 TAB_INSTALLER_SOURCE = (OPENZERO_ROOT / "install-tab-pilot.sh").read_text(encoding="utf-8")
 
 
@@ -35,6 +36,16 @@ class TabPilotIntegrationContractTests(unittest.TestCase):
         self.assertIn("OPENZERO_TAB_PILOT_KEY_HASH", APP_SOURCE)
         self.assertIn("openzerogemma:latest", TAB_INSTALLER_SOURCE)
 
+
+    def test_71_installer_migrates_version_and_can_install_brave(self):
+        self.assertIn('"OPENZERO_VERSION": "7.1.0"', INSTALLER_SOURCE)
+        self.assertIn('current["OPENZERO_VERSION"] = "7.1.0"', INSTALLER_SOURCE)
+        self.assertIn("https://dl.brave.com/install.sh", INSTALLER_SOURCE)
+        self.assertIn("--brave", INSTALLER_SOURCE)
+        self.assertIn("--no-brave", INSTALLER_SOURCE)
+        self.assertIn("install_brave_if_requested", INSTALLER_SOURCE)
+        self.assertIn("--brave", UPDATER_SOURCE)
+        self.assertIn("--no-brave", UPDATER_SOURCE)
 
 if __name__ == "__main__":
     unittest.main()

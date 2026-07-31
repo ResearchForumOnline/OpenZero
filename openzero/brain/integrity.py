@@ -19,7 +19,7 @@ INTEGRITY_MANIFEST_NAME = "integrity_manifest.json"
 
 DEFAULT_ETHICS_POLICY = {
     "policy_name": "OpenZero Ethics Lock",
-    "version": "5.4.0",
+    "version": "7.1.0",
     "immutable_claim": "tamper-evident-not-absolute",
     "core_rules": [
         "Protect operator data and privacy by default.",

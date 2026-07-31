@@ -67,6 +67,8 @@ TOOL_CAPABILITIES = {
     "fetch_url": ("network.read",),
     "web_search": ("network.read",),
     "moltbot_browse": ("browser.inspect", "network.read"),
+    "moltbot_click": ("browser.interact",),
+    "moltbot_type": ("browser.type_nonsensitive",),
     "ssh_command": ("remote.read",),
     "scp_get": ("filesystem.write", "remote.read"),
     "scp_put": ("filesystem.read", "remote.write"),
@@ -125,8 +127,19 @@ TASK_SCOPE_TERMS = {
     },
     "remote.restart": {"reload", "restart", "start", "stop"},
     "browser.navigate": {"browse", "navigate", "open", "visit"},
-    "browser.interact": {"choose", "click", "fill", "select", "type"},
-    "browser.type_nonsensitive": {"fill", "input", "type", "write"},
+    "browser.interact": {
+        "choose",
+        "click",
+        "enter",
+        "fill",
+        "press",
+        "select",
+        "submit",
+        "tap",
+        "toggle",
+        "type",
+    },
+    "browser.type_nonsensitive": {"enter", "fill", "input", "type", "write"},
     "document.convert": {"convert", "extract", "read", "summarize"},
     "voice.output": {"read aloud", "say", "speak", "voice"},
 }
@@ -218,7 +231,17 @@ def search_catalog(query: str = "", limit: int = 8, root: Path | str | None = No
 
 
 def select_skill_ids(query: str, limit: int = 2, root: Path | str | None = None) -> List[str]:
-    return [str(item["id"]) for item in search_catalog(query, limit=limit, root=root)]
+    requested_limit = max(1, min(int(limit or 2), 20))
+    ranked = search_catalog(query, limit=20, root=root)
+    if not ranked:
+        return []
+    scored = [(_search_score(item, query), item) for item in ranked]
+    top_score = max(score for score, _item in scored)
+    # Ignore weak incidental token matches that bloat the model prompt with an
+    # unrelated second skill. Retain genuinely mixed objectives when both
+    # skills score materially against the task.
+    threshold = max(6, (top_score * 2 + 4) // 5)
+    return [str(item["id"]) for score, item in scored if score >= threshold][:requested_limit]
 
 
 def get_skill_detail(
@@ -316,25 +339,32 @@ def runtime_skill_budgets(
     skill_ids: Sequence[str],
     requested: Mapping[str, Any] | None = None,
     root: Path | str | None = None,
+    profile: str = "standard",
 ) -> Dict[str, int]:
     """Translate skill limits into autonomous-runtime budgets and clamp requests."""
 
+    autonomy_profile = "ultra" if str(profile or "").strip().lower() == "ultra" else "standard"
+    scale = 2 if autonomy_profile == "ultra" else 1
     manifests = {str(item["id"]): item for item in load_catalog(root)["skills"]}
     selected = [manifests[item] for item in skill_ids if item in manifests]
     if selected:
         limits = {
-            "max_steps": min(int(item["budgets"]["max_steps"]) for item in selected),
-            "max_model_calls": min(int(item["budgets"]["max_steps"]) for item in selected),
-            "max_tool_calls": min(int(item["budgets"]["max_tool_calls"]) for item in selected),
-            "max_elapsed_seconds": min(int(item["budgets"]["max_seconds"]) for item in selected),
+            "max_steps": min(32, min(int(item["budgets"]["max_steps"]) for item in selected) * scale),
+            "max_model_calls": min(32, min(int(item["budgets"]["max_steps"]) for item in selected) * scale),
+            "max_tool_calls": min(24, min(int(item["budgets"]["max_tool_calls"]) for item in selected) * scale),
+            "max_elapsed_seconds": min(
+                14400,
+                min(int(item["budgets"]["max_seconds"]) for item in selected) * scale,
+            ),
             "max_consecutive_errors": 3,
         }
     else:
+        fallback_scale = 2 if autonomy_profile == "ultra" else 1
         limits = {
-            "max_steps": 4,
-            "max_model_calls": 4,
-            "max_tool_calls": 3,
-            "max_elapsed_seconds": 180,
+            "max_steps": 4 * fallback_scale,
+            "max_model_calls": 4 * fallback_scale,
+            "max_tool_calls": 3 * fallback_scale,
+            "max_elapsed_seconds": 180 * fallback_scale,
             "max_consecutive_errors": 2,
         }
     supplied = requested if isinstance(requested, Mapping) else {}
@@ -392,6 +422,19 @@ def permission_decision(
 
 def _task_authorizes(task_text: str, capability: str) -> bool:
     text = str(task_text or "").lower()
+    negative_terms = {
+        "browser.interact": (
+            r"(?:choose|click|enter|fill|open|press|select|submit|tap|toggle|type|use)"
+        ),
+        "browser.type_nonsensitive": r"(?:enter|fill|input|type|write)",
+    }
+    denied_actions = negative_terms.get(capability)
+    if denied_actions and re.search(
+        rf"\b(?:do\s+not|don't|never|without)\b[^.;\n]{{0,80}}\b{denied_actions}\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return False
     return any(term in text for term in TASK_SCOPE_TERMS.get(capability, set()))
 
 
