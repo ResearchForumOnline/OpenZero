@@ -223,6 +223,12 @@ def _search_score(skill: Mapping[str, Any], query: str) -> int:
     score += 12 * len(query_tokens & _tokens(f"{skill_id} {name}"))
     score += 6 * len(query_tokens & _tokens(triggers))
     score += 2 * len(query_tokens & _tokens(summary))
+    if (
+        skill_id == "browser-tabs"
+        and PUBLIC_WEB_TARGET_RE.search(query_clean)
+        and BROWSER_INSPECTION_RE.search(query_clean)
+    ):
+        score += 50
     return score
 
 
