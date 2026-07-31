@@ -4931,8 +4931,8 @@ def browser_inspection_final_reply(result: str) -> str:
     visible = blocks[1] if len(blocks) == 2 else ""
     visible = visible.rsplit("\n```", 1)[0]
     visible = re.sub(r"\s+", " ", visible).strip(" `")
-    if len(visible) > 900:
-        visible = visible[:900].rsplit(" ", 1)[0].rstrip() + "..."
+    if len(visible) > 600:
+        visible = visible[:600].rsplit(" ", 1)[0].rstrip() + "..."
     url = str(url_match.group(1) if url_match else "").strip()
     title = str(title_match.group(1) if title_match else "").strip()
     lines = ["I inspected the live page with OpenZero's Moltbot browser."]
@@ -5371,7 +5371,6 @@ def execute_autonomous_run(
             if action.get("retryable_model_error"):
                 emit_agent_log("The local model requested an unknown tool, so OpenZero is retrying cleanly.", session_id)
                 continue
-            emit_run_reply(session_id, action_result, "system")
 
             if completion_evidence is not None and tool_name == "moltbot_browse":
                 completion_reason = required_operator_evidence_reason(
@@ -5391,6 +5390,8 @@ def execute_autonomous_run(
                     AUTONOMOUS_RUN_STORE.finish(run_id, final_status, final_reply)
                     emit_run_reply(session_id, final_reply, agent_mode)
                     break
+
+            emit_run_reply(session_id, action_result, "system")
 
             if action.get("ambiguous_action"):
                 final_status = "error"
