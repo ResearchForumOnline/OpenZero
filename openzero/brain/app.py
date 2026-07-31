@@ -89,7 +89,7 @@ OPENZERO_FEATURED_MODELS = {
     },
     "openzero-qwen-q5": {
         "label": "OpenZero Qwen3 8B Q5_K_M",
-        "alias": "openzeroqwen3-q5",
+        "alias": "zero-qwen3-q5",
         "filename": "Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
         "url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/resolve/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf?download=true",
         "page_url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
@@ -100,7 +100,7 @@ OPENZERO_FEATURED_MODELS = {
     },
     "openzero-qwen-f16": {
         "label": "OpenZero Qwen3 8B F16",
-        "alias": "openzeroqwen3-f16",
+        "alias": "zero-qwen3-f16",
         "filename": "Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf",
         "url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/resolve/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf?download=true",
         "page_url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf",
@@ -110,6 +110,12 @@ OPENZERO_FEATURED_MODELS = {
         "description": "Optional high-precision Qwen3 alternative. Large download; it never becomes default automatically.",
     },
 }
+OPENZERO_PERSONAL_MODEL_ALIASES = tuple(
+    f"{preset['alias']}:latest" for preset in OPENZERO_FEATURED_MODELS.values()
+)
+OPENZERO_PERSONAL_MODEL_FILES = frozenset(
+    preset["filename"] for preset in OPENZERO_FEATURED_MODELS.values()
+)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(MODELS_FOLDER, exist_ok=True)
 os.makedirs(SECURITY_FOLDER, exist_ok=True)
@@ -445,6 +451,10 @@ LEGACY_LOCAL_MODEL_MAP = {
     "qwen2.5:32b": "openzerogemma:latest",
     "qwenq8": "openzerogemma:latest",
     "qwenq8:latest": "openzerogemma:latest",
+    "openzeroqwen3-q5": "zero-qwen3-q5:latest",
+    "openzeroqwen3-q5:latest": "zero-qwen3-q5:latest",
+    "openzeroqwen3-f16": "zero-qwen3-f16:latest",
+    "openzeroqwen3-f16:latest": "zero-qwen3-f16:latest",
     "bitnet": BITNET_DEFAULT_MODEL_ALIAS,
     "bitnet-b1.58-2b-4t": BITNET_DEFAULT_MODEL_ALIAS,
     "microsoft/bitnet-b1.58-2b-4t": BITNET_DEFAULT_MODEL_ALIAS,
@@ -652,22 +662,16 @@ def ollama_version_status() -> Dict[str, object]:
 
 
 def preferred_local_model_candidates(profile: Dict[str, object]) -> list[str]:
-    ram_gb = int(profile.get("ram_gb") or 0)
-    if ram_gb < 12:
-        return ["openzerogemma:latest", "gemma4:e2b", "gemma3:4b", "gemma4:e4b", "gemma3:12b"]
-    if ram_gb < 24:
-        return ["openzerogemma:latest", "gemma4:e4b", "gemma4:e2b", "gemma3:12b", "gemma3:4b"]
-    if ram_gb < 48:
-        return ["openzerogemma:latest", "gemma4:e4b", "gemma4:e2b", "gemma3:12b", "gemma4:26b"]
-    return ["openzerogemma:latest", "gemma4:e4b", "gemma4:e2b", "gemma4:26b", "gemma4:31b"]
+    return list(OPENZERO_PERSONAL_MODEL_ALIASES)
 
 
 def choose_installed_local_model(installed: set[str], profile: Dict[str, object]) -> str:
+    visible_installed = installed.intersection(OPENZERO_PERSONAL_MODEL_ALIASES)
     for candidate in preferred_local_model_candidates(profile):
-        if candidate in installed:
+        if candidate in visible_installed:
             return candidate
-    if installed:
-        return sorted(installed)[0]
+    if visible_installed:
+        return sorted(visible_installed)[0]
     return preferred_local_model_candidates(profile)[0]
 
 
@@ -707,7 +711,7 @@ def resolve_local_model_selection(
 
     raw_active = (config.get("ACTIVE_MODEL") or "").strip()
     normalized = normalize_local_model_name(raw_active)
-    installed = set(list_ollama_models())
+    installed = set(visible_openzero_models())
     preferred_candidates = preferred_local_model_candidates(profile)
     version_state = ollama_version_status() if include_ollama_status else {}
 
@@ -786,6 +790,11 @@ def list_ollama_models() -> list[str]:
         return []
 
 
+def visible_openzero_models(ollama_models: Optional[List[str]] = None) -> list[str]:
+    installed = set(list_ollama_models() if ollama_models is None else ollama_models)
+    return [alias for alias in OPENZERO_PERSONAL_MODEL_ALIASES if alias in installed]
+
+
 def list_local_gguf_files() -> list[str]:
     files = []
     if not os.path.isdir(MODELS_FOLDER):
@@ -794,6 +803,10 @@ def list_local_gguf_files() -> list[str]:
         if entry.lower().endswith(".gguf"):
             files.append(entry)
     return files
+
+
+def list_openzero_personal_gguf_files() -> list[str]:
+    return [name for name in list_local_gguf_files() if name in OPENZERO_PERSONAL_MODEL_FILES]
 
 
 def ollama_modelfile(model_name: str) -> str:
@@ -819,7 +832,7 @@ def ollama_modelfile(model_name: str) -> str:
 
 def infer_custom_model_aliases(ollama_models: Optional[List[str]] = None) -> Dict[str, List[str]]:
     alias_map: Dict[str, List[str]] = {}
-    for model_name in ollama_models or list_ollama_models():
+    for model_name in list_ollama_models() if ollama_models is None else ollama_models:
         modelfile = ollama_modelfile(model_name)
         if not modelfile:
             continue
@@ -835,9 +848,14 @@ def infer_custom_model_aliases(ollama_models: Optional[List[str]] = None) -> Dic
 
 
 def custom_model_inventory(ollama_models: Optional[List[str]] = None) -> List[Dict[str, object]]:
-    installed_models = ollama_models or list_ollama_models()
-    gguf_files = list_local_gguf_files()
-    registry = load_custom_model_registry().get("models", {})
+    installed_models = visible_openzero_models(ollama_models)
+    gguf_files = list_openzero_personal_gguf_files()
+    registry = {
+        alias: meta
+        for alias, meta in load_custom_model_registry().get("models", {}).items()
+        if f"{alias.removesuffix(':latest')}:latest" in OPENZERO_PERSONAL_MODEL_ALIASES
+        or str(meta.get("gguf_file") or "") in OPENZERO_PERSONAL_MODEL_FILES
+    }
     alias_map = infer_custom_model_aliases(installed_models)
     items: Dict[str, Dict[str, object]] = {}
 
@@ -3809,7 +3827,7 @@ def openzero_list_models():
                     "created": 0,
                     "owned_by": "openzero-local",
                 }
-                for model in list_ollama_models()
+                for model in visible_openzero_models()
             ],
         }
     )
@@ -4002,9 +4020,10 @@ def get_config():
     active_model_status = "cloud" if is_cloud_model(saved_active_model) else local_resolution["status"]
     voice_status = current_voice().status()
     hive_state = hive.status_snapshot(config)
-    ollama_models = list_ollama_models()
-    gguf_files = list_local_gguf_files()
-    custom_models = custom_model_inventory(ollama_models)
+    installed_ollama_models = list_ollama_models()
+    ollama_models = visible_openzero_models(installed_ollama_models)
+    gguf_files = list_openzero_personal_gguf_files()
+    custom_models = custom_model_inventory(installed_ollama_models)
     payload = {
         **config,
         "SAVED_ACTIVE_MODEL": saved_active_model,
@@ -4069,9 +4088,10 @@ def update_config_bulk():
 
 @app.route("/api/models", methods=["GET"])
 def get_models():
-    models = list_ollama_models()
-    gguf_files = list_local_gguf_files()
-    custom_models = custom_model_inventory(models)
+    installed_models = list_ollama_models()
+    models = visible_openzero_models(installed_models)
+    gguf_files = list_openzero_personal_gguf_files()
+    custom_models = custom_model_inventory(installed_models)
     profile = resource_profile(current_config())
     bitnet_runtime = bitnet_status()
     return jsonify(
@@ -4227,7 +4247,7 @@ def install_local_model():
 
 @app.route("/api/ollama/status", methods=["GET"])
 def ollama_status():
-    return jsonify({"status": "success", "ollama": ollama_version_status(), "models": list_ollama_models()})
+    return jsonify({"status": "success", "ollama": ollama_version_status(), "models": visible_openzero_models()})
 
 
 @app.route("/api/ollama/upgrade", methods=["POST"])
