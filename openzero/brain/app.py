@@ -4911,6 +4911,33 @@ def voice_transcribe():
     return jsonify(result)
 
 
+def deterministic_browser_inspection_reply(state: Dict[str, object]) -> str:
+    """Return the initial read-only browser action without spending a model call."""
+
+    skill_ids = {str(item) for item in state.get("skill_ids") or [] if str(item).strip()}
+    objective = str(state.get("objective") or "")
+    if "browser-tabs" not in skill_ids or requires_tab_pilot_evidence(objective):
+        return ""
+    target_url = objective_browser_target(objective)
+    if not target_url:
+        return ""
+    evidence = dict(state.get("completion_evidence") or {})
+    if (
+        evidence.get("browser_source") == "moltbot"
+        and evidence.get("browser_snapshot_id")
+        and browser_target_matches(
+            target_url, str(evidence.get("browser_requested_url") or "")
+        )
+    ):
+        return ""
+    latest = str(state.get("current_prompt") or "")
+    if any(
+        marker in latest
+        for marker in ("**[MOLTBOT OFFLINE]**", "**[MOLTBOT FAILED]**", "**[MOLTBOT BUSY]**")
+    ):
+        return ""
+    return f'<tool>{{"action":"moltbot_browse","url":{json.dumps(target_url)}}}</tool>'
+
 def autonomous_step_prompt(state: Dict[str, object]) -> str:
     """Keep the true objective in every model turn without fabricating chat."""
 
@@ -4927,25 +4954,13 @@ def autonomous_step_prompt(state: Dict[str, object]) -> str:
     except CatalogError as error:
         skill_context = f"Skill catalog unavailable: {error}. Do not propose another operator tool."
     browser_directive = ""
-    completion_evidence = dict(state.get("completion_evidence") or {})
-    objective_text = str(state.get("objective") or "")
-    target_url = objective_browser_target(objective_text)
-    explicit_tab_pilot = requires_tab_pilot_evidence(objective_text)
-    inspection_ready = bool(
-        completion_evidence.get("browser_source") == "moltbot"
-        and completion_evidence.get("browser_snapshot_id")
-        and target_url
-        and browser_target_matches(
-            target_url, str(completion_evidence.get("browser_requested_url") or "")
+    browser_tool_reply = deterministic_browser_inspection_reply(state)
+    if browser_tool_reply:
+        browser_directive = (
+            "\n\nBROWSER PROOF REQUIRED FOR THIS TURN:\n"
+            "Return exactly this one tool tag with no prose:\n"
+            f"{browser_tool_reply}"
         )
-    )
-    if "browser-tabs" in skill_ids and not explicit_tab_pilot and not inspection_ready:
-        if target_url:
-            browser_directive = (
-                "\n\nBROWSER PROOF REQUIRED FOR THIS TURN:\n"
-                "Return exactly this one tool tag with no prose:\n"
-                f'<tool>{{"action":"moltbot_browse","url":{json.dumps(target_url)}}}</tool>'
-            )
     return (
         "[AUTONOMOUS RUN CHECKPOINT]\n"
         f"Run id: {state.get('id')}\n"
@@ -5071,20 +5086,34 @@ def execute_autonomous_run(
                 break
 
             state = AUTONOMOUS_RUN_STORE.get(run_id)
-            step_prompt = autonomous_step_prompt(state)
-            AUTONOMOUS_RUN_STORE.append_trace(
-                run_id,
-                "model_request",
-                step=int((state.get("usage") or {}).get("steps") or 0) + 1,
-                prompt=step_prompt,
-            )
-            model_agent_mode = agent_mode if state.get("skill_ids") else "conversation"
-            reply = autonomous_model_reply(step_prompt, comp_mode, model_agent_mode, history, upload_context)
-            state = AUTONOMOUS_RUN_STORE.checkpoint(
-                run_id,
-                usage_delta={"steps": 1, "model_calls": 1},
-            )
-            AUTONOMOUS_RUN_STORE.append_trace(run_id, "model_reply", reply=reply)
+            deterministic_reply = deterministic_browser_inspection_reply(state)
+            if deterministic_reply:
+                reply = deterministic_reply
+                AUTONOMOUS_RUN_STORE.append_trace(
+                    run_id,
+                    "deterministic_tool_proposal",
+                    tool="moltbot_browse",
+                    reason="explicit_url_inspection",
+                )
+                state = AUTONOMOUS_RUN_STORE.checkpoint(
+                    run_id,
+                    usage_delta={"steps": 1},
+                )
+            else:
+                step_prompt = autonomous_step_prompt(state)
+                AUTONOMOUS_RUN_STORE.append_trace(
+                    run_id,
+                    "model_request",
+                    step=int((state.get("usage") or {}).get("steps") or 0) + 1,
+                    prompt=step_prompt,
+                )
+                model_agent_mode = agent_mode if state.get("skill_ids") else "conversation"
+                reply = autonomous_model_reply(step_prompt, comp_mode, model_agent_mode, history, upload_context)
+                state = AUTONOMOUS_RUN_STORE.checkpoint(
+                    run_id,
+                    usage_delta={"steps": 1, "model_calls": 1},
+                )
+                AUTONOMOUS_RUN_STORE.append_trace(run_id, "model_reply", reply=reply)
 
             post_allowed, post_reason = AUTONOMOUS_RUN_STORE.budget_guard(run_id)
             if not post_allowed and post_reason in {"revoked", "stop_requested"}:
