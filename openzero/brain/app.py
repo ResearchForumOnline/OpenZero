@@ -4921,6 +4921,29 @@ def autonomous_checkpoint_tool_result(action: Dict[str, object]) -> str:
         return result[:5000].rstrip() + "\n...[browser result compacted for local summary]..."
     return result
 
+def browser_inspection_final_reply(result: str) -> str:
+    """Build a factual read-only page report from observed Moltbot output."""
+
+    text = str(result or "")
+    url_match = re.search(r"^URL:\s*(.+)$", text, flags=re.MULTILINE)
+    title_match = re.search(r"^Title:\s*(.+)$", text, flags=re.MULTILINE)
+    blocks = text.split("\n\n", 1)
+    visible = blocks[1] if len(blocks) == 2 else ""
+    visible = visible.rsplit("\n```", 1)[0]
+    visible = re.sub(r"\s+", " ", visible).strip(" `")
+    if len(visible) > 900:
+        visible = visible[:900].rsplit(" ", 1)[0].rstrip() + "..."
+    url = str(url_match.group(1) if url_match else "").strip()
+    title = str(title_match.group(1) if title_match else "").strip()
+    lines = ["I inspected the live page with OpenZero's Moltbot browser."]
+    if url:
+        lines.append(f"URL: {url}")
+    if title:
+        lines.append(f"Title: {title}")
+    if visible:
+        lines.append(f"Visible page text begins: {visible}")
+    return "\n\n".join(lines)
+
 def deterministic_browser_inspection_reply(state: Dict[str, object]) -> str:
     """Return the initial read-only browser action without spending a model call."""
 
@@ -5349,6 +5372,25 @@ def execute_autonomous_run(
                 emit_agent_log("The local model requested an unknown tool, so OpenZero is retrying cleanly.", session_id)
                 continue
             emit_run_reply(session_id, action_result, "system")
+
+            if completion_evidence is not None and tool_name == "moltbot_browse":
+                completion_reason = required_operator_evidence_reason(
+                    objective,
+                    state.get("skill_ids"),
+                    completion_evidence,
+                    expected_run_id=run_id,
+                )
+                if not completion_reason:
+                    final_status = "completed"
+                    final_reply = browser_inspection_final_reply(action_result)
+                    AUTONOMOUS_RUN_STORE.append_trace(
+                        run_id,
+                        "deterministic_browser_completion",
+                        source="moltbot",
+                    )
+                    AUTONOMOUS_RUN_STORE.finish(run_id, final_status, final_reply)
+                    emit_run_reply(session_id, final_reply, agent_mode)
+                    break
 
             if action.get("ambiguous_action"):
                 final_status = "error"
