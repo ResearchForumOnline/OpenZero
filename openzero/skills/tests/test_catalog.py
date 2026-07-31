@@ -69,6 +69,12 @@ class CatalogTests(unittest.TestCase):
             ["browser-tabs"],
         )
 
+    def test_domain_inspection_search_ranks_browser_first(self):
+        self.assertEqual(
+            search_catalog("check talktoai.org what do you see?")[0]["id"],
+            "browser-tabs",
+        )
+
     def test_domain_inspection_binds_browser_without_browser_keyword(self):
         self.assertEqual(
             select_skill_ids("check talktoai.org what do you see?"),
