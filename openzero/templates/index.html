@@ -92,6 +92,33 @@
         .health-note { color: #9aa09b; font-size: 0.78em; line-height: 1.5; margin: 10px 0 0 0; text-transform: none; }
         .health-note.warn { color: var(--gold); }
         .health-note.error { color: #ff8f8f; }
+        .featured-model-grid { display:grid; grid-template-columns:1fr; gap:12px; margin:16px 0; }
+        .featured-model-card { position:relative; overflow:hidden; border:1px solid #29442f; border-left:4px solid var(--neon); background:linear-gradient(145deg, rgba(0,255,65,0.10), rgba(0,0,0,0.96) 58%); padding:15px; isolation:isolate; }
+        .featured-model-card::before { content:""; position:absolute; inset:-50%; z-index:-1; background:conic-gradient(from 0deg, transparent, rgba(0,255,65,0.18), transparent 28%); animation:modelOrbit 8s linear infinite; }
+        .featured-model-card.qwen { border-left-color:var(--cyan); background:linear-gradient(145deg, rgba(0,255,255,0.09), rgba(0,0,0,0.96) 58%); }
+        .featured-model-card.qwen::before { background:conic-gradient(from 0deg, transparent, rgba(0,255,255,0.15), transparent 28%); animation-duration:11s; }
+        .featured-model-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+        .featured-model-card h4 { color:#fff; margin:0 0 6px 0; font-size:0.94em; }
+        .featured-model-card p { color:#9daaa0; font-size:0.75em; line-height:1.45; margin:7px 0; text-transform:none; }
+        .featured-model-badge { display:inline-flex; border:1px solid var(--neon); color:var(--neon); padding:4px 7px; font-size:0.64em; font-weight:bold; letter-spacing:.08em; white-space:nowrap; animation:modelGlow 2.4s ease-in-out infinite; }
+        .featured-model-card.qwen .featured-model-badge { border-color:var(--cyan); color:var(--cyan); animation-delay:.5s; }
+        .featured-model-meta { color:#758178; font-size:0.67em; line-height:1.55; overflow-wrap:anywhere; text-transform:none; }
+        .featured-model-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:11px; }
+        .featured-model-actions a { display:flex; align-items:center; justify-content:center; border:1px solid #39523f; color:#c7f8d1; padding:9px; text-decoration:none; font-size:0.7em; font-weight:bold; text-align:center; }
+        .featured-model-card.qwen .featured-model-actions a { border-color:#2d5555; color:#bff8f8; }
+        .featured-model-progress { height:5px; margin-top:11px; background:#151a16; overflow:hidden; }
+        .featured-model-progress span { display:block; width:0; height:100%; background:linear-gradient(90deg,var(--neon),#fff); transition:width .35s ease; box-shadow:0 0 12px rgba(0,255,65,.65); }
+        .featured-model-card.qwen .featured-model-progress span { background:linear-gradient(90deg,var(--cyan),#fff); box-shadow:0 0 12px rgba(0,255,255,.6); }
+        .featured-model-status { min-height:1.5em; color:#89958c; font-size:.7em; margin-top:7px; text-transform:none; }
+        .tab-pilot-card { border:1px solid #554723; background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(0,0,0,.96)); padding:15px; margin:14px 0; animation:pilotFloat 5s ease-in-out infinite; }
+        .tab-pilot-card strong { color:var(--gold); display:block; margin-bottom:7px; }
+        .tab-pilot-card p { color:#a9a184; font-size:.75em; line-height:1.5; text-transform:none; }
+        @keyframes modelOrbit { to { transform:rotate(360deg); } }
+        @keyframes modelGlow { 0%,100% { box-shadow:0 0 0 rgba(0,255,65,0); } 50% { box-shadow:0 0 16px rgba(0,255,65,.28); } }
+        @keyframes pilotFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-3px); } }
+        @media (prefers-reduced-motion: reduce) {
+            .featured-model-card::before, .featured-model-badge, .tab-pilot-card { animation:none; }
+        }
 
         @media (max-width: 1100px) {
             body { display: block; height: auto; min-height: 100vh; overflow-x: hidden; overflow-y: auto; }
@@ -104,6 +131,7 @@
             .settings-tab { min-height: 40px; font-size: 0.72em; }
             .status-ribbon, .quickbar { grid-template-columns: 1fr; }
             .flex-row { flex-direction: column; }
+            .featured-model-actions { grid-template-columns:1fr; }
             .input-area { flex-wrap: wrap; padding: 14px; }
             textarea { width: 100%; order: 1; min-height: 100px; font-size: 16px; }
             .icon-btn { width: calc(50% - 8px); }
@@ -119,7 +147,7 @@
     <div class="sidebar">
         <div class="header-brand">
             <h1>OPEN<span>ZERO</span></h1>
-            <div style="color:#666; font-size:0.8em; margin-top:5px;">SOVEREIGN LATTICE NODE // 5.4 CONTROL PANEL</div>
+            <div style="color:#666; font-size:0.8em; margin-top:5px;">SOVEREIGN LATTICE NODE // 7.1 CONTROL PANEL</div>
         </div>
 
         <div class="telemetry">
@@ -132,6 +160,7 @@
             <div class="telemetry-row"><span>LOOKUP:</span> <span class="val" id="sys-hive-lookup" style="color:var(--gold)">--</span></div>
             <div class="telemetry-row"><span>CHAT SHARE:</span> <span class="val" id="sys-hive-share" style="color:var(--gold)">--</span></div>
             <div class="telemetry-row"><span>ENGINE:</span> <span class="val" id="sys-mode" style="color:var(--gold)">--</span></div>
+            <div class="telemetry-row"><span>AUTONOMY:</span> <span class="val" id="sys-autonomy" style="color:var(--neon)">--</span></div>
             <div class="telemetry-row"><span>NODE_ID:</span> <span class="val" id="sys-id" style="color:#888">--</span></div>
             <div class="telemetry-row"><span>TIER:</span> <span class="val" id="sys-tier" style="color:var(--gold)">--</span></div>
             <div class="telemetry-row"><span>MODEL:</span> <span class="val" id="sys-model" style="color:var(--cyan)">--</span></div>
@@ -247,6 +276,24 @@
                 </div>
                 <div class="hint">Terminal mode now has a stronger local operator lane: real file reads/writes, directory trees, archive create/extract, web fetch/search, OSINT, and SSH/SCP-style remote ops, with raw tool calls hidden from the main stream unless there is useful text to show.</div>
 
+                <label>Autonomy Profile</label>
+                <select id="cfg_autonomy_profile">
+                    <option value="standard">STANDARD (BOUNDED)</option>
+                    <option value="ultra">ULTRA (MAXIMUM BOUNDED PERSISTENCE)</option>
+                </select>
+                <div class="hint">Ultra doubles skill run budgets within the same hard caps. It never expands tool allowlists, bypasses confirmations, exposes secrets, or permits recursive agents.</div>
+
+                <label>Concurrent Root Agents</label>
+                <select id="cfg_autonomous_workers">
+                    <option value="1">1 WORKER</option>
+                    <option value="2">2 WORKERS</option>
+                    <option value="3">3 WORKERS</option>
+                    <option value="4">4 WORKERS</option>
+                    <option value="8">8 WORKERS</option>
+                    <option value="16">16 WORKERS (HARD MAX)</option>
+                </select>
+                <div class="hint">Local model inference remains serialized to protect RAM while independent tool work can progress concurrently.</div>
+
                 <label>Active Model</label>
                 <select id="cfg_model">
                     <option value="Loading...">Loading...</option>
@@ -255,6 +302,65 @@
                 <div class="health-note" id="ollama-health-note"></div>
                 <div class="health-note" id="model-health-note"></div>
                 <div class="health-note" id="bitnet-health-note"></div>
+                <div class="featured-model-grid" id="featured-model-grid">
+                    <div class="featured-model-card" data-featured-model="openzero-gemma">
+                        <div class="featured-model-top">
+                            <div>
+                                <h4>OPENZERO GEMMA 4 E4B</h4>
+                                <div class="featured-model-meta"><code>openzerogemma:latest</code> · VERIFIED GGUF · 5.5 GiB</div>
+                            </div>
+                            <span class="featured-model-badge">DEFAULT</span>
+                        </div>
+                        <p>The recommended OpenZero brain for new installs and Tab Pilot browser work.</p>
+                        <div class="featured-model-actions">
+                            <button class="action-btn" onclick="installFeaturedModel('openzero-gemma')">INSTALL / REPAIR DEFAULT</button>
+                            <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF" target="_blank" rel="noopener noreferrer">HUGGING FACE ↗</a>
+                        </div>
+                        <div class="featured-model-progress"><span id="featured-progress-openzero-gemma"></span></div>
+                        <div class="featured-model-status" id="featured-status-openzero-gemma">Checking this node...</div>
+                    </div>
+
+                    <div class="featured-model-card qwen" data-featured-model="openzero-qwen-q5">
+                        <div class="featured-model-top">
+                            <div>
+                                <h4>OPENZERO QWEN3 8B Q5_K_M</h4>
+                                <div class="featured-model-meta"><code>openzeroqwen3-q5:latest</code> · OPTIONAL · 5.5 GiB</div>
+                            </div>
+                            <span class="featured-model-badge">OPTIONAL QWEN</span>
+                        </div>
+                        <p>CPU-friendly Qwen3 alternative. Installation never changes the OpenZero Gemma default automatically.</p>
+                        <div class="featured-model-actions">
+                            <button class="action-btn" onclick="installFeaturedModel('openzero-qwen-q5')">INSTALL OPTIONAL Q5</button>
+                            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf" target="_blank" rel="noopener noreferrer">HUGGING FACE ↗</a>
+                        </div>
+                        <div class="featured-model-progress"><span id="featured-progress-openzero-qwen-q5"></span></div>
+                        <div class="featured-model-status" id="featured-status-openzero-qwen-q5">Optional model. Not installed automatically.</div>
+                    </div>
+
+                    <div class="featured-model-card qwen" data-featured-model="openzero-qwen-f16">
+                        <div class="featured-model-top">
+                            <div>
+                                <h4>OPENZERO QWEN3 8B F16</h4>
+                                <div class="featured-model-meta"><code>openzeroqwen3-f16:latest</code> · OPTIONAL · 13.8 GiB</div>
+                            </div>
+                            <span class="featured-model-badge">HIGH PRECISION</span>
+                        </div>
+                        <p>Large high-precision Qwen3 alternative for machines with more storage and memory. Never selected by default.</p>
+                        <div class="featured-model-actions">
+                            <button class="action-btn" onclick="installFeaturedModel('openzero-qwen-f16')">INSTALL OPTIONAL F16</button>
+                            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf" target="_blank" rel="noopener noreferrer">HUGGING FACE ↗</a>
+                        </div>
+                        <div class="featured-model-progress"><span id="featured-progress-openzero-qwen-f16"></span></div>
+                        <div class="featured-model-status" id="featured-status-openzero-qwen-f16">Optional 13.8 GiB download. Not installed automatically.</div>
+                    </div>
+                </div>
+
+                <div class="tab-pilot-card">
+                    <strong>BRAVE TAB PILOT // GUIDED SETUP</strong>
+                    <p>Download, verify, and prepare the extension automatically. Brave keeps the final Load unpacked approval manual. Use an SSH tunnel when this node runs on another machine.</p>
+                    <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="window.open('https://openzero.talktoai.org/tab-pilot', '_blank', 'noopener')">OPEN TAB PILOT SETUP</button>
+                </div>
+
                 <div class="flex-row" style="margin-top:10px;">
                     <button class="action-btn" style="border-color:var(--green); color:var(--green);" onclick="installLocalModel('gemma4:e2b')">INSTALL GEMMA 4 E2B</button>
                     <button class="action-btn" style="border-color:var(--green); color:var(--green);" onclick="installLocalModel('gemma4:e4b')">INSTALL GEMMA 4 E4B</button>
@@ -276,7 +382,7 @@
                     <button class="action-btn" style="border-color:#7fbfff; color:#7fbfff;" onclick="installLocalModel('gemma3:4b')">INSTALL GEMMA 3 4B</button>
                     <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="refreshModelInventory()">REFRESH MODELS</button>
                 </div>
-                <div class="hint">Gemma via Ollama remains the default lane. Microsoft BitNet is an optional 1-bit CPU add-on for lower-power or older systems and has its own runtime separate from Ollama.</div>
+                <div class="hint">OpenZero Gemma is the default lane. The two Qwen packages, stock Gemma presets, and Microsoft BitNet are optional alternatives and never replace the default unless the operator explicitly selects one.</div>
 
                 <label>CPU Performance Profile</label>
                 <select id="cfg_cpu_profile">
@@ -323,7 +429,11 @@
                 <input type="text" id="hf_model_name" placeholder="example-14b-q4">
                 <label>Optional Local Filename</label>
                 <input type="text" id="hf_file_name" placeholder="Leave blank to use the URL filename">
-                <div class="hint">Paste a direct GGUF URL, not just the model card page. Native Ollama pulls like Gemma 4 already install as local quantized weights and are the recommended CPU-first lane. BitNet is its own optional runtime add-on. The <code>./models</code> folder is only for custom GGUF overrides when you want to bring your own weights.</div>
+                <label>Verified GGUF SHA-256</label>
+                <input type="text" id="hf_sha256" maxlength="64" placeholder="64 lowercase hexadecimal characters">
+                <label>Expected Size In Bytes (Optional)</label>
+                <input type="number" id="hf_expected_size" min="0" placeholder="Use the Hugging Face file size when known">
+                <div class="hint">Paste a direct HTTPS GGUF URL plus a SHA-256 from a trusted source. Downloads use a unique temporary file, verify the hash and GGUF header, and only replace the final path after every check passes.</div>
                 <label>Custom GGUF Package Inventory</label>
                 <select id="cfg_custom_model">
                     <option value="">No custom GGUF packages detected</option>
@@ -817,6 +927,86 @@
             });
         }
 
+        const featuredModelSizes = {
+            'openzero-gemma': '5.5 GiB',
+            'openzero-qwen-q5': '5.5 GiB',
+            'openzero-qwen-f16': '13.8 GiB'
+        };
+
+        function renderFeaturedModels(models) {
+            (models || []).forEach(model => {
+                const status = document.getElementById(`featured-status-${model.id}`);
+                const progress = document.getElementById(`featured-progress-${model.id}`);
+                const card = document.querySelector(`[data-featured-model="${model.id}"]`);
+                const button = card?.querySelector('button');
+                const job = model.job || {};
+                const running = ['queued', 'downloading', 'injecting'].includes(job.status);
+                const total = Number(job.total_bytes || model.size || 0);
+                const downloaded = Number(job.downloaded_bytes || 0);
+                const percent = running && total ? Math.min(99, Math.round(downloaded * 100 / total)) : (model.installed ? 100 : 0);
+
+                if (progress) progress.style.width = `${percent}%`;
+                if (button) {
+                    button.disabled = running;
+                    if (running) {
+                        button.textContent = job.status === 'injecting' ? 'CREATING LOCAL ALIAS...' : `DOWNLOADING ${percent}%`;
+                    } else {
+                        button.textContent = model.role === 'default'
+                            ? 'INSTALL / REPAIR DEFAULT'
+                            : (model.id === 'openzero-qwen-f16' ? 'INSTALL OPTIONAL F16' : 'INSTALL OPTIONAL Q5');
+                    }
+                }
+                if (!status) return;
+
+                if (job.status === 'error') {
+                    status.textContent = `Install error: ${job.message || 'unknown error'}`;
+                    status.style.color = '#ff8f8f';
+                } else if (running) {
+                    status.textContent = `${job.message || 'Install running'}${total ? ` · ${percent}%` : ''}`;
+                    status.style.color = 'var(--gold)';
+                } else if (model.active) {
+                    status.textContent = 'INSTALLED · ACTIVE DEFAULT ON THIS NODE';
+                    status.style.color = 'var(--neon)';
+                } else if (model.installed) {
+                    status.textContent = 'INSTALLED · AVAILABLE IN ACTIVE MODEL SELECTOR';
+                    status.style.color = 'var(--cyan)';
+                } else {
+                    status.textContent = model.role === 'default'
+                        ? 'Recommended default. Select Install / Repair to prepare it automatically.'
+                        : 'Optional model. It will not replace the OpenZero Gemma default.';
+                    status.style.color = '';
+                }
+            });
+        }
+
+        function refreshFeaturedModels() {
+            fetch('/api/featured_models').then(response => response.json()).then(data => {
+                if (data.status === 'success') renderFeaturedModels(data.models || []);
+            }).catch(() => {});
+        }
+
+        function installFeaturedModel(presetId) {
+            const size = featuredModelSizes[presetId] || 'several GiB';
+            const isDefault = presetId === 'openzero-gemma';
+            const purpose = isDefault
+                ? 'install and activate the verified OpenZero Gemma default'
+                : 'install this optional Qwen model without changing the default';
+            if (!confirm(`Download ${size} and ${purpose}? The package is verified by exact size, SHA-256, and GGUF header before Ollama can use it.`)) return;
+
+            fetch('/api/featured_models/install', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({preset_id: presetId})
+            }).then(response => response.json()).then(data => {
+                appendMessage(
+                    data.status === 'accepted' || data.status === 'success' ? 'system' : 'terminal',
+                    'MODELS',
+                    data.message || 'Featured model install request finished.'
+                );
+                refreshFeaturedModels();
+            }).catch(() => appendMessage('system', 'MODELS', '[ERROR] Featured model install could not be started.'));
+        }
+
         function upgradeOllama() {
             appendMessage('system', 'LATTICE', 'Updating Ollama with the official installer. This can take a little while on slower nodes.');
             fetch('/api/ollama/upgrade', { method: 'POST' }).then(r => r.json()).then(data => {
@@ -874,7 +1064,7 @@
                 appendMessage(
                     data.status === 'success' ? 'system' : 'terminal',
                     'LATTICE',
-                    `${data.message || 'BitNet remove finished.'}\n\n- Active model: \`${data?.config?.ACTIVE_MODEL || runtimeConfig.ACTIVE_MODEL || 'gemma4:e4b'}\``
+                    `${data.message || 'BitNet remove finished.'}\n\n- Active model: \`${data?.config?.ACTIVE_MODEL || runtimeConfig.ACTIVE_MODEL || 'openzerogemma:latest'}\``
                 );
                 loadConfigAndModels();
             }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] BitNet removal failed.'));
@@ -1130,6 +1320,8 @@
                     document.getElementById('cfg_voicebox_personality').value = cfg.VOICEBOX_PERSONALITY || 'false';
                     document.getElementById('cfg_voicebox_fallback').value = cfg.VOICEBOX_FALLBACK_PIPER || 'true';
                     if(cfg.COMP_MODE) document.getElementById('cfg_comp_mode').value = cfg.COMP_MODE;
+                    document.getElementById('cfg_autonomy_profile').value = cfg.OPENZERO_AUTONOMY_PROFILE === 'ultra' ? 'ultra' : 'standard';
+                    document.getElementById('cfg_autonomous_workers').value = ['1', '2', '3', '4', '8', '16'].includes(String(cfg.OPENZERO_AUTONOMOUS_MAX_WORKERS)) ? String(cfg.OPENZERO_AUTONOMOUS_MAX_WORKERS) : (cfg.OPENZERO_AUTONOMY_PROFILE === 'ultra' ? '16' : '2');
                     
                     if(cfg.HAS_GROQ) document.getElementById('cfg_groq').placeholder = "•••••••• (Key Saved)";
                     if(cfg.HAS_SERPER) document.getElementById('cfg_serper').placeholder = "•••••••• (Key Saved)";
@@ -1145,8 +1337,12 @@
             loadConfigAndModels();
             loadSkillCatalog();
             refreshVisionHealth();
+            refreshFeaturedModels();
         };
-        socket.on('reload_models', loadConfigAndModels);
+        socket.on('reload_models', () => {
+            loadConfigAndModels();
+            refreshFeaturedModels();
+        });
 
         function deleteActiveModel() {
             const model = document.getElementById('cfg_model').value;
@@ -1217,13 +1413,15 @@
             const url = document.getElementById('hf_url').value.trim();
             const modelName = document.getElementById('hf_model_name').value.trim();
             const fileName = document.getElementById('hf_file_name').value.trim();
+            const sha256 = document.getElementById('hf_sha256').value.trim().toLowerCase();
+            const expectedSize = Number(document.getElementById('hf_expected_size').value || 0);
 
-            if (!url || !modelName) {
-                appendMessage('system', 'WEIGHTS', '[ERROR] Provide both a GGUF download URL and a model alias.');
+            if (!url || !modelName || !/^[0-9a-f]{64}$/.test(sha256)) {
+                appendMessage('system', 'WEIGHTS', '[ERROR] Provide a GGUF download URL, model alias, and verified 64-character SHA-256.');
                 return;
             }
 
-            appendMessage('system', 'WEIGHTS', `Starting GGUF pull for \`${modelName}\`.\n\n- URL: \`${url}\`\n- This can take a while for large models.\n- The model selector will refresh automatically when injection completes.`);
+            appendMessage('system', 'WEIGHTS', `Starting verified GGUF pull for \`${modelName}\`.\n\n- URL: \`${url}\`\n- SHA-256: \`${sha256}\`\n- The final model file is created only after size, hash, and GGUF header checks pass.`);
 
             fetch('/api/pull_weights', {
                 method: 'POST',
@@ -1231,17 +1429,21 @@
                 body: JSON.stringify({
                     url: url,
                     model_name: modelName,
-                    file_name: fileName
+                    file_name: fileName,
+                    sha256: sha256,
+                    expected_size: expectedSize
                 })
             }).then(r => r.json()).then(data => {
                 if (data.status !== 'success') {
                     appendMessage('system', 'WEIGHTS', `[ERROR] ${data.message || 'Weight pull failed.'}`);
                     return;
                 }
-                appendMessage('system', 'WEIGHTS', `${data.message}\n\n- Saved file: \`${data.file_name}\`\n- Model alias: \`${data.model_name}\``);
+                appendMessage('system', 'WEIGHTS', `${data.message}\n\n- Saved file: \`${data.file_name}\`\n- Model alias: \`${data.model_name}\`\n- Verified SHA-256: \`${data.download?.sha256 || sha256}\``);
                 document.getElementById('hf_url').value = '';
                 document.getElementById('hf_model_name').value = '';
                 document.getElementById('hf_file_name').value = '';
+                document.getElementById('hf_sha256').value = '';
+                document.getElementById('hf_expected_size').value = '';
                 loadConfigAndModels();
             }).catch(() => {
                 appendMessage('system', 'WEIGHTS', '[ERROR] Weight pull failed.');
@@ -1277,7 +1479,8 @@
             socket.emit('user_message', { 
                 message: msg, 
                 comp_mode: compMode,
-                agent_mode: currentAgentMode
+                agent_mode: currentAgentMode,
+                autonomy_profile: document.getElementById('cfg_autonomy_profile').value
             });
         }
 
@@ -1360,6 +1563,8 @@
                 FEE_OZ_COINS: currentFee,
                 FEE_ZERO_COINS: currentFee,
                 COMP_MODE: document.getElementById('cfg_comp_mode').value,
+                OPENZERO_AUTONOMY_PROFILE: document.getElementById('cfg_autonomy_profile').value,
+                OPENZERO_AUTONOMOUS_MAX_WORKERS: document.getElementById('cfg_autonomous_workers').value,
                 P_GOOD_THRESHOLD: currentThreshold,
                 OZ_TOKEN_CA: document.getElementById('cfg_oz_ca').value.trim(),
                 PAID_HIVE_ENABLED: document.getElementById('cfg_paid_hive').value,
@@ -1479,6 +1684,7 @@
                 document.getElementById('sys-hive-lookup').innerText = data.hive_lookup || '--';
                 document.getElementById('sys-hive-share').innerText = (data.hive_share_mode || 'manual').toUpperCase();
                 document.getElementById('sys-mode').innerText = data.mode;
+                document.getElementById('sys-autonomy').innerText = `${(data.autonomy_profile || 'standard').toUpperCase()} / ${data.max_concurrent_workers || 2}`;
                 document.getElementById('sys-id').innerText = data.identity;
                 document.getElementById('sys-tier').innerText = data.node_tier || '--';
                 document.getElementById('sys-model').innerText = data.active_model || '--';
@@ -1486,6 +1692,7 @@
             }).catch(e => {});
         }, 2000);
         setInterval(refreshVisionHealth, 30000);
+        setInterval(refreshFeaturedModels, 5000);
     </script>
 </body>
 </html>

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "permission_model": {
+    "allow": "May run without another prompt when the capability is available.",
+    "task_scoped": "May run only when the user's current request clearly asks for this kind of change.",
+    "confirm": "Pause for a fresh human confirmation at the consequential action boundary.",
+    "default": "deny"
+  },
+  "capability_vocabulary": [
+    "account.change",
+    "archive.read",
+    "archive.write",
+    "browser.inspect",
+    "browser.interact",
+    "browser.navigate",
+    "browser.type_nonsensitive",
+    "credentials.change",
+    "credentials.use",
+    "cross_origin",
+    "destructive.delete",
+    "destructive.overwrite",
+    "document.convert",
+    "document.external_upload",
+    "document.macro_execute",
+    "extension.install",
+    "external.publish",
+    "external.submit",
+    "filesystem.read",
+    "filesystem.write",
+    "network.read",
+    "permissions.change",
+    "personal_data.enter",
+    "process.run",
+    "purchase",
+    "remote.read",
+    "remote.restart",
+    "remote.write",
+    "voice.output"
+  ],
+  "skills": [
+    "web-research",
+    "files-code",
+    "server-ops",
+    "browser-tabs",
+    "document-reading",
+    "archives",
+    "voice"
+  ]
+}

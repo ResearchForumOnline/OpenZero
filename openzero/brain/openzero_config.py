@@ -3,7 +3,7 @@ from typing import Dict
 
 
 DEFAULTS: Dict[str, str] = {
-    "OPENZERO_VERSION": "5.4.0",
+    "OPENZERO_VERSION": "7.1.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
     "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
     "OPENZERO_HIVE_MODE": "standalone",
@@ -25,18 +25,21 @@ DEFAULTS: Dict[str, str] = {
     "OPENZERO_LOCAL_LEARNING_ENABLED": "true",
     "OPENZERO_LOCAL_LEARNING_TERMINAL": "false",
     "OPENZERO_AUTOMATION_ENABLED": "true",
+    "OPENZERO_AUTONOMY_PROFILE": "standard",
+    "OPENZERO_AUTONOMOUS_MAX_WORKERS": "2",
     "OPENZERO_LOW_CPU_MODE": "true",
     "OPENZERO_CPU_PROFILE": "balanced",
     "OPENZERO_OLLAMA_THREADS": "0",
     "OPENZERO_OLLAMA_NUM_BATCH": "512",
     "OPENZERO_OLLAMA_KEEP_ALIVE": "10m",
+    "OPENZERO_OLLAMA_CONTEXT_WINDOW": "0",
     "OPENZERO_SPARK_MODE": "auto",
     "OPENZERO_SPARK_DRAFT_MODEL": "qwen2.5:0.5b",
     "OPENZERO_SPARK_CONFIDENCE_THRESHOLD": "0.58",
     "OPENZERO_SPARK_MAX_DRAFT_TOKENS": "384",
     "OPENZERO_SPARK_SHOW_TRACE": "false",
     "BITNET_THREADS": "0",
-    "ACTIVE_MODEL": "gemma4:e4b",
+    "ACTIVE_MODEL": "openzerogemma:latest",
     "LOCAL_ENGINE": "ollama",
     "COMP_MODE": "hybrid",
     "VISION_ENABLED": "true",
@@ -80,12 +83,16 @@ DEFAULTS: Dict[str, str] = {
     "OPENZERO_API_ENABLED": "false",
     "OPENZERO_API_KEY_HASH": "",
     "OPENZERO_API_KEY_HINT": "",
+    "OPENZERO_TAB_PILOT_KEY_HASH": "",
+    "OPENZERO_TAB_PILOT_KEY_HINT": "",
+    "OPENZERO_BIND_HOST": "127.0.0.1",
+    "OPENZERO_ALLOW_PUBLIC_BIND": "false",
     "NODE_LABEL": "",
     "NODE_ROLE": "general",
     "NODE_BENCHMARK": "0.0",
     "NODE_CONTEXT_WINDOW": "8192",
     "NODE_RAM_GB": "0",
-    "NODE_RECOMMENDED_MODEL": "gemma4:e4b",
+    "NODE_RECOMMENDED_MODEL": "openzerogemma:latest",
     "GROQ_API_KEY": "",
     "SERPER_API_KEY": "",
     "TELEGRAM_BOT_TOKEN": "",
@@ -226,15 +233,15 @@ def resource_profile(env: Dict[str, str]) -> Dict[str, object]:
         ram_gb = env_int(env, "NODE_RAM_GB", 16)
 
     if ram_gb < 12:
-        recommended_model = "gemma4:e2b"
+        recommended_model = "openzerogemma:latest"
         context_window = 8192
         node_tier = "compact"
     elif ram_gb < 48:
-        recommended_model = "gemma4:e4b"
+        recommended_model = "openzerogemma:latest"
         context_window = 12288
         node_tier = "baseline"
     else:
-        recommended_model = "gemma4:e4b"
+        recommended_model = "openzerogemma:latest"
         context_window = 16384
         node_tier = "heavy"
 

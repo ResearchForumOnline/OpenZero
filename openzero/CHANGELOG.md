@@ -1,5 +1,22 @@
 # Changelog
 
+## 7.1.0 - 2026-07-31
+
+- Added canonical 7.1.0 version migration for fresh installs and upgrades.
+- Raised the bounded Ultra root-run worker ceiling to 16 while retaining
+  serialized local-model inference.
+- Added Brave installation from Brave's official Linux installer for desktop
+  setups, plus explicit `--brave` and `--no-brave` controls.
+- Kept Tab Pilot consent boundaries, managed policy, scoped tokens, and signed
+  automatic extension updates.
+
+## 2026-07-27
+
+- Documented `openzerogemma:latest` and the public Zero-Gemma4-E4B-OpenZero GGUF release.
+- Added the OpenZero Tab Pilot Manifest V3 extension for explicitly granted Brave tabs.
+- Added per-tab and per-origin consent, visible stop/revoke controls, bounded action schemas, and confirmation gates for consequential actions and personal-data entry.
+- Added a checksum-verifying Windows setup helper plus a public extension download and setup page.
+
 ## 2026-07-12
 
 - Added authenticated OpenAI-compatible local model discovery at `GET /v1/models`.

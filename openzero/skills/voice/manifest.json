@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "voice",
+  "name": "Voice",
+  "description": "Produce local speech output through the configured OpenZero voice stack. Use when the user asks OpenZero to speak, read text aloud, produce a local voice reply, or test text-to-speech.",
+  "version": "1.0.0",
+  "risk_class": "medium",
+  "risk_summary": "Local playback is allowed when requested; sensitive speech and external distribution are not implied.",
+  "summary": "Speak bounded text locally through the configured voice engine and report the actual engine result.",
+  "triggers": [
+    "read aloud",
+    "say",
+    "speak",
+    "speech",
+    "text to speech",
+    "tts",
+    "voice",
+    "voice reply"
+  ],
+  "entrypoint": "SKILL.md",
+  "tools": [
+    "speak"
+  ],
+  "tool_schemas": [
+    {
+      "action": "speak",
+      "required": ["text"],
+      "optional": []
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "voice.output"
+    ],
+    "task_scoped": [],
+    "confirm": [
+      "external.publish",
+      "personal_data.enter"
+    ]
+  },
+  "budgets": {
+    "max_steps": 4,
+    "max_tool_calls": 4,
+    "max_seconds": 180,
+    "max_output_chars": 6000
+  },
+  "completion": {
+    "required_evidence": [
+      "Report whether the local voice engine returned success and the output path when available."
+    ],
+    "stop_when": [
+      "The requested text is spoken once.",
+      "No configured local voice engine is available."
+    ]
+  },
+  "references": [
+    "references/voice-safety.md"
+  ],
+  "limitations": [
+    "Speech generation does not authorize posting or sending the audio.",
+    "A configured voice profile may be unavailable on another node."
+  ]
+}

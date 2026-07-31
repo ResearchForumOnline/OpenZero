@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "id": "archives",
+  "name": "Archives",
+  "description": "Inspect, create, or safely extract local ZIP archives with traversal checks and bounded output. Use for backups, release bundles, package inspection, ZIP validation, extraction, or deterministic handoff artifacts.",
+  "version": "1.0.0",
+  "risk_class": "medium",
+  "risk_summary": "Reading is bounded; creation and extraction are task-scoped and existing-target overwrite remains confirmation-gated.",
+  "summary": "Inspect members first, reject unsafe paths, preserve exact targets, then verify archive contents and hashes.",
+  "triggers": [
+    "archive",
+    "backup",
+    "bundle",
+    "extract",
+    "package",
+    "release",
+    "unzip",
+    "zip"
+  ],
+  "entrypoint": "SKILL.md",
+  "tools": [
+    "zip_list",
+    "zip_extract",
+    "zip_create",
+    "read_file",
+    "bash"
+  ],
+  "tool_schemas": [
+    {
+      "action": "zip_list",
+      "required": ["path"],
+      "optional": []
+    },
+    {
+      "action": "zip_create",
+      "required": ["source", "dest"],
+      "optional": []
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "archive.read",
+      "filesystem.read"
+    ],
+    "task_scoped": [
+      "archive.write",
+      "filesystem.write",
+      "process.run"
+    ],
+    "confirm": [
+      "destructive.delete",
+      "destructive.overwrite"
+    ]
+  },
+  "budgets": {
+    "max_steps": 8,
+    "max_tool_calls": 12,
+    "max_seconds": 300,
+    "max_output_chars": 12000
+  },
+  "completion": {
+    "required_evidence": [
+      "List or test the final archive contents.",
+      "Verify expected exclusions and checksum when the archive is a release or backup."
+    ],
+    "stop_when": [
+      "The archive is verified and usable.",
+      "Unsafe members, excessive expansion, or an ambiguous overwrite target is found."
+    ]
+  },
+  "references": [
+    "references/archive-safety.md"
+  ],
+  "limitations": [
+    "ZIP creation is not a database-consistent backup by itself.",
+    "Extraction does not authorize overwriting an existing destination."
+  ]
+}

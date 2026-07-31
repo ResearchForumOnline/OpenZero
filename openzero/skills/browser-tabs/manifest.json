@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "id": "browser-tabs",
+  "name": "Browser and Tabs",
+  "description": "Inspect public pages or perform bounded work in one explicitly granted Brave tab using OpenZero Tab Pilot. Use for browsing, dynamic UI inspection, navigation, form assistance, tab work, screenshots, or multi-step website tasks.",
+  "version": "1.0.0",
+  "risk_class": "high",
+  "risk_summary": "Inspection is read-only, while site changes, sensitive entry, and consequential clicks remain separately gated.",
+  "summary": "Use text extraction for reading and Tab Pilot for one user-granted tab; inspect before each action and stop at consequential boundaries.",
+  "triggers": [
+    "brave",
+    "browser",
+    "browse",
+    "click",
+    "form",
+    "navigate",
+    "page",
+    "screenshot",
+    "tab"
+  ],
+  "entrypoint": "SKILL.md",
+  "tools": [
+    "moltbot_browse",
+    "moltbot_click",
+    "moltbot_type",
+    "fetch_url",
+    "browse"
+  ],
+  "tool_schemas": [
+    {
+      "action": "moltbot_browse",
+      "required": ["url"],
+      "optional": []
+    },
+    {
+      "action": "moltbot_click",
+      "required": ["snapshot_id", "element_id"],
+      "optional": []
+    },
+    {
+      "action": "moltbot_type",
+      "required": ["snapshot_id", "element_id", "text"],
+      "optional": ["clear"]
+    },
+    {
+      "action": "fetch_url",
+      "required": ["url"],
+      "optional": []
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "browser.inspect",
+      "network.read"
+    ],
+    "task_scoped": [
+      "browser.interact",
+      "browser.navigate",
+      "browser.type_nonsensitive"
+    ],
+    "confirm": [
+      "account.change",
+      "cross_origin",
+      "extension.install",
+      "external.publish",
+      "external.submit",
+      "personal_data.enter",
+      "purchase"
+    ]
+  },
+  "budgets": {
+    "max_steps": 12,
+    "max_tool_calls": 18,
+    "max_seconds": 600,
+    "max_output_chars": 14000
+  },
+  "completion": {
+    "required_evidence": [
+      "Inspect the current page state after each navigation or interaction.",
+      "Verify a concrete state change for the requested outcome."
+    ],
+    "stop_when": [
+      "The bounded tab task is verified.",
+      "The tab grant ends, a protected field appears, or a consequential action needs human approval."
+    ]
+  },
+  "references": [
+    "references/tab-pilot-contract.md"
+  ],
+  "limitations": [
+    "Moltbot reads a separate headless browser and cannot control an existing Brave tab.",
+    "Tab Pilot requires an explicitly granted normal HTTP or HTTPS tab and is not unrestricted browser control."
+  ]
+}

@@ -1,4 +1,4 @@
-OPENZERO 5.4 OFFLINE RELEASE GUIDE
+OPENZERO 7.1 OFFLINE RELEASE GUIDE
 
 WHAT THIS IS
 The offline release path is for operators who want a machine that can keep running OpenZero after it is physically disconnected from the internet.

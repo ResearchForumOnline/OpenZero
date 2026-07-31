@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenZero 5.4 | Local-First Sovereign AI Node, Skills, Hive, Vision, and Self-Healing Installer</title>
-    <meta name="description" content="OpenZero 5.4 is a local-first sovereign AI node with compact agent skills, Moltbot web vision, web search, private local learning, Hive coordination, self-healing installs, Gemma 4, optional BitNet, and offline operation.">
+    <title>OpenZero 7.1 | Ultra-16 Agents, Brave Tab Pilot, and Local-First AI</title>
+    <meta name="description" content="Run OpenZero Gemma locally and connect one explicitly approved Brave tab with the OpenZero Tab Pilot extension, alongside Hive coordination, local learning, offline operation, and self-healing services.">
     <link rel="canonical" href="https://openzero.talktoai.org/">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="OpenZero 5.4 | Sovereign AI Node">
-    <meta property="og:description" content="Deploy your own local-first OpenZero node with compact agent skills, Moltbot web vision, private local learning, Hive sync, self-healing recovery, Gemma 4, optional BitNet, and RAM-aware scaling.">
+    <meta property="og:title" content="OpenZero 7.1 | Sovereign AI Node">
+    <meta property="og:description" content="Run OpenZero Gemma locally and use the consent-first Brave Tab Pilot extension for visible, bounded browser work.">
     <meta property="og:image" content="https://openzero.talktoai.org/zero_og_image.png">
     <meta property="og:url" content="https://openzero.talktoai.org/">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="OpenZero 5.4">
-    <meta name="twitter:description" content="Local-first sovereign AI with compact skills, Moltbot web vision, private local learning, Hive, Gemma 4, optional BitNet, and self-healing services.">
+    <meta name="twitter:title" content="OpenZero 7.1">
+    <meta name="twitter:description" content="OpenZero Gemma plus a consent-first Brave Tab Pilot extension for visible, bounded browser work.">
     <meta name="twitter:image" content="https://openzero.talktoai.org/zero_og_image.png">
     <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/svg+xml" href="/icon.svg">
@@ -24,7 +24,7 @@
       "name": "OpenZero",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Linux",
-      "softwareVersion": "5.4",
+      "softwareVersion": "7.1",
       "url": "https://openzero.talktoai.org/",
       "downloadUrl": "https://openzero.talktoai.org/install",
       "description": "Local-first sovereign AI node with compact agent skills, Moltbot web vision, private local learning, Hive coordination, self-healing install scripts, Gemma 4 by default, optional Microsoft BitNet, RAM-aware scaling, and optional offline voice.",
@@ -115,7 +115,7 @@
             color: #fff;
         }
         .glitch::before, .glitch::after {
-            content: "OPENZERO 5.4";
+            content: "OPENZERO 7.1";
             position: absolute;
             top: 0;
             left: 0;
@@ -201,6 +201,23 @@
         .card-icon { font-size: 2.5em; margin-bottom: 20px; }
         .card h3 { color: #fff; margin: 0 0 10px 0; letter-spacing: 1px; }
         .card p { color: #888; font-size: 0.9em; line-height: 1.6; text-transform: none; }
+        .model-card::after {
+            content: '';
+            position: absolute;
+            width: 150px; height: 150px;
+            right: -76px; top: -76px;
+            border: 1px solid rgba(0,255,65,.3);
+            border-radius: 50%;
+            animation: model-orbit 9s linear infinite;
+        }
+        .model-card.qwen { border-color: rgba(114,167,255,.42); }
+        .model-card.qwen::after { border-color: rgba(114,167,255,.55); }
+        .model-card .model-label { display:inline-block; margin-bottom:14px; padding:5px 9px; border:1px solid currentColor; color:var(--neon); font-size:.72em; letter-spacing:.12em; }
+        .model-card.qwen .model-label { color:#72a7ff; }
+        .model-card a { position:relative; z-index:1; color:var(--neon); }
+        .model-card.qwen a { color:#72a7ff; }
+        @keyframes model-orbit { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .model-card::after { animation:none; } }
 
         /* TERMINAL DEPLOYMENT */
         .terminal-box {
@@ -381,7 +398,7 @@
 <div class="container">
     <header>
         <div class="tagline">LOCAL-FIRST SOVEREIGN AI NODE</div>
-        <h1 class="glitch">OPENZERO 5.4</h1>
+        <h1 class="glitch">OPENZERO 7.1</h1>
         <div style="margin-top:20px; color: #666; font-size: 0.9em;">
             [ BRAIN STATUS: <span style="color:var(--neon)">IGNITED</span> ] &nbsp;//&nbsp;
             [ ARCHITECT: <span style="color:#fff">SHAF BRADY</span> ]
@@ -401,8 +418,8 @@
     <div class="grid-system">
         <div class="card">
             <div class="card-icon">🧠</div>
-            <h3>BRAIN: GEMMA 4 EDGE</h3>
-            <p>Sovereign local weights with Gemma 4 edge defaults, private on-device inference, an upgrade path to 26B or 31B when the node has the RAM for it, and an optional Microsoft BitNet 1-bit CPU lane for older or lower-power systems.</p>
+            <h3>BRAIN: OPENZERO GEMMA 4</h3>
+            <p>The verified Zero-Gemma4-E4B-OpenZero GGUF runs locally as <code>openzerogemma:latest</code> and is the recommended browser-workflow default.</p>
         </div>
         <div class="card">
             <div class="card-icon">⬢</div>
@@ -418,6 +435,46 @@
             <div class="card-icon">⚡</div>
             <h3>CORE: FLASK_IO</h3>
             <p>Sovereign Interface. Terminal Control. Compact Skills. Moltbot Web Vision. Private Local Learning.</p>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span class="section-num">00.5</span>
+        <span class="section-title">VERIFIED_MODEL_MATRIX</span>
+    </div>
+
+    <div class="grid-system">
+        <article class="card model-card">
+            <span class="model-label">DEFAULT // 5.46 GiB</span>
+            <h3>OPENZERO GEMMA</h3>
+            <p><code>openzerogemma:latest</code>. Installed and selected by the normal OpenZero setup after exact size, SHA-256, and GGUF validation.</p>
+            <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/blob/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf">VIEW VERIFIED GGUF →</a>
+        </article>
+        <article class="card model-card qwen">
+            <span class="model-label">OPTIONAL // 5.45 GiB</span>
+            <h3>QWEN3 8B Q5</h3>
+            <p><code>openzeroqwen3-q5:latest</code>. A smaller quantized experiment, available from the Super Panel but never pulled or activated automatically.</p>
+            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf">VIEW Q5 GGUF →</a>
+        </article>
+        <article class="card model-card qwen">
+            <span class="model-label">OPTIONAL // 13.82 GiB</span>
+            <h3>QWEN3 8B F16</h3>
+            <p><code>openzeroqwen3-f16:latest</code>. The full fused F16 experiment for operators with sufficient memory and disk headroom.</p>
+            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf">VIEW F16 GGUF →</a>
+        </article>
+    </div>
+
+    <div class="zeromint-banner" style="border-left-color:var(--neon); border-color:var(--neon);">
+        <div class="tagline">NEW // OPENZERO GEMMA + BRAVE TAB PILOT</div>
+        <h2 style="color:var(--neon);">LET YOUR LOCAL OPENZERO NODE WORK INSIDE ONE TAB YOU APPROVE.</h2>
+        <p style="text-transform:none;">OpenZero Tab Pilot is an early-access Manifest V3 extension for Brave. It uses authenticated OpenZero planning while tab control stays inside the browser: inspect, navigate, click, type, select, scroll, wait, back, and forward. Every tab requires an explicit grant, new origins require Brave permission, and consequential actions or personal-data entry pause for one-time approval.</p>
+        <p style="text-transform:none;">The verified default model is <code>openzerogemma:latest</code>, based on the public Zero-Gemma4-E4B-OpenZero GGUF release. Passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and arbitrary JavaScript are blocked by the extension.</p>
+        <p style="text-transform:none;">On desktop Linux, OpenZero 7.1 installs Brave from Brave's official installer when needed, provisions a planner-only token, installs the signed extension through managed policy, and registers automatic CRX updates. Headless servers stay browser-free unless <code>--brave</code> is requested. Use <code>--no-tab-pilot</code> to opt out.</p>
+        <div class="nav-grid" style="margin-top:22px;">
+            <a href="/tab-pilot" class="btn-large btn-neon">TAB PILOT SETUP</a>
+            <a href="/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx" class="btn-large">SIGNED EXTENSION v0.2</a>
+            <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF" class="btn-large" style="border-color:var(--gold); color:var(--gold)">OPENZERO GEMMA MODEL</a>
+            <a href="https://github.com/ResearchForumOnline/OpenZero" class="btn-large" style="border-color:var(--purple); color:var(--purple)">SOURCE + SECURITY DOCS</a>
         </div>
     </div>
 
@@ -523,7 +580,7 @@
         </div>
         <div class="card">
             <h3>SELF-HEALING WATCHDOG</h3>
-            <p>OpenZero 5.4 checks PM2 services, Janitor cleanup, integrity state, and config drift using a watchdog plus doctor toolkit.</p>
+            <p>OpenZero 7.1 checks PM2 services, Janitor cleanup, integrity state, and config drift using a watchdog plus doctor toolkit.</p>
             <code style="color:var(--neon)">python3 openzero_doctor.py --json</code>
         </div>
         <div class="card">
@@ -561,7 +618,7 @@
 
     <div class="hive-banner" style="margin-top:24px; border-left-color:var(--neon); border-color:var(--neon); background:rgba(0,255,65,0.04);">
         <h2 style="color: var(--neon); margin-top: 0;">HIVE HQ // FEDERATION // LOCAL CONTINUITY</h2>
-        <p style="text-transform:none;">OpenZero 5.4 now separates the node from the coordination layer. A node can run against one Hive HQ, fan out to backup federation mirrors, or keep recording continuity data locally until a new Hive comes online. If one operator disappears, the nodes do not become worthless bricks.</p>
+        <p style="text-transform:none;">OpenZero 7.1 separates the node from the coordination layer. A node can run against one Hive HQ, fan out to backup federation mirrors, or keep recording continuity data locally until a new Hive comes online. If one operator disappears, the nodes do not become worthless bricks.</p>
         <div class="grid-system" style="margin-top:20px;">
             <div class="card" style="padding:22px;">
                 <h3>STANDALONE</h3>
@@ -588,7 +645,7 @@
             <thead>
                 <tr>
                     <th>METRIC</th>
-                    <th>OPENZERO 5.4</th>
+                    <th>OPENZERO 7.1</th>
                     <th>COMMERCIAL AI</th>
                 </tr>
             </thead>
@@ -638,7 +695,7 @@
         <div>
             <h3 style="color: #ff3333; margin: 0 0 10px 0; font-size: 1.2em;">WARNING: HIGH-RISK AUTONOMY</h3>
             <p style="color: #cc5555; font-size: 0.9em; margin: 0; line-height: 1.6; text-transform: none;">
-                OpenZero can operate with elevated local privileges. Version 5.4 adds tamper-evident ethics locks, encrypted local vault files, and signed Hive contributions, but a system owner with full disk access can still replace files. Treat the platform as hardened and auditable, not magically immutable.
+                OpenZero can operate with elevated local privileges. Version 7.1 retains tamper-evident ethics locks, encrypted local vault files, and signed Hive contributions, but a system owner with full disk access can still replace files. Treat the platform as hardened and auditable, not magically immutable.
             </p>
         </div>
     </div>
@@ -648,7 +705,7 @@
     </div>
 
     <footer>
-        OPENZERO 5.4 // ARCHITECT: SHAF BRADY // 2026<br>
+        OPENZERO 7.1 // ARCHITECT: SHAF BRADY // 2026<br>
         <span style="color:#666">LOCAL-FIRST SOVEREIGN CODEBASE // openzero.talktoai.org</span>
     </footer>
 </div>
@@ -784,7 +841,7 @@
     }
     animate();
 
-    console.log("%c  OPENZERO 5.4  ", "color: #00ff41; background: #000; font-size: 40px; font-weight: bold; padding: 10px; border: 2px solid #00ff41;");
+    console.log("%c  OPENZERO 7.1  ", "color: #00ff41; background: #000; font-size: 40px; font-weight: bold; padding: 10px; border: 2px solid #00ff41;");
     console.log("%c// SOVEREIGN INTELLIGENCE LATTICE ESTABLISHED", "color: #d4af37; font-family: monospace; font-size: 14px;");
     console.log("%c// ARCHITECT: SHAF BRADY", "color: #888; font-family: monospace;");
 </script>

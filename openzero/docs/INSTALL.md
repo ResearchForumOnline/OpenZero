@@ -2,6 +2,13 @@
 
 This guide covers the normal OpenZero install path, update path, optional CPU/model features, and where to go after the first boot.
 
+OpenZero 7.1 desktop installs also install Brave when it is missing and Tab
+Pilot is enabled. Headless server installs do not add a desktop browser unless
+you pass `--brave`. Use `--no-brave` to keep an existing browser setup
+untouched, or `--no-tab-pilot` to skip the extension policy entirely. Brave is
+downloaded from its official `https://dl.brave.com/install.sh` endpoint before
+the signed Tab Pilot policy is configured.
+
 ## Supported Targets
 
 OpenZero is designed for Linux-first operation.

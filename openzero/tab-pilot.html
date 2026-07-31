@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenZero Tab Pilot for Brave | Local AI Browser Work</title>
+  <meta name="description" content="Connect OpenZero to one explicitly approved Brave tab for visible, policy-controlled browsing with local Gemma planning.">
+  <link rel="canonical" href="https://openzero.talktoai.org/tab-pilot">
+  <meta name="theme-color" content="#030303">
+  <style>
+    :root{--bg:#030303;--panel:#0b0f0d;--text:#e8f5ec;--muted:#9bb3a2;--green:#00ff6a;--gold:#f4d35e;--line:#22402e}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 70% 0,#0b2417 0,transparent 35%),var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;line-height:1.65}
+    main{width:min(1080px,calc(100% - 32px));margin:auto;padding:54px 0 80px} a{color:var(--green)}
+    .eyebrow{color:var(--green);letter-spacing:.14em;font-weight:800}.hero{padding:42px;border:1px solid var(--line);background:rgba(7,14,10,.9);box-shadow:0 0 70px rgba(0,255,106,.08)}
+    h1{font-size:clamp(2.4rem,8vw,5.7rem);line-height:.95;margin:.25em 0;text-transform:uppercase} h2{margin-top:0;color:var(--green)} h3{color:var(--gold)}
+    .lede{max-width:780px;font-size:1.1rem;color:#cfe2d4}.actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}
+    .button{display:inline-flex;padding:13px 17px;border:1px solid var(--green);text-decoration:none;font-weight:900;color:#001b0b;background:var(--green)}
+    .button.secondary{color:var(--green);background:transparent}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:26px 0}
+    .card{border:1px solid var(--line);background:var(--panel);padding:24px}.card p,.muted{color:var(--muted)}
+    pre{overflow:auto;padding:18px;border:1px solid #31513b;background:#000;color:#d9ffe4;white-space:pre-wrap;text-transform:none}
+    .notice{border-left:4px solid var(--gold);background:#171506;padding:18px 20px;margin:24px 0;color:#f6eabb}
+    .models{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.model{position:relative;overflow:hidden;min-height:220px;border:1px solid var(--line);background:linear-gradient(150deg,#0c1610,#050705);padding:22px;transition:transform .25s,border-color .25s}.model:hover{transform:translateY(-5px);border-color:var(--green)}.model::after{content:"";position:absolute;width:130px;height:130px;border:1px solid rgba(0,255,106,.26);border-radius:50%;right:-60px;top:-60px;animation:orbit 8s linear infinite}.model.qwen{--accent:#72a7ff}.model.qwen::after{border-color:rgba(114,167,255,.35)}.model strong{color:var(--green);font-size:1.05rem}.model.qwen strong{color:var(--accent)}.model a{position:relative;z-index:1}.pill{display:inline-block;margin-bottom:12px;padding:4px 8px;border:1px solid currentColor;font-size:.73rem;letter-spacing:.08em}.default{color:var(--green)}.optional{color:#72a7ff}@keyframes orbit{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.model::after{animation:none}.model{transition:none}}
+    ol li,ul li{margin:.55em 0} footer{margin-top:46px;color:var(--muted);font-size:.9rem}
+    @media(max-width:820px){.models{grid-template-columns:1fr}}@media(max-width:720px){.hero{padding:25px}.grid{grid-template-columns:1fr}main{width:min(100% - 20px,1080px);padding-top:20px}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="eyebrow">OPENZERO EARLY ACCESS // SIGNED BRAVE MANIFEST V3</div>
+    <h1>Tab Pilot</h1>
+    <p class="lede">Let your self-hosted OpenZero node work inside one Brave tab that you explicitly grant. OpenZero Gemma plans one bounded action at a time; the extension performs it locally and keeps a visible stop control on the page.</p>
+    <div class="actions">
+      <a class="button" href="/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx" download>Download signed CRX</a>
+      <a class="button secondary" href="/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.zip" download>Download verified ZIP</a>
+      <a class="button secondary" href="/install-tab-pilot.ps1" download>Download setup helper</a>
+      <a class="button secondary" href="https://github.com/ResearchForumOnline/OpenZero">View source on GitHub</a>
+    </div>
+    <p class="muted">Version 0.2.0 · signed CRX SHA-256 <code>8584330a1f9776de927469a148bda0ba1539e6259b7ef389a12ea9d8a6742a7e</code> · extension ID <code>bjjhckhjkjodankbndllgloanjnfmlmo</code></p>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <h2>What it can do</h2>
+      <ul>
+        <li>Inspect a privacy-reduced page snapshot.</li>
+        <li>Navigate, click, type, select, scroll, wait, go back, and go forward.</li>
+        <li>Use scoped model discovery and a strict browser-only planner.</li>
+        <li>Stop and revoke immediately from Brave or the page overlay.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>Authority stays local</h2>
+      <ul>
+        <li>Every tab needs an explicit user grant.</li>
+        <li>New origins need a Brave permission prompt.</li>
+        <li>Consequential clicks and personal-data entry need one-time confirmation.</li>
+        <li>Passwords, payments, secrets, CAPTCHAs, uploads, and arbitrary JavaScript are blocked.</li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Linux: installed and updated automatically</h2>
+    <p>On desktop Linux, OpenZero 7.1 installs Brave from Brave's official installer when it is missing, then configures the signed extension through Brave managed policy. It creates a browser-planner-only token, keeps the main API key untouched, and registers the self-update feed. Headless servers install no browser unless <code>--brave</code> is passed. Opt out with <code>--no-tab-pilot</code>.</p>
+    <pre>curl -fsSL https://openzero.talktoai.org/install.sh | bash
+# Existing node:
+curl -fsSL https://openzero.talktoai.org/update.sh | bash</pre>
+    <p>For an existing local checkout, one command performs the same scoped setup:</p>
+    <pre>cd ~/openzero &amp;&amp; ./install-tab-pilot.sh</pre>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <h2>Almost-automatic Windows setup</h2>
+    <p>The helper downloads the fixed extension archive, verifies its built-in SHA-256, extracts it under your local application-data folder, opens <code>brave://extensions</code>, and shows the exact folder to load. Brave deliberately keeps the final <strong>Load unpacked</strong> approval manual.</p>
+    <pre>Invoke-WebRequest https://openzero.talktoai.org/install-tab-pilot.ps1 -OutFile "$env:TEMP\install-openzero-tab-pilot.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\install-openzero-tab-pilot.ps1"</pre>
+    <ol>
+      <li>Review the downloaded script if you prefer.</li>
+      <li>Enable <strong>Developer mode</strong> in the Brave page opened by the helper.</li>
+      <li>Choose <strong>Load unpacked</strong> and select the displayed folder.</li>
+      <li>Open extension Options and connect it to your OpenZero API.</li>
+    </ol>
+    <p>Remote node? Add its SSH name and the helper can create a current-user Windows startup connection:</p>
+    <pre>powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\install-openzero-tab-pilot.ps1" -OpenZeroSshHost user@your-server -ConfigureTunnel</pre>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <h2>Connect securely</h2>
+    <p>For OpenZero on another machine, keep its API bound to loopback and create a tunnel:</p>
+    <pre>ssh -N -L 1024:127.0.0.1:1024 your-openzero-server</pre>
+    <p>Then configure Tab Pilot with <code>http://127.0.0.1:1024</code>. Managed Linux installs use a planner-only token; manual installs store the configured token in extension-local storage. Neither is injected into page JavaScript.</p>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <h2>One default. Two optional Qwen builds.</h2>
+    <p>Tab Pilot starts with the verified OpenZero Gemma model. The Qwen variants are visible choices for operators who want to experiment, but neither is downloaded or made default automatically.</p>
+    <div class="models">
+      <article class="model">
+        <span class="pill default">DEFAULT · 5.46 GiB</span>
+        <h3>OpenZero Gemma</h3>
+        <p><code>openzerogemma:latest</code><br>Verified Q5_K_M/F16 merged release for the standard OpenZero lane.</p>
+        <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/blob/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf">Open on Hugging Face →</a>
+      </article>
+      <article class="model qwen">
+        <span class="pill optional">OPTIONAL · 5.45 GiB</span>
+        <h3>Qwen3 8B Q5</h3>
+        <p><code>openzeroqwen3-q5:latest</code><br>Smaller quantized Qwen experiment. Install from the Super Panel only when wanted.</p>
+        <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf">Open on Hugging Face →</a>
+      </article>
+      <article class="model qwen">
+        <span class="pill optional">OPTIONAL · 13.82 GiB</span>
+        <h3>Qwen3 8B F16</h3>
+        <p><code>openzeroqwen3-f16:latest</code><br>Full fused F16 Qwen experiment for machines with the storage and memory headroom.</p>
+        <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf">Open on Hugging Face →</a>
+      </article>
+    </div>
+  </section>
+
+  <div class="notice">Early access: the CRX is self-hosted and cryptographically signed, but it is not yet published in the Chrome Web Store. It is designed for visible local testing on pages you control or are authorized to use. Site rules and final-action responsibility still apply.</div>
+
+  <footer>
+    <a href="/">← OpenZero home</a> ·
+    <a href="/tab-pilot-privacy">Privacy</a> ·
+    <a href="https://github.com/ResearchForumOnline/OpenZero">GitHub</a> ·
+    <a href="https://huggingface.co/collections/shafire/agentic-gguf-models">Model collection</a> ·
+    <a href="https://docs.talktoai.org/openzero-user-manual/">Manual</a>
+  </footer>
+</main>
+</body>
+</html>

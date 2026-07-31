@@ -30,6 +30,9 @@ The result is a hybrid workflow: use ZeroThink as the polished web workbench, th
 - ZeroThink: https://zerothink.talktoai.org/
 - Docs: https://docs.talktoai.org/
 - OpenZero manual: https://docs.talktoai.org/openzero-user-manual/
+- Tab Pilot: https://openzero.talktoai.org/tab-pilot
+- Verified model guide: [docs/MODELS.md](docs/MODELS.md)
+- Agentic GGUF collection: https://huggingface.co/collections/shafire/agentic-gguf-models
 - Voicebox upstream: https://github.com/jamiepine/voicebox
 - Ecosystem video: https://www.youtube.com/watch?v=R52hsRdCmSM
 
@@ -161,7 +164,7 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H "Authorization: Bearer ztapi_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemma4:e4b",
+    "model": "openzerogemma:latest",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}
     ]

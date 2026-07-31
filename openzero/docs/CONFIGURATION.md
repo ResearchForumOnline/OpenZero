@@ -8,12 +8,28 @@ Never commit real `.env` files.
 
 | Key | Default | Purpose |
 | --- | --- | --- |
-| `OPENZERO_VERSION` | `5.4.0` | Version label. |
+| `OPENZERO_VERSION` | `7.1.0` | Version label. |
 | `OPENZERO_DOMAIN` | `https://openzero.talktoai.org` | Public download/domain reference. |
 | `SERVER_PORT` | `1024` | Panel/API port when configured. |
-| `ACTIVE_MODEL` | `gemma4:e4b` | Preferred local model. |
+| `ACTIVE_MODEL` | `openzerogemma:latest` | Preferred local model. |
 | `LOCAL_ENGINE` | `ollama` | Local engine selector. |
 | `COMP_MODE` | `hybrid` | Computation mode. |
+
+## Autonomous Runs
+
+| Key | Default | Purpose |
+| --- | --- | --- |
+| `OPENZERO_AUTONOMY_PROFILE` | `standard` | Default run profile. `ultra` doubles skill budgets inside the unchanged hard caps and safety policy. |
+| `OPENZERO_AUTONOMOUS_MAX_WORKERS` | `2` | Concurrent root-run workers, clamped from 1 to 16. Ultra defaults to 16 when the value is absent. Local model inference is always serialized. |
+
+The profile is immutable after a run is created. Neither profile permits a
+model to create child runs or bypass tool permissions and confirmations.
+Because server-side Moltbot currently owns one browser page, browser-tagged runs
+are serialized for their full workflow. Other workers can still coordinate
+non-browser tools concurrently. The browser lane is bound to one run ID and is
+held briefly across a fresh-confirmation pause so approval can consume the
+exact inspected action. It is released when that confirmation window expires,
+or when the run completes, errors, stops, or is revoked.
 
 ## CPU
 
@@ -23,7 +39,12 @@ Never commit real `.env` files.
 | `OPENZERO_OLLAMA_THREADS` | `0` |
 | `OPENZERO_OLLAMA_NUM_BATCH` | `512` |
 | `OPENZERO_OLLAMA_KEEP_ALIVE` | `10m` |
+| `OPENZERO_OLLAMA_CONTEXT_WINDOW` | `0` |
 | `BITNET_THREADS` | `0` |
+
+`OPENZERO_OLLAMA_CONTEXT_WINDOW=0` uses the hardware-derived context window.
+Set an explicit value such as `4096` when a smaller local prompt budget improves
+latency; values are clamped from 2048 to 32768.
 
 ## Z-Spark Draft-Verify
 

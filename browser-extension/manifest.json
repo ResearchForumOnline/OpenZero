@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "OpenZero Tab Pilot",
+  "version": "0.2.1",
+  "description": "Explicitly grant one Brave tab to OpenZero for inspected, visible, policy-controlled browser work.",
+  "homepage_url": "https://openzero.talktoai.org/tab-pilot",
+  "update_url": "https://openzero.talktoai.org/downloads/tab-pilot-updates.xml",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "OpenZero Tab Pilot",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "options_page": "src/options.html",
+  "storage": {
+    "managed_schema": "src/managed_schema.json"
+  }
+}

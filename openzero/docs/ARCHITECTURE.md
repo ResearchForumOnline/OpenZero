@@ -25,6 +25,7 @@ flowchart TD
 | Component | Path | Purpose |
 | --- | --- | --- |
 | Brain app | `brain/app.py` | Web app, socket events, routing, API bridge, model actions, voice endpoints. |
+| Autonomous run store | `brain/autonomous_runtime.py` | Atomic checkpoints, redacted traces, budgets, restart recovery, stop/revoke, and exact-action confirmation. |
 | Config | `brain/openzero_config.py` | Defaults, `.env` loading/saving, CPU runtime profile logic. |
 | Voice stack | `brain/voice_stack.py` | Piper speech, Voicebox proxy, local transcription. |
 | Moltbot | `moltbot/moltbot.js` | Browser/text/page inspection helper. |
@@ -62,6 +63,17 @@ OpenZero can operate in chat and terminal/operator modes. Tool behavior includes
 - Moltbot browser inspection;
 - web search through configured providers;
 - SSH/SCP-style tasks when local keys and OS tools exist.
+
+## Durable Run Control Plane
+
+The model/tool loop remains in `brain/app.py`; durable authority and state live
+in `brain/autonomous_runtime.py`. The separation keeps budget, restart, trace,
+and confirmation behavior deterministic and testable without a running model.
+The brain writes an in-flight checkpoint before each tool and a result
+checkpoint afterward. On restart, safe reads can be checked again, while an
+ambiguous mutation pauses for operator review rather than being replayed.
+
+See [AUTONOMOUS_RUNS.md](AUTONOMOUS_RUNS.md).
 
 ## Voice Lane
 

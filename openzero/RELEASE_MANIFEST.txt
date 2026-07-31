@@ -1,0 +1,15 @@
+OPENZERO RELEASE
+Version: 7.1.0
+Channel: stable
+Release date: 2026-07-31
+
+Highlights:
+- Bounded Ultra autonomy supports up to 16 concurrent root-run workers.
+- Local model inference remains serialized to prevent duplicate model loads.
+- Fresh installs and upgrades report the canonical 7.1.0 version.
+- Desktop Linux installs can install Brave from Brave's official installer.
+- Brave Tab Pilot is configured through managed policy with automatic updates.
+
+Install: https://openzero.talktoai.org/install.sh
+Update: https://openzero.talktoai.org/update.sh
+Tab Pilot: https://openzero.talktoai.org/tab-pilot

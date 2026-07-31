@@ -544,7 +544,7 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 <p>OpenZero operates on a Hybrid Neural Lattice. This means you have the power to choose <i>where</i> the AI's "brain" lives, instantly toggling between them in the System Config menu.</p>
 
 <h3>1. The Local Engine: Gemma 4 Edge (Default)</h3>
-<p>Fresh OpenZero installs now default to the Gemma 4 edge track through Ollama. The normal default is <code>gemma4:e4b</code>, while lower-RAM boxes can use <code>gemma4:e2b</code>. Stronger nodes can move up to <code>gemma4:26b</code> or <code>gemma4:31b</code>. This means the AI processes your questions on your own machine using your own CPU/GPU. <br>
+<p>Fresh OpenZero installs now default to the public OpenZero Gemma build through Ollama as <code>openzerogemma:latest</code>. Stock Gemma models remain compatibility choices. This means the AI processes your questions on your own machine using your own CPU/GPU. <br>
 <b>Benefits:</b> Zero cost, maximum privacy, and air-gapped capability. Sensitive information never leaves your environment.</p>
 
 <div class="note"><b>Important storage detail:</b> native Ollama pulls do <i>not</i> appear in OpenZero's local <code>./models</code> folder. Ollama keeps its own model store. The local <code>./models</code> folder is reserved for custom GGUF files that you download and inject manually.</div>
@@ -560,10 +560,10 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 <div class="cmd-box" data-cmd="curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H 'Authorization: Bearer oz_your_key_here' \
   -H 'Content-Type: application/json' \
-  -d '{&quot;model&quot;:&quot;gemma4:e4b&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Say OpenZero API OK&quot;}]}';">curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
+  -d '{&quot;model&quot;:&quot;openzerogemma:latest&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Say OpenZero API OK&quot;}]}';">curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H 'Authorization: Bearer oz_your_key_here' \
   -H 'Content-Type: application/json' \
-  -d '{"model":"gemma4:e4b","messages":[{"role":"user","content":"Say OpenZero API OK"}]}'</div>
+  -d '{"model":"openzerogemma:latest","messages":[{"role":"user","content":"Say OpenZero API OK"}]}'</div>
 <div class="warning"><b>Security boundary:</b> this endpoint is for local/self-hosted Ollama models only. It does not relay Groq, Serper, Telegram, Hive, terminal tools, or cloud provider keys. Keep the OpenZero panel/API behind your firewall, VPN, or trusted network. ZeroThink web does not accept arbitrary browser-supplied OpenZero URLs; production bridges must be registered server-side.</div>
 
 <h2>05 // AUTONOMOUS AGENT CAPABILITIES</h2>
