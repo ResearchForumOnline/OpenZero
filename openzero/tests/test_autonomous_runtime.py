@@ -1108,6 +1108,9 @@ class AppIntegrationContractTests(unittest.TestCase):
         self.assertIn("`text_generation` is not a tool.", self.source)
         self.assertIn("Never repeat or expose this checkpoint.", self.source)
         self.assertIn("BROWSER PROOF REQUIRED FOR THIS TURN", self.source)
+        self.assertIn("def deterministic_browser_inspection_reply(", self.source)
+        self.assertIn('"deterministic_tool_proposal"', self.source)
+        self.assertIn('usage_delta={"steps": 1}', self.source)
         self.assertIn('"action":"moltbot_browse"', self.source)
 
     def test_plain_conversation_and_model_format_recovery_are_guarded(self):
