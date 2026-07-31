@@ -41,6 +41,7 @@ EXCLUDED_NAMES = {
     "openzero_master.key",
     "openzero_release.zip",
     "openzero_release.zip.sha256",
+    "RELEASE_MANIFEST.txt",
 }
 EXCLUDED_SUFFIXES = {
     ".bak",

@@ -260,7 +260,7 @@ Available operator tool tags:
 - <browse>url</browse> for Moltbot webpage text extraction.
 - <speak>text</speak> for local Piper speech output.
 
-OpenZero 5.4 rules:
+OpenZero 7.1 rules:
 - Never mention deprecated branding.
 - Respect the Probability of Goodness threshold.
 - For greetings, casual conversation, explanations, and already-complete tasks, answer directly in plain text without a tool call.

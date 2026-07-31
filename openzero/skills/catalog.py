@@ -14,6 +14,14 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
 CATALOG_ROOT = Path(__file__).resolve().parent
 TOKEN_RE = re.compile(r"[a-z0-9]+")
+PUBLIC_WEB_TARGET_RE = re.compile(
+    r"(?:https?://[^\s<>'\"]+|\b(?:localhost|(?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d+)?(?:/[^\s<>'\"]*)?)",
+    flags=re.IGNORECASE,
+)
+BROWSER_INSPECTION_RE = re.compile(
+    r"\b(?:browse|check|inspect|navigate|open|read|see|view|visit)\b",
+    flags=re.IGNORECASE,
+)
 SEARCH_STOP_WORDS = {
     "a",
     "an",
@@ -233,9 +241,39 @@ def search_catalog(query: str = "", limit: int = 8, root: Path | str | None = No
 def select_skill_ids(query: str, limit: int = 2, root: Path | str | None = None) -> List[str]:
     requested_limit = max(1, min(int(limit or 2), 20))
     ranked = search_catalog(query, limit=20, root=root)
-    if not ranked:
-        return []
     scored = [(_search_score(item, query), item) for item in ranked]
+    # A public URL/domain plus an inspection verb is an unambiguous browser
+    # objective even when the hostname itself has no catalog-token overlap.
+    # Bind the browser contract deterministically so small local models cannot
+    # incorrectly claim that OpenZero has no web access.
+    query_text = str(query or "")
+    if PUBLIC_WEB_TARGET_RE.search(query_text) and BROWSER_INSPECTION_RE.search(query_text):
+        browser = next(
+            (
+                item
+                for item in load_catalog(root)["skills"]
+                if str(item.get("id") or "") == "browser-tabs"
+            ),
+            None,
+        )
+        if browser is not None:
+            remaining = [
+                (score, item)
+                for score, item in scored
+                if str(item.get("id") or "") != "browser-tabs"
+            ]
+            selected = ["browser-tabs"]
+            if requested_limit > 1 and remaining:
+                top_remaining = max(score for score, _item in remaining)
+                threshold = max(6, (top_remaining * 2 + 4) // 5)
+                selected.extend(
+                    str(item["id"])
+                    for score, item in remaining
+                    if score >= threshold
+                )
+            return selected[:requested_limit]
+    if not scored:
+        return []
     top_score = max(score for score, _item in scored)
     # Ignore weak incidental token matches that bloat the model prompt with an
     # unrelated second skill. Retain genuinely mixed objectives when both

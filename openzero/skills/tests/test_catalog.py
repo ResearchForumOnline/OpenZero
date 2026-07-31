@@ -69,6 +69,17 @@ class CatalogTests(unittest.TestCase):
             ["browser-tabs"],
         )
 
+    def test_domain_inspection_binds_browser_without_browser_keyword(self):
+        self.assertEqual(
+            select_skill_ids("check talktoai.org what do you see?"),
+            ["browser-tabs"],
+        )
+        self.assertEqual(
+            select_skill_ids("visit https://example.com/docs and tell me what you see"),
+            ["browser-tabs"],
+        )
+        self.assertEqual(select_skill_ids("check the server logs"), ["server-ops"])
+
     def test_permission_contract(self):
         skill = get_skill_detail("files-code")
         self.assertEqual(permission_decision(skill, "filesystem.read")["decision"], "allow")
