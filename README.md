@@ -38,6 +38,7 @@ passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and
 arbitrary JavaScript are blocked.
 
 - [Tab Pilot product and setup page](https://openzero.talktoai.org/tab-pilot)
+- [Install OpenZero Tab Pilot from the Chrome Web Store](https://chromewebstore.google.com/detail/openzero-tab-pilot/cgaalobjjknalamgchppccbocnhonhbf)
 - [Extension source and security documentation](browser-extension/README.md)
 - [Verified Brave extension ZIP](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.zip)
 - [Signed Brave extension CRX](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx)
