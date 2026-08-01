@@ -31,6 +31,7 @@ The result is a hybrid workflow: use ZeroThink as the polished web workbench, th
 - Docs: https://docs.talktoai.org/
 - OpenZero manual: https://docs.talktoai.org/openzero-user-manual/
 - Tab Pilot: https://openzero.talktoai.org/tab-pilot
+- Tab Pilot on the Chrome Web Store: https://chromewebstore.google.com/detail/openzero-tab-pilot/cgaalobjjknalamgchppccbocnhonhbf
 - Verified model guide: [docs/MODELS.md](docs/MODELS.md)
 - Agentic GGUF collection: https://huggingface.co/collections/shafire/agentic-gguf-models
 - Voicebox upstream: https://github.com/jamiepine/voicebox

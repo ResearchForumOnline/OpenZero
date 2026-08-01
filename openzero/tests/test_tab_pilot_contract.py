@@ -8,6 +8,9 @@ CONFIG_SOURCE = (OPENZERO_ROOT / "brain" / "openzero_config.py").read_text(encod
 INSTALLER_SOURCE = (OPENZERO_ROOT / "install.sh").read_text(encoding="utf-8")
 UPDATER_SOURCE = (OPENZERO_ROOT / "update.sh").read_text(encoding="utf-8")
 TAB_INSTALLER_SOURCE = (OPENZERO_ROOT / "install-tab-pilot.sh").read_text(encoding="utf-8")
+TAB_PAGE_SOURCE = (OPENZERO_ROOT / "tab-pilot.html").read_text(encoding="utf-8")
+LANDING_PAGE_SOURCE = (OPENZERO_ROOT / "index.html").read_text(encoding="utf-8")
+STORE_URL = "https://chromewebstore.google.com/detail/openzero-tab-pilot/cgaalobjjknalamgchppccbocnhonhbf"
 
 
 class TabPilotIntegrationContractTests(unittest.TestCase):
@@ -35,6 +38,12 @@ class TabPilotIntegrationContractTests(unittest.TestCase):
         self.assertIn("ExtensionInstallForcelist", TAB_INSTALLER_SOURCE)
         self.assertIn("OPENZERO_TAB_PILOT_KEY_HASH", APP_SOURCE)
         self.assertIn("openzerogemma:latest", TAB_INSTALLER_SOURCE)
+
+
+    def test_published_chrome_web_store_listing_is_canonical_interactive_install(self):
+        self.assertIn(STORE_URL, TAB_PAGE_SOURCE)
+        self.assertIn(STORE_URL, LANDING_PAGE_SOURCE)
+        self.assertNotIn("not yet published in the Chrome Web Store", TAB_PAGE_SOURCE)
 
 
     def test_71_installer_migrates_version_and_can_install_brave(self):
