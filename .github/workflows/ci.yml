@@ -16,3 +16,5 @@ jobs:
         run: |
           cd openzero
           python -m compileall brain hivemind openzero_doctor.py openzero_watchdog.py zero_core.py
+      - name: Verify public model catalog
+        run: python -m unittest openzero.tests.test_model_catalog_contract
