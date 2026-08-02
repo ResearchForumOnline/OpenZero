@@ -56,8 +56,8 @@ downloaded or selected during a normal install:
 | Release | OpenZero runtime name | Role |
 | --- | --- | --- |
 | [Zero-Gemma4 E4B OpenZero](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) | `openzerogemma:latest` | Default |
-| [Zero-Qwen3 8B OpenZero Q5_K_M](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) | `openzeroqwen3-q5:latest` | Optional |
-| [Zero-Qwen3 8B OpenZero F16](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) | `openzeroqwen3-f16:latest` | Optional |
+| [Zero-Qwen3 8B OpenZero Q5_K_M](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) | `zero-qwen3-q5:latest` | Optional |
+| [Zero-Qwen3 8B OpenZero F16](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) | `zero-qwen3-f16:latest` | Optional |
 
 `openzerogemma:latest` remains the verified default. See the
 [verified model guide](openzero/docs/MODELS.md) for filenames, sizes,
