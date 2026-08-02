@@ -4,9 +4,10 @@ OpenZero Tab Pilot is a signed Chromium Manifest V3 extension that lets a
 person explicitly grant **one normal Brave tab** to OpenZero for visible,
 step-by-step browser work.
 
-This is an early-access self-hosted extension. Linux OpenZero installs and
-updates can configure it through Brave managed policy; a verified ZIP and
-guided Windows setup helper remain available.
+The public extension is published in the Chrome Web Store. Linux OpenZero
+installs and updates can continue to configure the self-hosted signed build
+through Brave managed policy; a verified ZIP and guided Windows setup helper
+remain available for offline and source-verifiable installs.
 
 ## What it can do
 
@@ -53,6 +54,18 @@ The default model name is `openzerogemma:latest`. It must be installed and retur
 `/v1/models`; otherwise select any installed OpenZero model in the options page.
 
 ## Install in Brave
+
+### Chrome Web Store: recommended interactive install
+
+Install the public listing in Brave, Chrome, or another compatible Chromium
+browser:
+
+https://chromewebstore.google.com/detail/openzero-tab-pilot/cgaalobjjknalamgchppccbocnhonhbf
+
+The Chrome Web Store extension ID is `cgaalobjjknalamgchppccbocnhonhbf`.
+Open the extension options after installation and connect it to your OpenZero
+node. Remote nodes should remain loopback-bound and be reached through the SSH
+tunnel described on https://openzero.talktoai.org/tab-pilot.
 
 ### Linux: automatic managed install
 
