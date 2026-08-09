@@ -1,4 +1,8 @@
-import { listOpenZeroModels } from "./shared/openzero-client.js";
+import {
+  isLoopbackOpenZeroOrigin,
+  listOpenZeroModels,
+  pairLoopbackOpenZero
+} from "./shared/openzero-client.js";
 import {
   mergeEffectiveSettings,
   mergeSettings,
@@ -20,6 +24,8 @@ const fields = {
   allowClicking: document.querySelector("#allow-clicking"),
   allowTyping: document.querySelector("#allow-typing"),
   riskApproval: document.querySelector("#risk-approval"),
+  autoConnect: document.querySelector("#auto-connect"),
+  connectionResult: document.querySelector("#connection-result"),
   test: document.querySelector("#test"),
   testResult: document.querySelector("#test-result"),
   save: document.querySelector("#save"),
@@ -29,6 +35,10 @@ const fields = {
 let savedSettings = mergeSettings();
 let savedLocalSettings = {};
 let managedSettings = {};
+
+function extensionVersion() {
+  return String(chrome.runtime.getManifest()?.version || "").slice(0, 32);
+}
 
 function settingsFromForm() {
   return mergeSettings({
@@ -63,11 +73,86 @@ function render(settings) {
   fields.allowClicking.checked = settings.allowClicking;
   fields.allowTyping.checked = settings.allowTyping;
   fields.riskApproval.checked = settings.requireRiskApproval;
+  fields.autoConnect.textContent = settings.apiKey
+    ? "Reconnect automatically"
+    : "Connect automatically";
 }
 
 function requestApiOrigin(settings) {
   const pattern = originPattern(settings.apiBaseUrl);
   return chrome.permissions.request({ origins: [pattern] });
+}
+
+function localSettingsFor(next) {
+  const localSettings = { ...next };
+  for (const key of ["apiBaseUrl", "apiKey", "model"]) {
+    if (typeof managedSettings[key] === "string" && managedSettings[key].trim()) {
+      delete localSettings[key];
+    }
+  }
+  return localSettings;
+}
+
+async function saveSettings(next) {
+  const localSettings = localSettingsFor(next);
+  await chrome.storage.local.set({ [SETTINGS_KEY]: localSettings });
+  savedLocalSettings = localSettings;
+  savedSettings = mergeEffectiveSettings(savedLocalSettings, managedSettings);
+  render(savedSettings);
+}
+
+async function connectAutomatically({ requestPermission = true, quiet = false } = {}) {
+  if (typeof managedSettings.apiKey === "string" && managedSettings.apiKey.trim()) {
+    if (!quiet) fields.connectionResult.textContent = "Your administrator already manages this connection.";
+    return false;
+  }
+  const apiBaseUrl = normalizeApiBaseUrl(fields.apiUrl.value || savedSettings.apiBaseUrl);
+  if (!isLoopbackOpenZeroOrigin(apiBaseUrl)) {
+    if (!quiet) {
+      fields.connectionResult.textContent =
+        "Automatic setup is loopback-only. Use an SSH tunnel to 127.0.0.1, or open Advanced for a remote HTTPS connection.";
+      document.querySelector("details.advanced").open = true;
+    }
+    return false;
+  }
+  const pattern = originPattern(apiBaseUrl);
+  const allowed = requestPermission
+    ? await chrome.permissions.request({ origins: [pattern] })
+    : await chrome.permissions.contains({ origins: [pattern] });
+  if (!allowed) {
+    if (!quiet) fields.connectionResult.textContent = "Brave did not grant access to the local OpenZero origin.";
+    return false;
+  }
+
+  fields.autoConnect.disabled = true;
+  fields.connectionResult.textContent = "Connecting to OpenZero and verifying models…";
+  try {
+    const paired = await pairLoopbackOpenZero({
+      apiBaseUrl,
+      preferredModel: fields.model.value.trim() || savedSettings.model,
+      version: extensionVersion()
+    });
+    const next = mergeSettings({
+      ...settingsFromForm(),
+      apiBaseUrl,
+      apiKey: paired.apiKey,
+      model: paired.model
+    });
+    await saveSettings(next);
+    fields.connectionResult.textContent =
+      `Connected securely. ${paired.model} selected from ${paired.models.length} installed ` +
+      `model${paired.models.length === 1 ? "" : "s"}.`;
+    fields.testResult.textContent =
+      `Connected. Configured model is available: ${paired.model}\n\n` +
+      `Installed models:\n${paired.models.map((model) => `- ${model}`).join("\n")}`;
+    return true;
+  } catch (error) {
+    fields.connectionResult.textContent = `Automatic setup failed: ${error.message}`;
+    if (!quiet) document.querySelector("details.advanced").open = true;
+    return false;
+  } finally {
+    fields.autoConnect.disabled = false;
+  }
 }
 
 async function load() {
@@ -79,6 +164,14 @@ async function load() {
   managedSettings = managed || {};
   savedSettings = mergeEffectiveSettings(savedLocalSettings, managedSettings);
   render(savedSettings);
+  if (savedSettings.apiKey) {
+    fields.connectionResult.textContent = `Connected settings saved for ${savedSettings.apiBaseUrl}.`;
+    fields.autoConnect.textContent = "Reconnect automatically";
+    return;
+  }
+  if (isLoopbackOpenZeroOrigin(savedSettings.apiBaseUrl)) {
+    await connectAutomatically({ requestPermission: false, quiet: true });
+  }
 }
 
 form.addEventListener("submit", async (event) => {
@@ -94,22 +187,17 @@ form.addEventListener("submit", async (event) => {
     if (!allowed) {
       throw new Error("Brave did not grant access to the OpenZero API origin.");
     }
-    const localSettings = { ...next };
-    for (const key of ["apiBaseUrl", "apiKey", "model"]) {
-      if (typeof managedSettings[key] === "string" && managedSettings[key].trim()) {
-        delete localSettings[key];
-      }
-    }
-    await chrome.storage.local.set({ [SETTINGS_KEY]: localSettings });
-    savedLocalSettings = localSettings;
-    savedSettings = mergeEffectiveSettings(savedLocalSettings, managedSettings);
-    render(savedSettings);
+    await saveSettings(next);
     fields.saveResult.textContent = "Saved.";
   } catch (error) {
     fields.saveResult.textContent = `Not saved: ${error.message}`;
   } finally {
     fields.save.disabled = false;
   }
+});
+
+fields.autoConnect.addEventListener("click", async () => {
+  await connectAutomatically({ requestPermission: true });
 });
 
 fields.test.addEventListener("click", async () => {

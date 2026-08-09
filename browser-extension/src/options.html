@@ -20,6 +20,22 @@
       <form id="settings-form">
         <section class="card">
           <h2>OpenZero connection</h2>
+          <div class="quick-connect">
+            <div>
+              <p class="quick-title">Recommended: connect automatically</p>
+              <p class="help">
+                One click asks your loopback OpenZero node for a dedicated credential, verifies it,
+                selects an installed model, and saves everything in this extension only.
+              </p>
+            </div>
+            <button id="auto-connect" type="button" class="primary">Connect automatically</button>
+          </div>
+          <p id="connection-result" class="connection-result" aria-live="polite">
+            Ready for automatic local setup.
+          </p>
+
+          <details class="advanced">
+            <summary>Advanced or remote connection</summary>
           <label for="api-url">API origin</label>
           <input id="api-url" type="url" required spellcheck="false" placeholder="http://127.0.0.1:1024">
           <p class="help">
@@ -58,6 +74,7 @@
             <button id="test" type="button" class="secondary">Test connection &amp; list models</button>
           </div>
           <pre id="test-result" class="result" aria-live="polite">Not tested yet.</pre>
+          </details>
         </section>
 
         <section class="card">
