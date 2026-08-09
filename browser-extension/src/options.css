@@ -71,6 +71,48 @@ form {
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
 }
 
+.quick-connect {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 13px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(14, 116, 144, 0.2), rgba(37, 99, 235, 0.12));
+}
+
+.quick-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.quick-connect .help {
+  margin: 0;
+}
+
+.connection-result {
+  margin: 10px 2px 0;
+  color: #bae6fd;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.advanced {
+  margin-top: 18px;
+  border-top: 1px solid #334155;
+  padding-top: 14px;
+}
+
+.advanced summary {
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 label {
   display: block;
   margin-top: 16px;
@@ -207,5 +249,10 @@ button:disabled {
   .grid {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+
+  .quick-connect {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

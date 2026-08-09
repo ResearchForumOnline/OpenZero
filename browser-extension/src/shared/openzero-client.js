@@ -4,6 +4,16 @@ import {
   normalizeBrowserAction
 } from "./policy.js";
 
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
+const TAB_PILOT_KEY_RE = /^oztp_[A-Za-z0-9_-]{32,128}$/;
+const MODEL_FALLBACK_ORDER = Object.freeze([
+  "openzerogemma:latest",
+  "zero-qwen3-q5:latest",
+  "openzeroqwen3-q5:latest",
+  "zero-qwen3-f16:latest",
+  "openzeroqwen3-f16:latest"
+]);
+
 const SYSTEM_PROMPT = `You are OpenZero's browser planner. The Brave extension, not you, owns authority.
 
 Return exactly one JSON object and no markdown or prose. Choose one action:
@@ -178,4 +188,70 @@ export async function listOpenZeroModels({ apiBaseUrl, apiKey, fetchImpl = fetch
   return (Array.isArray(payload?.data) ? payload.data : [])
     .map((model) => String(model?.id || "").trim())
     .filter(Boolean);
+}
+
+export function isLoopbackOpenZeroOrigin(apiBaseUrl) {
+  const baseUrl = normalizeApiBaseUrl(apiBaseUrl);
+  return LOOPBACK_HOSTS.has(new URL(baseUrl).hostname.toLowerCase());
+}
+
+export function selectOpenZeroModel(models, preferredModel = "", serverModel = "") {
+  const installed = [...new Set((Array.isArray(models) ? models : [])
+    .map((model) => String(model || "").trim())
+    .filter(Boolean))];
+  if (!installed.length) {
+    throw new Error("OpenZero did not report any installed models.");
+  }
+  const candidates = [preferredModel, serverModel, ...MODEL_FALLBACK_ORDER]
+    .map((model) => String(model || "").trim())
+    .filter(Boolean);
+  return candidates.find((model) => installed.includes(model)) || installed[0];
+}
+
+export async function pairLoopbackOpenZero({
+  apiBaseUrl,
+  preferredModel = "",
+  client = "openzero-tab-pilot",
+  version = "",
+  fetchImpl = fetch
+}) {
+  const baseUrl = normalizeApiBaseUrl(apiBaseUrl);
+  if (!isLoopbackOpenZeroOrigin(baseUrl)) {
+    throw new Error(
+      "Automatic pairing is available only through loopback. Use a local OpenZero node or an SSH tunnel to 127.0.0.1."
+    );
+  }
+  const response = await fetchImpl(`${baseUrl}/api/tab-pilot/key`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ action: "rotate" }),
+    cache: "no-store",
+    credentials: "omit",
+    referrerPolicy: "no-referrer"
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = payload?.error?.message || payload?.message || `HTTP ${response.status}`;
+    throw new Error(`OpenZero automatic pairing failed: ${String(detail).slice(0, 300)}`);
+  }
+  const apiKey = String(payload?.api_key || "");
+  if (!TAB_PILOT_KEY_RE.test(apiKey)) {
+    throw new Error("OpenZero returned an invalid dedicated Tab Pilot credential.");
+  }
+
+  const models = await listOpenZeroModels({ apiBaseUrl: baseUrl, apiKey, fetchImpl });
+  const model = selectOpenZeroModel(
+    models,
+    preferredModel,
+    payload?.default_model || payload?.model
+  );
+  return {
+    apiKey,
+    model,
+    models,
+    hint: String(payload?.hint || "").slice(0, 300)
+  };
 }

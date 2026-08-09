@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "OpenZero Tab Pilot",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Explicitly grant one Brave tab to OpenZero for inspected, visible, policy-controlled browser work.",
   "homepage_url": "https://openzero.talktoai.org/tab-pilot",
   "update_url": "https://openzero.talktoai.org/downloads/tab-pilot-updates.xml",
