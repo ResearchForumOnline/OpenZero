@@ -1049,7 +1049,7 @@
                 appendMessage(
                     data.status === 'success' ? 'system' : 'terminal',
                     'LATTICE',
-                    `${data.message || 'BitNet remove finished.'}\n\n- Active model: \`${data?.config?.ACTIVE_MODEL || runtimeConfig.ACTIVE_MODEL || 'openzerogemma:latest'}\``
+                    `${data.message || 'BitNet remove finished.'}\n\n- Active model: \`${data?.config?.ACTIVE_MODEL || runtimeConfig.ACTIVE_MODEL || 'hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M'}\``
                 );
                 loadConfigAndModels();
             }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] BitNet removal failed.'));

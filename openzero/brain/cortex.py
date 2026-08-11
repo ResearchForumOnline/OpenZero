@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Lock onto the local Gemma 4 edge engine by default.
-ACTIVE_MODEL = os.getenv("ACTIVE_MODEL", "openzerogemma:latest")
+# Use the validated OpenZero Ministral runtime-template edition by default.
+ACTIVE_MODEL = os.getenv("ACTIVE_MODEL", "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M")
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 
 # Load the DevOps Frameworks into the System Prompt so the AI is smart

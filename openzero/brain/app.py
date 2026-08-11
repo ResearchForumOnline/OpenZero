@@ -110,7 +110,8 @@ OPENZERO_FEATURED_MODELS = {
         "description": "Optional high-precision Qwen3 alternative. Large download; it never becomes default automatically.",
     },
 }
-OPENZERO_PERSONAL_MODEL_ALIASES = tuple(
+OPENZERO_MINISTRAL_RUNTIME_MODEL = "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
+OPENZERO_PERSONAL_MODEL_ALIASES = (OPENZERO_MINISTRAL_RUNTIME_MODEL,) + tuple(
     f"{preset['alias']}:latest" for preset in OPENZERO_FEATURED_MODELS.values()
 )
 OPENZERO_PERSONAL_MODEL_FILES = frozenset(
