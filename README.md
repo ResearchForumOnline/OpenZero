@@ -22,12 +22,14 @@ Docs: [docs.talktoai.org/openzero-user-manual](https://docs.talktoai.org/openzer
 
 ZeroThink bridge: [zerothink.talktoai.org](https://zerothink.talktoai.org/)
 
-## New: OpenZero Gemma + Brave Tab Pilot
+## New default: OpenZero Ministral 8B Runtime Agent + Brave Tab Pilot
 
-The current OpenZero model release is
-[`shafire/Zero-Gemma4-E4B-OpenZero-GGUF`](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF).
-On a configured node it is exposed as `openzerogemma:latest` and is the
-recommended default for the OpenZero browser workflow.
+Fresh OpenZero nodes now use
+[`shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF`](https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF)
+through Ollama as `hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M`.
+This is the upstream Ministral 3 8B Instruct model with unchanged weights and an
+OpenZero runtime template; it is not represented as a weight fine-tune. The
+previous OpenZero Gemma release remains an explicit compatibility fallback.
 
 **OpenZero Tab Pilot** is a consent-first Manifest V3 extension for Brave. It
 lets OpenZero inspect and operate one explicitly granted browser tab while the
@@ -55,11 +57,12 @@ downloaded or selected during a normal install:
 
 | Release | OpenZero runtime name | Role |
 | --- | --- | --- |
-| [Zero-Gemma4 E4B OpenZero](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) | `openzerogemma:latest` | Default |
+| [OpenZero Ministral3 8B Runtime Agent](https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF) | `hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M` | Default |
+| [Zero-Gemma4 E4B OpenZero](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) | `openzerogemma:latest` | Compatibility fallback |
 | [Zero-Qwen3 8B OpenZero Q5_K_M](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) | `zero-qwen3-q5:latest` | Optional |
 | [Zero-Qwen3 8B OpenZero F16](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) | `zero-qwen3-f16:latest` | Optional |
 
-`openzerogemma:latest` remains the verified default. See the
+The Ministral runtime-template edition is the default; Gemma remains available as a fallback. See the
 [verified model guide](openzero/docs/MODELS.md) for filenames, sizes,
 SHA-256 digests, direct Ollama commands, and the automatic-install boundary.
 All three artifacts are also grouped in the

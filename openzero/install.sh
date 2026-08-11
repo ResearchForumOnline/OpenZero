@@ -20,7 +20,7 @@ RELEASE_URL="https://openzero.talktoai.org/openzero_release.zip"
 RELEASE_CHECKSUM_URL="https://openzero.talktoai.org/openzero_release.zip.sha256"
 TORRENT_URL="https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent"
 TAB_PILOT_URL="https://openzero.talktoai.org/tab-pilot"
-OPENZERO_DEFAULT_MODEL="openzerogemma:latest"
+OPENZERO_DEFAULT_MODEL="hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
 OPENZERO_GEMMA_URL="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/resolve/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf?download=true"
 OPENZERO_GEMMA_FILE="Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf"
 OPENZERO_GEMMA_SHA256="84fd62ff6c5f0abe14dd2c6135e56800df4bc4a0b9d4cd8d9f26c36b28aa190b"
@@ -163,6 +163,15 @@ install_openzero_gemma() {
     return 0
 }
 
+install_openzero_ministral() {
+    echo -e "${CYAN}Downloading the OpenZero Ministral 8B Runtime Agent default through Ollama (about 6.1 GB)...${NC}"
+    if ollama pull "${OPENZERO_DEFAULT_MODEL}"; then
+        ollama show "${OPENZERO_DEFAULT_MODEL}" >/dev/null 2>&1
+        return $?
+    fi
+    return 1
+}
+
 install_ollama() {
     echo -e "${CYAN}Refreshing Ollama with the official Linux installer...${NC}"
     curl -fsSL https://ollama.com/install.sh | sh
@@ -182,11 +191,13 @@ install_ollama() {
         return 0
     fi
 
-    if install_openzero_gemma; then
-        echo -e "${GREEN}OpenZero Gemma is installed as the default local model.${NC}"
+    if install_openzero_ministral; then
+        echo -e "${GREEN}OpenZero Ministral 8B Runtime Agent is installed as the default local model.${NC}"
     else
-        echo -e "${GOLD}Verified OpenZero Gemma install failed; trying a stock Gemma compatibility fallback.${NC}"
-        if ollama pull gemma4:e4b; then
+        echo -e "${GOLD}OpenZero Ministral install failed; trying the verified OpenZero Gemma compatibility fallback.${NC}"
+        if install_openzero_gemma; then
+            echo -e "${GREEN}OpenZero Gemma is installed as the compatibility fallback.${NC}"
+        elif ollama pull gemma4:e4b; then
             OPENZERO_DEFAULT_MODEL="gemma4:e4b"
         elif ollama pull gemma4:e2b; then
             OPENZERO_DEFAULT_MODEL="gemma4:e2b"
@@ -369,11 +380,14 @@ legacy_defaults = {
     "gemma3:4b",
     "gemma3:12b",
 }
-if "${OPENZERO_DEFAULT_MODEL}" == "openzerogemma:latest":
-    if current.get("ACTIVE_MODEL", "") in legacy_defaults:
-        current["ACTIVE_MODEL"] = "openzerogemma:latest"
-    if current.get("NODE_RECOMMENDED_MODEL", "") in legacy_defaults:
-        current["NODE_RECOMMENDED_MODEL"] = "openzerogemma:latest"
+managed_previous_defaults = legacy_defaults | {
+    "openzerogemma:latest",
+    "hf.co/shafire/OpenZero-Qwen3-1.7B-Agentic-GGUF:Q4_K_M",
+}
+if current.get("ACTIVE_MODEL", "") in managed_previous_defaults:
+    current["ACTIVE_MODEL"] = "${OPENZERO_DEFAULT_MODEL}"
+if current.get("NODE_RECOMMENDED_MODEL", "") in managed_previous_defaults:
+    current["NODE_RECOMMENDED_MODEL"] = "${OPENZERO_DEFAULT_MODEL}"
 
 # Version is release metadata, not a private user preference. Always migrate it.
 current["OPENZERO_VERSION"] = "7.1.0"

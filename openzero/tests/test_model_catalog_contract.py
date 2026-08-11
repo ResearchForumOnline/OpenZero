@@ -9,8 +9,9 @@ PANEL_SOURCE = (OPENZERO_ROOT / "templates" / "index.html").read_text(encoding="
 
 
 class ModelCatalogContractTests(unittest.TestCase):
-    def test_local_catalog_is_limited_to_the_three_current_openzero_models(self):
+    def test_local_catalog_includes_the_runtime_default_and_compatibility_models(self):
         for alias in (
+            "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
             "openzerogemma:latest",
             "zero-qwen3-q5:latest",
             "zero-qwen3-f16:latest",
@@ -19,6 +20,14 @@ class ModelCatalogContractTests(unittest.TestCase):
             self.assertIn(alias, PANEL_SOURCE)
         self.assertIn("visible_openzero_models", APP_SOURCE)
         self.assertIn("for model in visible_openzero_models()", APP_SOURCE)
+
+    def test_ministral_is_the_runtime_default(self):
+        config = (OPENZERO_ROOT / "brain" / "openzero_config.py").read_text(encoding="utf-8")
+        installer = (OPENZERO_ROOT / "install.sh").read_text(encoding="utf-8")
+        model = "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
+        self.assertIn(f'"ACTIVE_MODEL": "{model}"', config)
+        self.assertIn(f'OPENZERO_DEFAULT_MODEL="{model}"', installer)
+        self.assertIn('ollama pull "${OPENZERO_DEFAULT_MODEL}"', installer)
 
     def test_old_stock_install_buttons_and_resolved_local_reinsertion_are_absent(self):
         self.assertNotIn("installLocalModel('gemma4:e2b')", PANEL_SOURCE)
