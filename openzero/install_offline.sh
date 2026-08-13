@@ -57,14 +57,19 @@ if [[ -n "${PM2_TGZ}" ]]; then
     ln -sf "${INSTALL_DIR}/.runtime/npm-global/bin/pm2-runtime" "${INSTALL_DIR}/.runtime/bin/pm2-runtime"
 fi
 
-python3 -m ensurepip --upgrade >/dev/null 2>&1 || true
-python3 -m pip install --upgrade pip --break-system-packages >/dev/null 2>&1 || python3 -m pip install --user --upgrade pip
-python3 -m pip install --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/requirements.txt" --break-system-packages \
-    || python3 -m pip install --user --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/requirements.txt"
+RUNTIME_PYTHON="python3"
+if python3 -m venv "${INSTALL_DIR}/.runtime/venv" >/dev/null 2>&1; then
+    RUNTIME_PYTHON="${INSTALL_DIR}/.runtime/venv/bin/python"
+fi
+"${RUNTIME_PYTHON}" -m ensurepip --upgrade >/dev/null 2>&1 || true
+"${RUNTIME_PYTHON}" -m pip install --upgrade pip --break-system-packages >/dev/null 2>&1 \
+    || "${RUNTIME_PYTHON}" -m pip install --user --upgrade pip
+"${RUNTIME_PYTHON}" -m pip install --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/requirements.txt" --break-system-packages \
+    || "${RUNTIME_PYTHON}" -m pip install --user --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/requirements.txt"
 
 if [[ "${ENABLE_VOICE}" == "true" && -f "${INSTALL_DIR}/offline_assets/voice_requirements.txt" ]]; then
-    python3 -m pip install --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/offline_assets/voice_requirements.txt" --break-system-packages \
-        || python3 -m pip install --user --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/offline_assets/voice_requirements.txt"
+    "${RUNTIME_PYTHON}" -m pip install --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/offline_assets/voice_requirements.txt" --break-system-packages \
+        || "${RUNTIME_PYTHON}" -m pip install --user --no-index --find-links "${INSTALL_DIR}/offline_assets/wheels" -r "${INSTALL_DIR}/offline_assets/voice_requirements.txt"
 fi
 
 if [[ -f "${INSTALL_DIR}/offline_assets/ollama/ollama" ]]; then
@@ -169,6 +174,9 @@ if env_path.exists():
 for key, value in defaults.items():
     current.setdefault(key, value)
 
+# Remove the retired plaintext privilege credential during offline upgrades.
+current.pop("SUDO_PASS", None)
+
 if "${ENABLE_VOICE}" == "true":
     current["VOICE_ENABLED"] = "true"
     current["VOICE_TTS_ENABLED"] = "true"
@@ -177,7 +185,7 @@ env_path.write_text("\n".join(f"{key}={value}" for key, value in sorted(current.
 PY
 
 cd "${INSTALL_DIR}"
-chmod +x ignite.sh setup_service.sh janitor.sh openzero-kali.sh build_offline_release.sh install_offline.sh update.sh install_bitnet.sh
+chmod +x ignite.sh run_brain.sh setup_service.sh janitor.sh openzero-kali.sh build_offline_release.sh install_offline.sh update.sh install_bitnet.sh
 
 if command -v systemctl >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
     ./setup_service.sh "${MODE}" || true

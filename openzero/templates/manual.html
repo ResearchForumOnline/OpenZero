@@ -604,7 +604,7 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 <div class="note"><b>Operator upgrade:</b> In current builds, OpenZero hides raw operator tool payloads from the main stream whenever possible. You mainly see the useful result, not the internal tool grammar. That makes the autonomous loop feel much closer to a real operator instead of a demo chatbot printing its own internals.</div>
 
 <div class="warning">
-<b>SECURITY WARNING:</b> Terminal Sovereignty means the AI executes commands with the exact permissions of the user who installed it. If you installed OpenZero as the `root` user, the AI has <b>absolute control</b> over your operating system. Exercise extreme caution when instructing the AI to delete files, format drives, or modify system states.
+<b>SECURITY BOUNDARY:</b> OpenZero's supported service runs as an unprivileged account with operating-system sandboxing and no automatic privilege escalation. Consequential tool proposals pass through the policy gate and require approval bound to the exact action. Keep administrative maintenance outside the model runtime and never run the service as <code>root</code>.
 </div>
 
 <h2>06 // TELEGRAM UPLINK (MOBILE ACCESS)</h2>
@@ -621,7 +621,7 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 </ol>
 
 <h2>07 // THE TERMINAL ARSENAL</h2>
-<p>A tactical list of commands you can type directly into the Agent's chat box to manage your Linux infrastructure. Remember, you can prefix any standard Linux command with the word <code>run</code> to force the AI to execute it.</p>
+<p>A tactical list of non-privileged commands the Agent can propose for Linux infrastructure inspection. Prefixing a command with <code>run</code> does not bypass policy: review the exact action and approve it only when the target and impact are correct.</p>
 
 <div class="arsenal-grid">
 <div class="arsenal-item">
@@ -661,15 +661,11 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 <p>If you downloaded the <b>ZeroMint OS ISO</b>, you possess a complete, bootable operating system with OpenZero permanently baked into its core. To deploy this to physical hardware:</p>
 
 <div class="highlight-box" style="border-color: var(--neon); box-shadow: 0 0 20px rgba(0,255,65,0.1); padding: 30px;">
-<h3 style="margin-top:0; color:var(--neon); letter-spacing: 2px;">🔑 DEFAULT OS & AGENT CREDENTIALS</h3>
-<p style="color: #ccc; margin-bottom: 20px;">Use these exact credentials to log into the ZeroMint desktop after booting:</p>
-<div style="font-size: 1.3em; margin: 15px 0;">
-USERNAME: <code style="font-size: 1.2em; padding: 5px 15px;">zero</code><br><br>
-PASSWORD: <code style="font-size: 1.2em; padding: 5px 15px;">1234ZERO</code>
-</div>
-<p style="color: #ff3333; font-size: 0.95em; margin-top: 25px;"><b>SECURITY OVERRIDE PROTOCOL:</b> If you change the default password using the standard Linux `passwd` command, the AI agent will lose root access and fail system tasks. You <b>MUST</b> change your password using the internal Agent Sync utility:</p>
-<div class="cmd-box" data-cmd="cd ~/openzero && ./zero_passwd.sh">cd ~/openzero && ./zero_passwd.sh</div>
-<p style="color: #888; font-size: 0.85em; margin-top: 10px;">This script securely changes your Linux Desktop password AND injects it into the Agent's memory so it retains Terminal Sovereignty.</p>
+<h3 style="margin-top:0; color:var(--neon); letter-spacing: 2px;">🔑 FIRST-BOOT CREDENTIAL POLICY</h3>
+<p style="color: #ccc; margin-bottom: 20px;">A supported ZeroMint image must require the operator to establish a unique account password during provisioning. OpenZero does not publish a shared default password and never stores an operating-system password in its configuration.</p>
+<p style="color: #ffcc00; font-size: 0.95em; margin-top: 25px;"><b>LEAST-PRIVILEGE BOUNDARY:</b> OpenZero runs as an unprivileged service account. Change your own operating-system password with the native interactive utility:</p>
+<div class="cmd-box" data-cmd="passwd">passwd</div>
+<p style="color: #888; font-size: 0.85em; margin-top: 10px;">Administrative maintenance stays outside the model runtime and follows the host's normal audited privilege-management process.</p>
 </div>
 
 <ol class="step-list">
@@ -677,7 +673,7 @@ PASSWORD: <code style="font-size: 1.2em; padding: 5px 15px;">1234ZERO</code>
 <li>Insert a USB Flash Drive (8GB minimum).</li>
 <li>Select the `ZeroMint_OS_v1.0.iso` file and flash it to the USB drive.</li>
 <li>Plug the USB into your target computer, boot into the BIOS menu, and select "Boot from USB".</li>
-<li>Log in using the default credentials above.</li>
+<li>Log in using the unique operator account and password created during provisioning.</li>
 <li>Once logged in, simply double-click the <b>"Ignite OpenZero"</b> icon on the desktop to initialize your Sovereign Lattice.</li>
 </ol>
 

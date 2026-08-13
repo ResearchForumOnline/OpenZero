@@ -1,4 +1,6 @@
 import datetime
+import hashlib
+import hmac
 import os
 import subprocess
 import sys
@@ -81,23 +83,29 @@ def get_config() -> Dict[str, str]:
 
 
 def execute_system_command(command: str) -> str:
-    config = get_config()
+    """Execute a command as the current user without automatic escalation."""
+
     if "rm -rf /" in command:
         return "ACTION DENIED: ethical hazard."
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        return "[BLOCKED] OpenZero will not execute model-proposed commands as root."
 
     process = subprocess.run(command, shell=True, text=True, capture_output=True)
     exit_code = process.returncode
     output = process.stdout if exit_code == 0 else process.stderr
 
-    sudo_password = config.get("SUDO_PASS", "")
-    if exit_code != 0 and sudo_password and ("Permission denied" in output or exit_code == 1):
-        payload = f"{sudo_password}\n{command}\n"
-        retry = subprocess.run(["sudo", "-S", "bash"], input=payload, text=True, capture_output=True)
-        if retry.returncode == 0:
-            return retry.stdout.strip() or "[ROOT OVERRIDE SUCCESS]"
-        return retry.stderr.strip()
-
     return output.strip() or "[Success: command executed with no output]"
+
+
+def confirm_exact_cli_command(command: str) -> bool:
+    """Require a fresh confirmation bound to the exact interactive command."""
+
+    fingerprint = hashlib.sha256(command.encode("utf-8", errors="replace")).hexdigest()[:12]
+    supplied = input(
+        f"[CONFIRM] Run exactly this command as the current user?\n{command}\n"
+        f"Type {fingerprint} to continue: "
+    ).strip().lower()
+    return hmac.compare_digest(supplied, fingerprint)
 
 
 def build_prompt(user_prompt: str) -> str:
@@ -343,7 +351,13 @@ def handle_meta_command(user_input: str) -> bool:
             print("Usage: !pg <0.10-0.99>")
         return True
     if command.startswith("!"):
-        print(execute_system_command(user_input[1:]))
+        shell_command = user_input[1:].strip()
+        if not shell_command:
+            print("Usage: !<command>")
+        elif confirm_exact_cli_command(shell_command):
+            print(execute_system_command(shell_command))
+        else:
+            print("[CANCELLED] Command was not approved.")
         return True
     return False
 

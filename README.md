@@ -243,7 +243,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python -m compileall brain hivemind
-python brain/app.py
+./run_brain.sh
 ```
 
 Start from `openzero/.env.example` and keep real `.env` files out of Git.

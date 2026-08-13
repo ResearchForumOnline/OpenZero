@@ -25,10 +25,11 @@ RUNTIME_STATE_PATH = os.path.join(BASE_DIR, "security", "runtime_state.json")
 RUNTIME_OLLAMA_TAGS_URL = "http://127.0.0.1:11434/api/tags"
 BITNET_INSTALL_SCRIPT = os.path.join(BASE_DIR, "install_bitnet.sh")
 BITNET_DEFAULT_ALIAS = "bitnet-b1.58-2b-4t"
-LOCAL_MODEL_CANDIDATES_SMALL = ["openzerogemma:latest", "gemma4:e2b", "gemma3:4b", "gemma4:e4b"]
-LOCAL_MODEL_CANDIDATES_BASE = ["openzerogemma:latest", "gemma4:e4b", "gemma4:e2b", "gemma3:12b"]
-LOCAL_MODEL_CANDIDATES_HEAVY = ["openzerogemma:latest", "gemma4:26b", "gemma4:e4b", "gemma3:12b"]
-LOCAL_MODEL_CANDIDATES_ULTRA = ["openzerogemma:latest", "gemma4:31b", "gemma4:26b", "gemma4:e4b"]
+CURRENT_DEFAULT_LOCAL_MODEL = DEFAULTS["ACTIVE_MODEL"]
+LOCAL_MODEL_CANDIDATES_SMALL = [CURRENT_DEFAULT_LOCAL_MODEL, "openzerogemma:latest", "gemma4:e2b", "gemma3:4b"]
+LOCAL_MODEL_CANDIDATES_BASE = [CURRENT_DEFAULT_LOCAL_MODEL, "openzerogemma:latest", "gemma4:e4b", "gemma4:e2b"]
+LOCAL_MODEL_CANDIDATES_HEAVY = [CURRENT_DEFAULT_LOCAL_MODEL, "openzerogemma:latest", "gemma4:26b", "gemma3:12b"]
+LOCAL_MODEL_CANDIDATES_ULTRA = [CURRENT_DEFAULT_LOCAL_MODEL, "openzerogemma:latest", "gemma4:31b", "gemma4:26b"]
 LEGACY_LOCAL_MODEL_MAP = {
     "gemma2": "openzerogemma:latest",
     "gemma2:2b": "openzerogemma:latest",
@@ -38,7 +39,7 @@ LEGACY_LOCAL_MODEL_MAP = {
     "qwenq8": "openzerogemma:latest",
     "qwenq8:latest": "openzerogemma:latest",
 }
-LOCAL_MODEL_HINT_PREFIXES = ("gemma", "qwenq8", "phi", "mistral", "llama", "deepseek", "codestral", "bitnet")
+LOCAL_MODEL_HINT_PREFIXES = ("hf.co/", "gemma", "qwenq8", "phi", "mistral", "llama", "deepseek", "codestral", "bitnet")
 CLOUD_MODEL_HINT_PREFIXES = ("groq/", "openai/", "qwen/", "meta/", "gemini", "claude", "gpt", "compound")
 
 
@@ -46,46 +47,29 @@ def run_command(command: str, timeout: int = 120) -> subprocess.CompletedProcess
     return subprocess.run(command, shell=True, text=True, capture_output=True, timeout=timeout, check=False)
 
 
-def privileged_shell_prefix() -> List[str]:
-    if os.name != "posix":
-        return []
-    if hasattr(os, "geteuid") and os.geteuid() == 0:
-        return ["bash", "-lc"]
-    sudo_check = run_command("sudo -n true", timeout=10)
-    if sudo_check.returncode == 0:
-        return ["sudo", "-n", "bash", "-lc"]
-    return []
-
-
-def run_privileged(command: str, timeout: int = 1800) -> Dict[str, object]:
-    prefix = privileged_shell_prefix()
-    if not prefix:
-        return {
-            "ok": False,
-            "skipped": True,
-            "command": command,
-            "output": "Skipped privileged runtime repair because passwordless sudo is not available.",
-        }
-    result = subprocess.run(prefix + [command], text=True, capture_output=True, timeout=timeout, check=False)
-    output = (result.stdout or result.stderr or "").strip()
-    return {
-        "ok": result.returncode == 0,
-        "skipped": False,
-        "command": command,
-        "output": output,
-    }
-
-
 def runtime_candidates(env: Dict[str, str]) -> List[str]:
     profile = resource_profile(env)
     ram_gb = int(profile["ram_gb"])
     if ram_gb < 12:
-        return list(LOCAL_MODEL_CANDIDATES_SMALL)
-    if ram_gb < 24:
-        return list(LOCAL_MODEL_CANDIDATES_BASE)
-    if ram_gb < 48:
-        return list(LOCAL_MODEL_CANDIDATES_HEAVY)
-    return list(LOCAL_MODEL_CANDIDATES_ULTRA)
+        profile_candidates = LOCAL_MODEL_CANDIDATES_SMALL
+    elif ram_gb < 24:
+        profile_candidates = LOCAL_MODEL_CANDIDATES_BASE
+    elif ram_gb < 48:
+        profile_candidates = LOCAL_MODEL_CANDIDATES_HEAVY
+    else:
+        profile_candidates = LOCAL_MODEL_CANDIDATES_ULTRA
+
+    ordered = [
+        env.get("ACTIVE_MODEL", ""),
+        env.get("NODE_RECOMMENDED_MODEL", ""),
+        *profile_candidates,
+    ]
+    result = []
+    for candidate in ordered:
+        normalized = normalize_local_model(candidate)
+        if normalized and normalized not in result:
+            result.append(normalized)
+    return result
 
 
 def normalize_local_model(model_name: str) -> str:
@@ -174,10 +158,7 @@ def choose_installed_model(installed: List[str], env: Dict[str, str]) -> str:
         if candidate in installed_set:
             return candidate
     for candidate in installed:
-        if candidate.startswith("gemma4:"):
-            return candidate
-    for candidate in installed:
-        if candidate.startswith("gemma3:"):
+        if model_is_localish(candidate):
             return candidate
     return installed[0] if installed else ""
 
@@ -185,6 +166,11 @@ def choose_installed_model(installed: List[str], env: Dict[str, str]) -> str:
 def model_is_probably_cloud(model_name: str) -> bool:
     normalized = (model_name or "").strip().lower()
     if not normalized:
+        return False
+    # Ollama uses Hugging Face repository references such as
+    # ``hf.co/org/repo:quant`` as local runtime names.  The slash is not proof
+    # of a cloud API dependency.
+    if normalized.startswith("hf.co/"):
         return False
     if "/" in normalized:
         return True
@@ -228,31 +214,28 @@ def ensure_local_ollama_process() -> List[Dict[str, str]]:
                 return logs
             time.sleep(2)
 
-    restart = run_privileged("systemctl daemon-reload || true; systemctl enable ollama || true; systemctl restart ollama || systemctl start ollama || true", timeout=180)
-    logs.append({"step": "restart-system-ollama", "output": str(restart["output"])})
-    for _ in range(20):
-        if ollama_api_status()["reachable"]:
-            break
-        time.sleep(2)
+    logs.append(
+        {
+            "step": "system-ollama-manual-required",
+            "output": (
+                "System service changes are outside the OpenZero runtime. "
+                "Use the host's audited administrator or deployment process."
+            ),
+        }
+    )
     return logs
 
 
 def upgrade_ollama_runtime() -> List[Dict[str, str]]:
-    logs: List[Dict[str, str]] = []
-    commands = [
-        "curl -fsSL https://ollama.com/install.sh | sh",
-        "systemctl daemon-reload || true",
-        "systemctl enable ollama || true",
-        "systemctl restart ollama || systemctl start ollama || true",
+    return [
+        {
+            "step": "ollama-upgrade-manual-required",
+            "output": (
+                "Automatic operating-system upgrades are disabled. Update Ollama through "
+                "the host's audited administrator or managed-deployment process."
+            ),
+        }
     ]
-    for command in commands:
-        result = run_privileged(command, timeout=1800 if "install.sh" in command else 180)
-        logs.append({"step": command, "output": str(result["output"])})
-    for _ in range(45):
-        if ollama_api_status()["reachable"]:
-            break
-        time.sleep(2)
-    return logs
 
 
 def pull_model(model_name: str, timeout: int = 7200) -> Dict[str, object]:
@@ -279,28 +262,34 @@ def repair_runtime(auto_update: bool = True) -> Dict[str, object]:
     logs: List[Dict[str, str]] = []
 
     if bitnet_selected(env):
-        if os.path.exists(BITNET_INSTALL_SCRIPT):
-            result = run_command(f'"{BITNET_INSTALL_SCRIPT}" --install --activate --json --quiet', timeout=14400)
-            output = (result.stdout or result.stderr or "").strip()
-            logs.append({"step": "bitnet-install", "output": output})
-            bitnet = bitnet_status(load_env(BASE_DIR))
-            report = {
-                "saved_model": saved_model,
-                "effective_model": env.get("BITNET_MODEL_ALIAS", BITNET_DEFAULT_ALIAS),
-                "recommended_model": profile["recommended_model"],
-                "installed_models": [env.get("BITNET_MODEL_ALIAS", BITNET_DEFAULT_ALIAS)] if bitnet["ready"] else [],
-                "api_reachable": bitnet["ready"],
-                "api_error": "" if bitnet["ready"] else "BitNet runtime is not ready.",
-                "did_upgrade_ollama": False,
-                "logs": logs,
-                "status": "healthy" if bitnet["ready"] else "degraded",
-                "env_model": load_env(BASE_DIR).get("ACTIVE_MODEL", ""),
-                "engine": "bitnet",
-            }
-            os.makedirs(os.path.dirname(RUNTIME_STATE_PATH), exist_ok=True)
-            with open(RUNTIME_STATE_PATH, "w", encoding="utf-8") as handle:
-                json.dump(report, handle, indent=2, sort_keys=True)
-            return report
+        bitnet = bitnet_status(load_env(BASE_DIR))
+        if not bitnet["ready"]:
+            logs.append(
+                {
+                    "step": "bitnet-install-manual-required",
+                    "output": (
+                        "Automatic BitNet installation is disabled in the doctor. "
+                        "Use the explicit administrator-approved installer workflow."
+                    ),
+                }
+            )
+        report = {
+            "saved_model": saved_model,
+            "effective_model": env.get("BITNET_MODEL_ALIAS", BITNET_DEFAULT_ALIAS),
+            "recommended_model": profile["recommended_model"],
+            "installed_models": [env.get("BITNET_MODEL_ALIAS", BITNET_DEFAULT_ALIAS)] if bitnet["ready"] else [],
+            "api_reachable": bitnet["ready"],
+            "api_error": "" if bitnet["ready"] else "BitNet runtime is not ready.",
+            "did_upgrade_ollama": False,
+            "logs": logs,
+            "status": "healthy" if bitnet["ready"] else "degraded",
+            "env_model": load_env(BASE_DIR).get("ACTIVE_MODEL", ""),
+            "engine": "bitnet",
+        }
+        os.makedirs(os.path.dirname(RUNTIME_STATE_PATH), exist_ok=True)
+        with open(RUNTIME_STATE_PATH, "w", encoding="utf-8") as handle:
+            json.dump(report, handle, indent=2, sort_keys=True)
+        return report
 
     logs.extend(ensure_local_ollama_process())
     installed = list_ollama_models()
@@ -325,14 +314,7 @@ def repair_runtime(auto_update: bool = True) -> Dict[str, object]:
                 "requires a newer version of ollama" in lower_output or "pull model manifest: 412" in lower_output
             ):
                 logs.extend(upgrade_ollama_runtime())
-                did_upgrade = True
-                logs.extend(ensure_local_ollama_process())
-                pulled_retry = pull_model(candidate)
-                logs.append({"step": f"retry pull {candidate}", "output": str(pulled_retry["output"])})
-                if pulled_retry["ok"]:
-                    installed = list_ollama_models()
-                    target_model = candidate if candidate in installed else choose_installed_model(installed, env)
-                    break
+                break
 
     api_state = ollama_api_status()
     updates = {

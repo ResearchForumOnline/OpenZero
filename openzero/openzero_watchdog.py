@@ -63,8 +63,10 @@ def ensure_ollama(config) -> None:
 
     status = run("systemctl is-active ollama", timeout=20)
     if status.returncode != 0 or "active" not in status.stdout:
-        write_log("ollama inactive, attempting restart")
-        run("sudo -n systemctl restart ollama", timeout=120)
+        write_log(
+            "ollama system service is inactive; automatic privileged restart is disabled, "
+            "so administrator action is required"
+        )
 
 
 def pm2_processes():
@@ -88,9 +90,13 @@ def ensure_pm2_process(name: str, command: str) -> None:
 
 
 def ensure_services() -> None:
-    os.chdir(BASE_DIR)
-    ensure_pm2_process("zero-vision", "pm2 start moltbot/moltbot.js --name zero-vision")
-    ensure_pm2_process("zero-brain", "pm2 start brain/app.py --name zero-brain --interpreter python3")
+    # Production processes are supervised only by systemd. Starting PM2
+    # fallbacks here can create a second browser or brain process while a unit
+    # is activating, so the watchdog reports health and lets Restart= own it.
+    for service in ("openzero-brain.service", "openzero-vision.service"):
+        status = run(f"systemctl is-active {service}", timeout=20)
+        if status.returncode != 0 or status.stdout.strip() != "active":
+            write_log(f"{service} is not active; systemd restart policy owns recovery")
 
 
 def maybe_run_runtime_repair(config, reason: str, force: bool = False) -> None:

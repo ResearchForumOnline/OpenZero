@@ -2,6 +2,9 @@ import os
 from typing import Dict
 
 
+RETIRED_PLAINTEXT_KEYS = {"SUDO_PASS"}
+
+
 DEFAULTS: Dict[str, str] = {
     "OPENZERO_VERSION": "7.1.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
@@ -97,7 +100,6 @@ DEFAULTS: Dict[str, str] = {
     "SERPER_API_KEY": "",
     "TELEGRAM_BOT_TOKEN": "",
     "TELEGRAM_CHAT_ID": "",
-    "SUDO_PASS": "",
 }
 
 
@@ -119,7 +121,10 @@ def load_env(base_dir: str) -> Dict[str, str]:
                 if not line or line.startswith("#") or "=" not in line:
                     continue
                 key, value = line.split("=", 1)
-                env[key.strip()] = value.strip()
+                key = key.strip()
+                if key in RETIRED_PLAINTEXT_KEYS:
+                    continue
+                env[key] = value.strip()
     profile = resource_profile(env)
     env.setdefault("NODE_RAM_GB", str(profile["ram_gb"]))
     env.setdefault("NODE_CONTEXT_WINDOW", str(profile["context_window"]))
@@ -128,6 +133,8 @@ def load_env(base_dir: str) -> Dict[str, str]:
 
 
 def save_env_value(base_dir: str, key: str, value: str) -> Dict[str, str]:
+    if key in RETIRED_PLAINTEXT_KEYS:
+        raise ValueError(f"{key} is retired; OpenZero never stores operating-system passwords")
     env = load_env(base_dir)
     env[key] = sanitize_env_value(value)
     env_path = env_path_for(base_dir)
@@ -139,7 +146,10 @@ def save_env_value(base_dir: str, key: str, value: str) -> Dict[str, str]:
     with open(env_path, "w", encoding="utf-8") as handle:
         replaced = False
         for raw_line in lines:
-            if raw_line.strip().startswith(f"{key}="):
+            line_key = raw_line.split("=", 1)[0].strip() if "=" in raw_line else ""
+            if line_key in RETIRED_PLAINTEXT_KEYS:
+                continue
+            if line_key == key:
                 handle.write(f"{key}={env[key]}\n")
                 replaced = True
             else:
@@ -150,6 +160,10 @@ def save_env_value(base_dir: str, key: str, value: str) -> Dict[str, str]:
 
 
 def save_env_values(base_dir: str, updates: Dict[str, str]) -> Dict[str, str]:
+    retired_updates = RETIRED_PLAINTEXT_KEYS.intersection(updates)
+    if retired_updates:
+        retired = ", ".join(sorted(retired_updates))
+        raise ValueError(f"Retired plaintext configuration keys are not accepted: {retired}")
     env = load_env(base_dir)
     env.update({key: sanitize_env_value(value) for key, value in updates.items()})
     env_path = env_path_for(base_dir)
