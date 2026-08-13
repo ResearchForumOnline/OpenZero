@@ -119,7 +119,9 @@ install_prereqs_if_possible() {
   fi
 
   log "BitNet prerequisites missing: ${missing[*]}"
-  if command_exists apt-get && ( [[ "${EUID:-$(id -u)}" -eq 0 ]] || sudo -n true >/dev/null 2>&1 ); then
+  if [[ "${OPENZERO_NO_PRIVILEGE_ESCALATION:-0}" == "1" ]]; then
+    log "Managed runtime mode: skipping operating-system package installation."
+  elif command_exists apt-get && ( [[ "${EUID:-$(id -u)}" -eq 0 ]] || sudo -n true >/dev/null 2>&1 ); then
     log "Attempting to install BitNet prerequisites via apt-get..."
     if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
       apt-get update

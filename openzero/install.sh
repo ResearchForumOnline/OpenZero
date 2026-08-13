@@ -264,10 +264,13 @@ PY
 
 install_python_dependencies() {
     cd "${INSTALL_DIR}"
-    python3 -m pip install --upgrade pip --break-system-packages
-    python3 -m pip install -r requirements.txt --break-system-packages
+    mkdir -p "${INSTALL_DIR}/.runtime"
+    python3 -m venv "${INSTALL_DIR}/.runtime/venv"
+    local runtime_python="${INSTALL_DIR}/.runtime/venv/bin/python"
+    "${runtime_python}" -m pip install --upgrade pip
+    "${runtime_python}" -m pip install -r requirements.txt
     if [ "${ENABLE_VOICE}" = "true" ]; then
-        python3 -m pip install faster-whisper --break-system-packages || true
+        "${runtime_python}" -m pip install faster-whisper || true
     fi
 }
 
@@ -371,6 +374,10 @@ if env_path.exists():
 for key, value in defaults.items():
     current.setdefault(key, value)
 
+# Older releases could retain an operating-system password in plaintext.
+# It is no longer consumed, and upgrades remove it from managed configuration.
+current.pop("SUDO_PASS", None)
+
 legacy_defaults = {
     "gemma2",
     "gemma2:2b",
@@ -402,7 +409,7 @@ PY
 
 install_services() {
     cd "${INSTALL_DIR}"
-    chmod +x ignite.sh janitor.sh openzero-kali.sh setup_service.sh update.sh install_bitnet.sh install-tab-pilot.sh
+    chmod +x ignite.sh run_brain.sh janitor.sh openzero-kali.sh setup_service.sh update.sh install_bitnet.sh install-tab-pilot.sh
     python3 openzero_doctor.py --json >/dev/null || true
     python3 openzero_doctor.py --repair-runtime --quiet >/dev/null || true
     ./setup_service.sh "${MODE}"
@@ -410,9 +417,10 @@ install_services() {
 
 start_openzero() {
     cd "${INSTALL_DIR}"
-    ./ignite.sh --headless
     if [ "${MODE}" = "desktop" ]; then
         ./ignite.sh
+    else
+        ./ignite.sh --headless
     fi
 }
 

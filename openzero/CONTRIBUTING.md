@@ -27,7 +27,8 @@ Good contributions include:
 Python compile check:
 
 ```bash
-python -m py_compile brain/app.py brain/openzero_config.py brain/voice_stack.py
+python -m py_compile brain/app.py brain/wsgi.py brain/openzero_config.py brain/voice_stack.py
+./run_brain.sh
 ```
 
 Basic local run depends on your environment and installed services.

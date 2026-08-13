@@ -1,43 +1,30 @@
-import subprocess
-import os
-from dotenv import load_dotenv
+"""Fail-closed compatibility shim for the retired legacy shell executor.
 
-load_dotenv()
-SUDO_PASS = os.getenv("SUDO_PASS", "1234ZERO")
+OpenZero's governed operator runtime lives in :mod:`brain.autonomous_runtime`
+and requires a fresh, exact-action approval for raw shell execution.  Older
+releases exposed helpers from this module that executed arbitrary strings and
+attempted privilege escalation.  Those helpers are intentionally retained only
+as non-executing stubs so an old import cannot silently restore that behavior.
+"""
 
-def execute_bash(command):
-    """
-    Armored Execution Engine.
-    Uses stdin piping to flawlessly handle LLM newlines, quotes, and && chains as root.
-    """
-    command = command.strip()
-    
-    # 1. Try as standard user first
-    process = subprocess.run(command, shell=True, text=True, capture_output=True)
-    exit_code = process.returncode
-    output = process.stdout if exit_code == 0 else process.stderr
-    
-    # 2. AUTO-ESCALATION: If permission denied or exit 1
-    if exit_code != 0 and ("Permission denied" in output or exit_code == 1):
-        
-        # THE FIX: We pass the password on line 1, and the AI's raw command on the next lines.
-        # This completely bypasses the need for quotes or escaping.
-        payload = f"{SUDO_PASS}\n{command}\n"
-        
-        # Execute 'sudo bash' directly, feeding it the payload
-        retry = subprocess.run(
-            ["sudo", "-S", "bash"], 
-            input=payload, 
-            text=True, 
-            capture_output=True
-        )
-        
-        if retry.returncode == 0:
-            return f"[ROOT OVERRIDE SUCCESS]\n{retry.stdout.strip()}", 0
-        else:
-            return retry.stderr.strip(), retry.returncode
+from __future__ import annotations
 
-    if not output.strip():
-        output = "[Success: Command executed with no output]"
-        
-    return output.strip(), exit_code
+
+LEGACY_EXECUTION_DISABLED = (
+    "Legacy direct command execution is disabled. Use the governed OpenZero "
+    "operator runtime, which applies policy and exact-action confirmation."
+)
+
+
+def execute_bash(command: str):
+    """Refuse legacy shell execution while preserving the old return shape."""
+
+    del command
+    return f"[BLOCKED] {LEGACY_EXECUTION_DISABLED}", 126
+
+
+def execute_persistent(session_name: str, command: str):
+    """Refuse legacy background execution while preserving compatibility."""
+
+    del session_name, command
+    return f"[BLOCKED] {LEGACY_EXECUTION_DISABLED}", 126

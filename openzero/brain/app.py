@@ -65,6 +65,7 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 MODELS_FOLDER = os.path.join(BASE_DIR, "models")
 SECURITY_FOLDER = os.path.join(BASE_DIR, "security")
 CUSTOM_MODEL_REGISTRY_PATH = os.path.join(SECURITY_FOLDER, "custom_models.json")
+SSH_KNOWN_HOSTS_PATH = os.path.join(SECURITY_FOLDER, "ssh_known_hosts")
 HF_BRIDGE_PATH = os.path.join(BASE_DIR, "hf_bridge.sh")
 BITNET_INSTALL_SCRIPT = os.path.join(BASE_DIR, "install_bitnet.sh")
 BITNET_RUNTIME_DIR = os.path.join(BASE_DIR, ".runtime", "bitnet")
@@ -765,7 +766,10 @@ def resolve_local_model_selection(
 
     upgrade_hint = ""
     if version_state.get("available"):
-        upgrade_hint = " Re-run `curl -fsSL https://ollama.com/install.sh | sh` if Gemma 4 pulls say Ollama is too old."
+        upgrade_hint = (
+            " If model pulls report that Ollama is too old, ask the host administrator "
+            "to update it through the audited package-management process."
+        )
     return {
         "model": preferred_candidates[0],
         "saved_model": raw_active,
@@ -1446,6 +1450,11 @@ def enforce_requested_reply_shape(reply: str, prompt: str) -> str:
 def run_bitnet_installer(activate: bool = True, remove: bool = False) -> Dict[str, object]:
     if not os.path.exists(BITNET_INSTALL_SCRIPT):
         return {"status": "error", "message": "BitNet installer script is missing."}
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        return {
+            "status": "error",
+            "message": "BitNet runtime actions are disabled when the web process is running as root.",
+        }
     command = ["bash", BITNET_INSTALL_SCRIPT]
     if remove:
         command.append("--remove")
@@ -1455,9 +1464,12 @@ def run_bitnet_installer(activate: bool = True, remove: bool = False) -> Dict[st
         command.append("--activate")
     command.append("--json")
     try:
+        installer_env = dict(os.environ)
+        installer_env["OPENZERO_NO_PRIVILEGE_ESCALATION"] = "1"
         result = subprocess.run(
             command,
             cwd=BASE_DIR,
+            env=installer_env,
             capture_output=True,
             text=True,
             timeout=14400,
@@ -1630,22 +1642,18 @@ def ask_local(
     return ask_ollama_local(prompt, context=context, agent_mode=agent_mode, history=history)
 
 
-def execute_system_command(command: str, sudo_password: str, timeout: int = 45) -> str:
+def execute_system_command(command: str, timeout: int = 45) -> str:
+    """Execute one already-approved command as the unprivileged service user."""
+
     command = command.strip()
     if not command:
         return "[ERROR] No command provided."
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        return "[BLOCKED] OpenZero will not execute model-proposed commands as root."
 
     process = subprocess.run(command, shell=True, text=True, capture_output=True, timeout=timeout)
     exit_code = process.returncode
     output = process.stdout if exit_code == 0 else process.stderr
-
-    if exit_code != 0 and sudo_password and ("Permission denied" in output or exit_code == 1):
-        payload = f"{sudo_password}\n{command}\n"
-        retry = subprocess.run(["sudo", "-S", "bash"], input=payload, text=True, capture_output=True, timeout=timeout)
-        if retry.returncode == 0:
-            return retry.stdout.strip() or "[ROOT OVERRIDE SUCCESS]"
-        return retry.stderr.strip()
-
     return output.strip() or "[Success: command executed with no output]"
 
 
@@ -1676,25 +1684,24 @@ def wait_for_ollama_api(timeout_seconds: int = 60) -> bool:
 
 
 def upgrade_ollama_runtime() -> Dict[str, object]:
-    config = current_config()
-    sudo_password = config.get("SUDO_PASS", "")
-    steps = [
-        ("Refreshing Ollama with the official installer", "curl -fsSL https://ollama.com/install.sh | sh", 900),
-        ("Reloading systemd", "systemctl daemon-reload", 60),
-        ("Enabling Ollama", "systemctl enable ollama", 60),
-        ("Restarting Ollama", "systemctl restart ollama", 120),
-    ]
-    logs = []
-    for label, command, timeout in steps:
-        output = execute_system_command(command, sudo_password, timeout=timeout)
-        logs.append({"label": label, "command": command, "output": output})
-    ready = wait_for_ollama_api(timeout_seconds=90)
-    version_state = ollama_version_status()
+    """Refuse operating-system upgrades from the model-facing web process.
+
+    Ollama installation and service lifecycle changes belong to a host
+    administrator or managed deployment tool.  Keeping that boundary here
+    prevents a loopback/API request from turning into unattended privilege
+    escalation, even on a host with passwordless sudo configured.
+    """
+
     return {
-        "status": "success" if ready else "partial",
-        "ready": ready,
-        "ollama": version_state,
-        "logs": logs,
+        "status": "manual_required",
+        "ready": False,
+        "requires_admin": True,
+        "message": (
+            "Automatic operating-system upgrades are disabled. Update and restart Ollama "
+            "through the host's audited administrator or managed-deployment process."
+        ),
+        "ollama": ollama_version_status(),
+        "logs": [],
     }
 
 
@@ -2711,6 +2718,8 @@ def ssh_command_result(host: str, user: str, port: int, command: str) -> str:
         "BatchMode=yes",
         "-o",
         "StrictHostKeyChecking=accept-new",
+        "-o",
+        f"UserKnownHostsFile={SSH_KNOWN_HOSTS_PATH}",
         "-p",
         str(port or 22),
         ssh_target(host, user),
@@ -2748,6 +2757,8 @@ def scp_result(host: str, user: str, port: int, source: str, destination: str, d
         "BatchMode=yes",
         "-o",
         "StrictHostKeyChecking=accept-new",
+        "-o",
+        f"UserKnownHostsFile={SSH_KNOWN_HOSTS_PATH}",
         "-P",
         str(port or 22),
     ]
@@ -3195,7 +3206,7 @@ def run_tool_action(raw_reply: str, session_id: str = "", run_id: str = "") -> D
                 action_fingerprint("bash", bash_payload),
                 bash_summary,
             )
-        result = execute_system_command(command, config.get("SUDO_PASS", ""))
+        result = execute_system_command(command)
         return {"tool": "bash", "result": f"**[TERMINAL RESULT]**\n```bash\n{result}\n```"}
 
     match = re.search(r"<osint>(.*?)</osint>", raw_reply, re.DOTALL)
@@ -4225,8 +4236,8 @@ def install_local_model():
         if ollama_upgrade_needed(message):
             message = (
                 f"{message}\n\n"
-                "OpenZero detected an outdated Ollama runtime. Use the `Update Ollama` or `Repair Local Brain` button, "
-                "or rerun `curl -fsSL https://ollama.com/install.sh | sh`."
+                "OpenZero detected an outdated Ollama runtime. Automatic operating-system upgrades are disabled; "
+                "ask the host administrator to update Ollama through the audited package-management process."
             )
         return jsonify({"status": "error", "message": message, "needs_ollama_upgrade": ollama_upgrade_needed(message)}), 500
 
@@ -4254,11 +4265,13 @@ def ollama_status():
 @app.route("/api/ollama/upgrade", methods=["POST"])
 def ollama_upgrade():
     report = upgrade_ollama_runtime()
-    http_code = 200 if report.get("ready") else 500
-    message = "Ollama upgrade cycle finished and the local API is reachable." if report.get("ready") else (
-        "Ollama upgrade ran, but the local API still is not responding yet."
-    )
-    return jsonify({"status": "success" if report.get("ready") else "error", "message": message, "report": report}), http_code
+    return jsonify(
+        {
+            "status": "manual_required",
+            "message": report["message"],
+            "report": report,
+        }
+    ), 409
 
 
 @app.route("/api/repair_local_brain", methods=["POST"])
@@ -5956,12 +5969,7 @@ def heartbeat_loop():
 
 
 if __name__ == "__main__":
-    threading.Thread(target=heartbeat_loop, daemon=True).start()
-    recover_autonomous_runs()
-    startup_config = current_config()
-    bind_host = str(startup_config.get("OPENZERO_BIND_HOST") or "127.0.0.1").strip()
-    if bind_host not in {"127.0.0.1", "::1", "localhost"} and not env_bool(
-        startup_config, "OPENZERO_ALLOW_PUBLIC_BIND", False
-    ):
-        bind_host = "127.0.0.1"
-    socketio.run(app, host=bind_host, port=1024, allow_unsafe_werkzeug=True)
+    bind_host = "127.0.0.1"
+    raise SystemExit(
+        f"Direct Flask/Werkzeug startup is disabled; use ./run_brain.sh (loopback {bind_host})"
+    )

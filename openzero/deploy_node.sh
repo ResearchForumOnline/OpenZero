@@ -1,24 +1,13 @@
 #!/bin/bash
-# OPENZERO // SOVEREIGN DEPLOYMENT v4.5
-echo ">>> INITIALIZING OPENZERO LATTICE..."
+set -euo pipefail
 
-# 1. Install System Deps
-sudo apt-get update
-sudo apt-get install -y wget nodejs npm python3-pip
+# Compatibility entrypoint retained for older documentation and automation.
+# The primary installer owns dependency installation, verified release staging,
+# the unprivileged runtime venv, and hardened systemd services.  Keeping a
+# second deployment implementation here previously bypassed those controls and
+# could launch duplicate PM2 processes.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INSTALL_DIR="${OPENZERO_INSTALL_DIR:-${SCRIPT_DIR}}"
 
-# 2. Fix Chrome (The Moltbot Vision Eye)
-if ! command -v google-chrome-stable &> /dev/null; then
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    sudo dpkg -i google-chrome-stable_current_amd64.deb
-    sudo apt-get install -f -y
-    sudo ln -sf /usr/bin/google-chrome-stable /usr/bin/chromium
-fi
-
-# 3. Process Management
-sudo npm install -g pm2
-pm2 start moltbot/moltbot.js --name "zero-vision"
-pm2 start brain/app.py --name "zero-brain" --interpreter python3
-pm2 save
-pm2 startup
-
-echo ">>> DEPLOYMENT COMPLETE. ACCESS AT PORT 1024."
+echo ">>> deploy_node.sh now delegates to the verified OpenZero installer."
+exec "${SCRIPT_DIR}/install.sh" --server --dir "${INSTALL_DIR}" "$@"
