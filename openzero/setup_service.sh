@@ -75,7 +75,7 @@ RequiresMountsFor=${INSTALL_DIR}/models
 Type=exec
 User=${SERVICE_USER}
 Group=${SERVICE_GROUP}
-WorkingDirectory="${INSTALL_DIR}"
+WorkingDirectory=${INSTALL_DIR}
 Environment=PYTHONUNBUFFERED=1
 Environment=PATH=${INSTALL_DIR}/.runtime/venv/bin:${INSTALL_DIR}/.runtime/bin:${INSTALL_DIR}/.runtime/node/bin:${INSTALL_DIR}/.runtime/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 UMask=0077
@@ -119,7 +119,7 @@ After=network-online.target
 Type=exec
 User=${SERVICE_USER}
 Group=${SERVICE_GROUP}
-WorkingDirectory="${INSTALL_DIR}"
+WorkingDirectory=${INSTALL_DIR}
 Environment=HOME=${INSTALL_DIR}/.runtime/vision-home
 Environment=PATH=${INSTALL_DIR}/.runtime/node/bin:${INSTALL_DIR}/.runtime/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 UMask=0077
@@ -162,7 +162,7 @@ After=openzero-brain.service openzero-vision.service
 Type=simple
 User=${SERVICE_USER}
 Group=${SERVICE_GROUP}
-WorkingDirectory="${INSTALL_DIR}"
+WorkingDirectory=${INSTALL_DIR}
 Environment=PYTHONUNBUFFERED=1
 Environment=PATH=${INSTALL_DIR}/.runtime/venv/bin:${INSTALL_DIR}/.runtime/bin:${INSTALL_DIR}/.runtime/node/bin:${INSTALL_DIR}/.runtime/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 UMask=0077
