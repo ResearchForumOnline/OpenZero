@@ -381,7 +381,7 @@ LOCAL_MODEL_PRESETS = [
         "id": "gemma4:e4b",
         "label": "Gemma 4 Edge 4B",
         "tier": "baseline",
-        "ram_hint": "Stock compatibility choice; OpenZero Gemma remains the default.",
+        "ram_hint": "Stock compatibility choice; the verified OpenZero Ministral runtime remains the default.",
     },
     {
         "id": "gemma4:26b",
