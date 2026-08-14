@@ -44,6 +44,18 @@ class ModelCatalogContractTests(unittest.TestCase):
         self.assertIn("Compatibility fallback", ROOT_README)
         self.assertNotIn("The Super Panel also shows two optional Qwen3", ROOT_README)
 
+    def test_operator_copy_does_not_restore_the_retired_gemma_default(self):
+        manual = (OPENZERO_ROOT / "templates" / "manual.html").read_text(encoding="utf-8")
+        for stale_copy in (
+            "OpenZero Gemma remains the default",
+            "Gemma/Ollama lane",
+            "built-in Gemma 4 install buttons",
+            "Gemma model store",
+        ):
+            self.assertNotIn(stale_copy, APP_SOURCE)
+            self.assertNotIn(stale_copy, PANEL_SOURCE)
+            self.assertNotIn(stale_copy, manual)
+
 
 if __name__ == "__main__":
     unittest.main()

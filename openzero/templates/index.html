@@ -1017,7 +1017,7 @@
         }
 
         function removeBitnet() {
-            if (!confirm('Remove the optional BitNet runtime and switch this node back to the Gemma/Ollama lane?')) return;
+            if (!confirm('Remove the optional BitNet runtime and switch this node back to the verified Ministral/Ollama lane?')) return;
             fetch('/api/bitnet/remove', { method: 'POST' }).then(r => r.json()).then(data => {
                 appendMessage(
                     data.status === 'success' ? 'system' : 'terminal',
