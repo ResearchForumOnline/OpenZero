@@ -45,6 +45,11 @@ class TabPilotIntegrationContractTests(unittest.TestCase):
         self.assertIn(STORE_URL, TAB_PAGE_SOURCE)
         self.assertIn(STORE_URL, LANDING_PAGE_SOURCE)
         self.assertNotIn("not yet published in the Chrome Web Store", TAB_PAGE_SOURCE)
+        self.assertIn("The Chrome Web Store is the preferred public install", TAB_PAGE_SOURCE)
+        self.assertIn("the verified OpenZero runtime plans", TAB_PAGE_SOURCE)
+        self.assertIn("Managed/offline self-hosted package 0.2.0", TAB_PAGE_SOURCE)
+        self.assertNotIn("OpenZero Gemma plans", TAB_PAGE_SOURCE)
+        self.assertNotIn("<p class=\"muted\">Version 0.2.0", TAB_PAGE_SOURCE)
 
 
     def test_71_installer_migrates_version_and_can_install_brave(self):
