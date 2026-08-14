@@ -202,6 +202,24 @@ class PrivilegeBoundaryTests(unittest.TestCase):
         self.assertIn("unique operator account and password", manual)
         self.assertIn("no automatic privilege escalation", manual)
 
+    def test_public_page_matches_the_production_privilege_boundary(self):
+        public_page = (OPENZERO_ROOT / "index.html").read_text(encoding="utf-8")
+        for retired_claim in (
+            "ROOT@OPENZERO:~#",
+            "UNCENSORED / DNA MATH",
+            "ROOT SHELL / BASH",
+            "operate with elevated local privileges",
+        ):
+            self.assertNotIn(retired_claim, public_page)
+        for required_copy in (
+            "ZERO@OPENZERO:~$",
+            "OPERATOR POLICY / LOCAL AUDIT",
+            "APPROVAL-GATED LOCAL TOOLS",
+            "automatic privilege escalation is blocked in production",
+            "self-editing and other writable state remain high risk",
+        ):
+            self.assertIn(required_copy, public_page)
+
 
 class DoctorModelSelectionTests(unittest.TestCase):
     def test_hugging_face_ollama_reference_is_local(self):

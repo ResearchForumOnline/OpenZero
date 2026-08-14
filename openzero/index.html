@@ -476,7 +476,7 @@
 
     <div class="terminal-box">
         <div class="terminal-top">
-            <span>ROOT@OPENZERO:~#</span>
+            <span>ZERO@OPENZERO:~$</span>
             <div style="display:flex; align-items:center; gap:10px;">
                 <span>OS_INSTALL_SCRIPT</span>
                 <button onclick="copyInstall()" id="copy-btn" class="copy-btn">COPY_CODE</button>
@@ -494,7 +494,7 @@
 
     <div class="terminal-box" style="margin-top:24px;">
         <div class="terminal-top">
-            <span>ROOT@OPENZERO:~#</span>
+            <span>ZERO@OPENZERO:~$</span>
             <div style="display:flex; align-items:center; gap:10px;">
                 <span>SAFE_UPDATE_SCRIPT</span>
                 <button onclick="copyUpdate()" id="copy-update-btn" class="copy-btn">COPY_CODE</button>
@@ -510,7 +510,7 @@
 
     <div class="terminal-box" style="margin-top:24px;">
         <div class="terminal-top">
-            <span>ROOT@OPENZERO:~#</span>
+            <span>ZERO@OPENZERO:~$</span>
             <div style="display:flex; align-items:center; gap:10px;">
                 <span>AIRGAP_OFFLINE_BUNDLE</span>
                 <button onclick="copyOfflineBuild()" id="copy-offline-btn" class="copy-btn">COPY_CODE</button>
@@ -653,12 +653,12 @@
                 </tr>
                 <tr>
                     <td>RESTRICTIONS</td>
-                    <td class="check">UNCENSORED / DNA MATH</td>
+                    <td class="check">OPERATOR POLICY / LOCAL AUDIT</td>
                     <td class="cross">CORPORATE GUARDRAILS</td>
                 </tr>
                 <tr>
                     <td>ACCESS</td>
-                    <td class="check">ROOT SHELL / BASH</td>
+                    <td class="check">APPROVAL-GATED LOCAL TOOLS</td>
                     <td class="cross">LOCKED SANDBOX</td>
                 </tr>
             </tbody>
@@ -686,7 +686,7 @@
         <div>
             <h3 style="color: #ff3333; margin: 0 0 10px 0; font-size: 1.2em;">WARNING: HIGH-RISK AUTONOMY</h3>
             <p style="color: #cc5555; font-size: 0.9em; margin: 0; line-height: 1.6; text-transform: none;">
-                OpenZero can operate with elevated local privileges. Version 7.1 retains tamper-evident ethics locks, encrypted local vault files, and signed Hive contributions, but a system owner with full disk access can still replace files. Treat the platform as hardened and auditable, not magically immutable.
+                OpenZero performs operator-approved actions only within the deployed service permissions; automatic privilege escalation is blocked in production. Version 7.1 retains tamper-evident ethics locks, encrypted local vault files, and signed Hive contributions, but self-editing and other writable state remain high risk because a system owner with full disk access can still replace files. Treat the platform as hardened and auditable, not magically immutable.
             </p>
         </div>
     </div>
