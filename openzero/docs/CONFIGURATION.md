@@ -11,7 +11,7 @@ Never commit real `.env` files.
 | `OPENZERO_VERSION` | `7.1.0` | Version label. |
 | `OPENZERO_DOMAIN` | `https://openzero.talktoai.org` | Public download/domain reference. |
 | `SERVER_PORT` | `1024` | Panel/API port when configured. |
-| `ACTIVE_MODEL` | `openzerogemma:latest` | Preferred local model. |
+| `ACTIVE_MODEL` | `hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M` | Verified local runtime default. |
 | `LOCAL_ENGINE` | `ollama` | Local engine selector. |
 | `COMP_MODE` | `hybrid` | Computation mode. |
 

@@ -20,13 +20,13 @@ test("managed connection settings override local values without weakening safety
     {
       apiBaseUrl: "http://127.0.0.1:1024",
       apiKey: "managed-key",
-      model: "openzerogemma:latest",
+      model: "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
       requireRiskApproval: false
     }
   );
   assert.equal(settings.apiBaseUrl, "http://127.0.0.1:1024");
   assert.equal(settings.apiKey, "managed-key");
-  assert.equal(settings.model, "openzerogemma:latest");
+  assert.equal(settings.model, "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M");
   assert.equal(settings.requireRiskApproval, false);
 });
 

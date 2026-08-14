@@ -135,7 +135,7 @@ prepare_models() {
     local source_models
 
     source_models="$(detect_models_path)" || {
-        echo "Unable to find an Ollama model store. Install openzerogemma:latest on this builder node first, or rerun with sudo plus --models-path /path/to/models."
+        echo "Unable to find an Ollama model store. Install hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M on this builder node first, or rerun with sudo plus --models-path /path/to/models."
         exit 1
     }
 

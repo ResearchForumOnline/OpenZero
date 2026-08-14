@@ -13,11 +13,13 @@ class ModelCatalogContractTests(unittest.TestCase):
         for alias in (
             "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
             "openzerogemma:latest",
-            "zero-qwen3-q5:latest",
-            "zero-qwen3-f16:latest",
         ):
             self.assertIn(alias, APP_SOURCE)
             self.assertIn(alias, PANEL_SOURCE)
+        self.assertNotIn('"openzero-qwen-q5"', APP_SOURCE)
+        self.assertNotIn('"openzero-qwen-f16"', APP_SOURCE)
+        self.assertNotIn("OPENZERO QWEN3", PANEL_SOURCE)
+        self.assertNotIn("FUSION", PANEL_SOURCE.upper())
         self.assertIn("visible_openzero_models", APP_SOURCE)
         self.assertIn("for model in visible_openzero_models()", APP_SOURCE)
 
@@ -34,11 +36,13 @@ class ModelCatalogContractTests(unittest.TestCase):
         self.assertNotIn("installLocalModel('gemma3:12b')", PANEL_SOURCE)
         self.assertNotIn("Resolved Local:", PANEL_SOURCE)
 
-    def test_public_readme_uses_canonical_qwen_aliases(self):
-        self.assertIn("zero-qwen3-q5:latest", ROOT_README)
-        self.assertIn("zero-qwen3-f16:latest", ROOT_README)
-        self.assertNotIn("openzeroqwen3-q5:latest", ROOT_README)
-        self.assertNotIn("openzeroqwen3-f16:latest", ROOT_README)
+    def test_model_roles_and_api_recommendation_are_coherent(self):
+        self.assertIn('"role": "compatibility"', APP_SOURCE)
+        self.assertNotIn('"role": "default"', APP_SOURCE[: APP_SOURCE.index("os.makedirs(UPLOAD_FOLDER")])
+        self.assertIn('"recommended_model": profile["recommended_model"]', APP_SOURCE)
+        self.assertIn('"active_model": resolution["model"]', APP_SOURCE)
+        self.assertIn("Compatibility fallback", ROOT_README)
+        self.assertNotIn("The Super Panel also shows two optional Qwen3", ROOT_README)
 
 
 if __name__ == "__main__":

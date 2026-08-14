@@ -52,20 +52,17 @@ with managed Brave policy, and registers automatic updates. Headless servers use
 `--brave` to opt in; `--no-tab-pilot` opts out. Windows keeps the verified helper
 path, where Brave deliberately requires the final **Load unpacked** approval.
 
-The Super Panel also shows two optional Qwen3 8B builds. They are never
-downloaded or selected during a normal install:
+The promoted runtime catalog is intentionally small and evidence-bound:
 
 | Release | OpenZero runtime name | Role |
 | --- | --- | --- |
 | [OpenZero Ministral3 8B Runtime Agent](https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF) | `hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M` | Default |
 | [Zero-Gemma4 E4B OpenZero](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) | `openzerogemma:latest` | Compatibility fallback |
-| [Zero-Qwen3 8B OpenZero Q5_K_M](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) | `zero-qwen3-q5:latest` | Optional |
-| [Zero-Qwen3 8B OpenZero F16](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) | `zero-qwen3-f16:latest` | Optional |
 
 The Ministral runtime-template edition is the default; Gemma remains available as a fallback. See the
 [verified model guide](openzero/docs/MODELS.md) for filenames, sizes,
 SHA-256 digests, direct Ollama commands, and the automatic-install boundary.
-All three artifacts are also grouped in the
+The wider research archive remains available in the
 [Agentic GGUF Models collection](https://huggingface.co/collections/shafire/agentic-gguf-models).
 
 ## What You Can Build With It
@@ -123,9 +120,8 @@ http://localhost:1024
 | Brave Tab Pilot page | [openzero.talktoai.org/tab-pilot](https://openzero.talktoai.org/tab-pilot) |
 | Brave extension ZIP | [Download v0.2.0](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.zip) |
 | Signed Brave extension | [Download v0.2.0 CRX](https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx) |
-| OpenZero Gemma GGUF | [Hugging Face model](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) |
-| Optional Qwen3 8B Q5 | [Hugging Face GGUF](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf) |
-| Optional Qwen3 8B F16 | [Hugging Face GGUF](https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf) |
+| OpenZero Ministral default | [Hugging Face model](https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF) |
+| OpenZero Gemma compatibility model | [Hugging Face model](https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF) |
 | Verified model guide | [openzero/docs/MODELS.md](openzero/docs/MODELS.md) |
 | Update script | [openzero/update.sh](openzero/update.sh) |
 | ZeroMint OS v1.0 ISO | [Download ISO](https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso) |
@@ -141,7 +137,7 @@ http://localhost:1024
 | Area | What OpenZero Provides |
 | --- | --- |
 | Super Panel | Browser UI for models, Hive controls, voice, OpenZero API key management, local runtime status, and settings. |
-| Local LLM lane | Ollama-backed model routing with Gemma defaults, custom model names, repair actions, install buttons, and model status checks. |
+| Local LLM lane | Ollama-backed Ministral Q5 default with a Gemma E4B compatibility fallback, custom model names, repair actions, install buttons, and model status checks. |
 | CPU profiles | Compact, balanced, and max CPU modes with thread, batch, context, and keep-warm controls. |
 | Z-Spark | Custom draft-verify layer: a small local model drafts, OpenZero estimates confidence, and the active model verifies or rewrites. |
 | OpenAI-compatible API | `/v1/chat/completions` for local model calls with OpenZero API keys. |
@@ -212,7 +208,7 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H "Authorization: Bearer ztapi_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openzerogemma:latest",
+    "model": "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
     "openzero_spark": "auto",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}

@@ -37,7 +37,8 @@ class TabPilotIntegrationContractTests(unittest.TestCase):
         self.assertIn("install-tab-pilot.sh", INSTALLER_SOURCE)
         self.assertIn("ExtensionInstallForcelist", TAB_INSTALLER_SOURCE)
         self.assertIn("OPENZERO_TAB_PILOT_KEY_HASH", APP_SOURCE)
-        self.assertIn("openzerogemma:latest", TAB_INSTALLER_SOURCE)
+        self.assertIn("OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M", TAB_INSTALLER_SOURCE)
+        self.assertIn('"default_model": default_model', APP_SOURCE)
 
 
     def test_published_chrome_web_store_listing_is_canonical_interactive_install(self):

@@ -76,6 +76,7 @@ BITNET_DEFAULT_MODEL_ID = "microsoft/bitnet-b1.58-2B-4T-gguf"
 BITNET_DEFAULT_MODEL_ALIAS = "bitnet-b1.58-2b-4t"
 BITNET_DEFAULT_MODEL_FILE = os.path.join(BITNET_MODEL_ROOT, "BitNet-b1.58-2B-4T", "ggml-model-i2_s.gguf")
 AUTONOMOUS_RUN_ROOT = os.path.join(BASE_DIR, ".runtime", "autonomous-runs")
+OPENZERO_MINISTRAL_RUNTIME_MODEL = "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
 OPENZERO_FEATURED_MODELS = {
     "openzero-gemma": {
         "label": "OpenZero Gemma 4 E4B",
@@ -85,33 +86,10 @@ OPENZERO_FEATURED_MODELS = {
         "page_url": "https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF",
         "sha256": "84fd62ff6c5f0abe14dd2c6135e56800df4bc4a0b9d4cd8d9f26c36b28aa190b",
         "size": 5865235584,
-        "role": "default",
-        "description": "Recommended OpenZero default. Local-first Gemma 4 E4B workflow model.",
-    },
-    "openzero-qwen-q5": {
-        "label": "OpenZero Qwen3 8B Q5_K_M",
-        "alias": "zero-qwen3-q5",
-        "filename": "Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
-        "url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/resolve/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf?download=true",
-        "page_url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
-        "sha256": "390464f750b5cb53da298848adc05839c1fd40404a74cd5f800cad9612d17d59",
-        "size": 5851112224,
-        "role": "optional",
-        "description": "Optional CPU-friendly Qwen3 alternative. It never replaces the default automatically.",
-    },
-    "openzero-qwen-f16": {
-        "label": "OpenZero Qwen3 8B F16",
-        "alias": "zero-qwen3-f16",
-        "filename": "Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf",
-        "url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/resolve/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf?download=true",
-        "page_url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf",
-        "sha256": "c69cdbe2c3be4a08efb7d56c115abad2b83cfcf398f80a246ae374131ca58232",
-        "size": 14837080864,
-        "role": "optional",
-        "description": "Optional high-precision Qwen3 alternative. Large download; it never becomes default automatically.",
+        "role": "compatibility",
+        "description": "Compatibility-only OpenZero Gemma 4 E4B model. It never replaces the verified Ministral default automatically.",
     },
 }
-OPENZERO_MINISTRAL_RUNTIME_MODEL = "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
 OPENZERO_PERSONAL_MODEL_ALIASES = (OPENZERO_MINISTRAL_RUNTIME_MODEL,) + tuple(
     f"{preset['alias']}:latest" for preset in OPENZERO_FEATURED_MODELS.values()
 )
@@ -3813,12 +3791,19 @@ def rotate_tab_pilot_api_key():
             "OPENZERO_TAB_PILOT_KEY_HINT": openzero_api_hint(token),
         }
     )
+    profile = resource_profile(config)
+    default_model = resolve_local_model_selection(
+        config,
+        profile,
+        include_ollama_status=False,
+    )["model"]
     return jsonify(
         {
             "status": "success",
             "message": "Tab Pilot key created. Copy it now; it will not be shown again.",
             "api_key": token,
             "hint": config.get("OPENZERO_TAB_PILOT_KEY_HINT", ""),
+            "default_model": default_model,
         }
     )
 
@@ -3829,9 +3814,13 @@ def openzero_list_models():
     if not openzero_model_api_authorized(config):
         return openzero_api_error("Unauthorized OpenZero API key.", 401, "authentication_error")
 
+    profile = resource_profile(config)
+    resolution = resolve_local_model_selection(config, profile, include_ollama_status=False)
     return jsonify(
         {
             "object": "list",
+            "recommended_model": profile["recommended_model"],
+            "active_model": resolution["model"],
             "data": [
                 {
                     "id": model,

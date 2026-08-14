@@ -7,11 +7,8 @@ import {
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 const TAB_PILOT_KEY_RE = /^oztp_[A-Za-z0-9_-]{32,128}$/;
 const MODEL_FALLBACK_ORDER = Object.freeze([
-  "openzerogemma:latest",
-  "zero-qwen3-q5:latest",
-  "openzeroqwen3-q5:latest",
-  "zero-qwen3-f16:latest",
-  "openzeroqwen3-f16:latest"
+  "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
+  "openzerogemma:latest"
 ]);
 
 const SYSTEM_PROMPT = `You are OpenZero's browser planner. The Brave extension, not you, owns authority.

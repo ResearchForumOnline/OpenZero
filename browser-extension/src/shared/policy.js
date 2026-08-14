@@ -1,7 +1,7 @@
 export const DEFAULT_SETTINGS = Object.freeze({
   apiBaseUrl: "http://127.0.0.1:1024",
   apiKey: "",
-  model: "openzerogemma:latest",
+  model: "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
   maxSteps: 12,
   requestTimeoutSeconds: 120,
   allowNavigation: true,

@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenZero 7.1 | Ultra-16 Agents, Brave Tab Pilot, and Local-First AI</title>
-    <meta name="description" content="Run OpenZero Gemma locally and connect one explicitly approved Brave tab with the OpenZero Tab Pilot extension, alongside Hive coordination, local learning, offline operation, and self-healing services.">
+    <meta name="description" content="Run OpenZero with the verified Ministral 8B Runtime Agent Q5_K_M default and connect one explicitly approved Brave tab through the consent-first OpenZero Tab Pilot extension.">
     <link rel="canonical" href="https://openzero.talktoai.org/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="OpenZero 7.1 | Sovereign AI Node">
-    <meta property="og:description" content="Run OpenZero Gemma locally and use the consent-first Brave Tab Pilot extension for visible, bounded browser work.">
+    <meta property="og:description" content="Run the verified OpenZero Ministral 8B Runtime Agent locally and use the consent-first Brave Tab Pilot extension for visible, bounded browser work.">
     <meta property="og:image" content="https://openzero.talktoai.org/zero_og_image.png">
     <meta property="og:url" content="https://openzero.talktoai.org/">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="OpenZero 7.1">
-    <meta name="twitter:description" content="OpenZero Gemma plus a consent-first Brave Tab Pilot extension for visible, bounded browser work.">
+    <meta name="twitter:description" content="OpenZero Ministral 8B Runtime Agent plus a consent-first Brave Tab Pilot extension for visible, bounded browser work.">
     <meta name="twitter:image" content="https://openzero.talktoai.org/zero_og_image.png">
     <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/svg+xml" href="/icon.svg">
@@ -27,7 +27,7 @@
       "softwareVersion": "7.1",
       "url": "https://openzero.talktoai.org/",
       "downloadUrl": "https://openzero.talktoai.org/install",
-      "description": "Local-first sovereign AI node with compact agent skills, Moltbot web vision, private local learning, Hive coordination, self-healing install scripts, Gemma 4 by default, optional Microsoft BitNet, RAM-aware scaling, and optional offline voice.",
+      "description": "Local-first sovereign AI node with the verified OpenZero Ministral 8B Runtime Agent Q5_K_M default, compact agent skills, Moltbot web vision, private local learning, Hive coordination, optional Microsoft BitNet, RAM-aware scaling, and optional offline voice.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -210,12 +210,8 @@
             border-radius: 50%;
             animation: model-orbit 9s linear infinite;
         }
-        .model-card.qwen { border-color: rgba(114,167,255,.42); }
-        .model-card.qwen::after { border-color: rgba(114,167,255,.55); }
         .model-card .model-label { display:inline-block; margin-bottom:14px; padding:5px 9px; border:1px solid currentColor; color:var(--neon); font-size:.72em; letter-spacing:.12em; }
-        .model-card.qwen .model-label { color:#72a7ff; }
         .model-card a { position:relative; z-index:1; color:var(--neon); }
-        .model-card.qwen a { color:#72a7ff; }
         @keyframes model-orbit { to { transform: rotate(360deg); } }
         @media (prefers-reduced-motion: reduce) { .model-card::after { animation:none; } }
 
@@ -418,8 +414,8 @@
     <div class="grid-system">
         <div class="card">
             <div class="card-icon">🧠</div>
-            <h3>BRAIN: OPENZERO GEMMA 4</h3>
-            <p>The verified Zero-Gemma4-E4B-OpenZero GGUF runs locally as <code>openzerogemma:latest</code> and is the recommended browser-workflow default.</p>
+            <h3>BRAIN: OPENZERO MINISTRAL 8B RUNTIME AGENT</h3>
+            <p>The verified OpenZero Ministral 8B Runtime Agent Q5_K_M runs locally as <code>hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M</code>. Upstream weights are unchanged; OpenZero behavior is supplied by its runtime template.</p>
         </div>
         <div class="card">
             <div class="card-icon">⬢</div>
@@ -445,36 +441,30 @@
 
     <div class="grid-system">
         <article class="card model-card">
-            <span class="model-label">DEFAULT // 5.46 GiB</span>
-            <h3>OPENZERO GEMMA</h3>
-            <p><code>openzerogemma:latest</code>. Installed and selected by the normal OpenZero setup after exact size, SHA-256, and GGUF validation.</p>
-            <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/blob/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf">VIEW VERIFIED GGUF →</a>
+            <span class="model-label">DEFAULT // 5.64 GiB Q5_K_M</span>
+            <h3>OPENZERO MINISTRAL 8B RUNTIME AGENT</h3>
+            <p><code>hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M</code>. Installed and selected by the normal OpenZero setup through Ollama.</p>
+            <a href="https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF">VIEW VERIFIED Q5 RELEASE →</a>
         </article>
-        <article class="card model-card qwen">
-            <span class="model-label">OPTIONAL // 5.45 GiB</span>
-            <h3>QWEN3 8B Q5</h3>
-            <p><code>zero-qwen3-q5:latest</code>. A smaller quantized experiment, available from the Super Panel but never pulled or activated automatically.</p>
-            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf">VIEW Q5 GGUF →</a>
-        </article>
-        <article class="card model-card qwen">
-            <span class="model-label">OPTIONAL // 13.82 GiB</span>
-            <h3>QWEN3 8B F16</h3>
-            <p><code>zero-qwen3-f16:latest</code>. The full fused F16 experiment for operators with sufficient memory and disk headroom.</p>
-            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf">VIEW F16 GGUF →</a>
+        <article class="card model-card">
+            <span class="model-label">COMPATIBILITY // 5.46 GiB</span>
+            <h3>OPENZERO GEMMA 4 E4B</h3>
+            <p><code>openzerogemma:latest</code>. Retained for existing deployments and explicit compatibility use; it does not replace the Ministral default automatically.</p>
+            <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF">VIEW COMPATIBILITY RELEASE →</a>
         </article>
     </div>
 
     <div class="zeromint-banner" style="border-left-color:var(--neon); border-color:var(--neon);">
-        <div class="tagline">NEW // OPENZERO GEMMA + BRAVE TAB PILOT</div>
+        <div class="tagline">OPENZERO MINISTRAL 8B RUNTIME AGENT + BRAVE TAB PILOT</div>
         <h2 style="color:var(--neon);">LET YOUR LOCAL OPENZERO NODE WORK INSIDE ONE TAB YOU APPROVE.</h2>
         <p style="text-transform:none;">OpenZero Tab Pilot is an early-access Manifest V3 extension for Brave. It uses authenticated OpenZero planning while tab control stays inside the browser: inspect, navigate, click, type, select, scroll, wait, back, and forward. Every tab requires an explicit grant, new origins require Brave permission, and consequential actions or personal-data entry pause for one-time approval.</p>
         <p style="text-transform:none;"><strong>Now published in the Chrome Web Store:</strong> install the public listing in Brave, Chrome, or another compatible Chromium browser, then connect it to your OpenZero node.</p>
-        <p style="text-transform:none;">The verified default model is <code>openzerogemma:latest</code>, based on the public Zero-Gemma4-E4B-OpenZero GGUF release. Passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and arbitrary JavaScript are blocked by the extension.</p>
+        <p style="text-transform:none;">The verified default is <code>hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M</code>; <code>openzerogemma:latest</code> is compatibility-only. Passwords, payments, secrets, CAPTCHAs, file uploads, privileged pages, and arbitrary JavaScript are blocked by the extension.</p>
         <p style="text-transform:none;">On desktop Linux, OpenZero 7.1 installs Brave from Brave's official installer when needed, provisions a planner-only token, installs the signed extension through managed policy, and registers automatic CRX updates. Headless servers stay browser-free unless <code>--brave</code> is requested. Use <code>--no-tab-pilot</code> to opt out.</p>
         <div class="nav-grid" style="margin-top:22px;">
             <a href="/tab-pilot" class="btn-large btn-neon">TAB PILOT SETUP</a>
             <a href="https://chromewebstore.google.com/detail/openzero-tab-pilot/cgaalobjjknalamgchppccbocnhonhbf" target="_blank" rel="noopener noreferrer" class="btn-large">INSTALL FROM CHROME WEB STORE</a>
-            <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF" class="btn-large" style="border-color:var(--gold); color:var(--gold)">OPENZERO GEMMA MODEL</a>
+            <a href="https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF" class="btn-large" style="border-color:var(--gold); color:var(--gold)">OPENZERO DEFAULT MODEL</a>
             <a href="https://github.com/ResearchForumOnline/OpenZero" class="btn-large" style="border-color:var(--purple); color:var(--purple)">SOURCE + SECURITY DOCS</a>
         </div>
     </div>

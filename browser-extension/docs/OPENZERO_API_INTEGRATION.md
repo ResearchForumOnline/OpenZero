@@ -16,7 +16,7 @@ Expected response:
   "object": "list",
   "data": [
     {
-      "id": "openzerogemma:latest",
+      "id": "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
       "object": "model"
     }
   ]
@@ -67,7 +67,9 @@ sent cleartext across a network.
 
 ## Default model
 
-The extension defaults to `openzerogemma:latest` to match the OpenZero Gemma
-lane. Model discovery is authoritative: if `/v1/models` does not return that
-name, select an installed model or repair/install the model on OpenZero before
-running the extension.
+The extension defaults to
+`hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M` to match the
+verified OpenZero runtime. Model discovery is authoritative: if `/v1/models`
+does not return that name, select an installed model or repair/install the model
+on OpenZero before running the extension. `openzerogemma:latest` remains a
+compatibility fallback.

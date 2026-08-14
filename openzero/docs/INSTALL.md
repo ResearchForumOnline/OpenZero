@@ -43,7 +43,7 @@ The installer prepares:
 - Python dependencies;
 - Node/Moltbot dependencies;
 - Ollama;
-- default Gemma local model path where possible;
+- verified Ministral Q5 local default, with Gemma E4B retained only for compatibility;
 - PM2/system service helpers;
 - `.env` defaults.
 
