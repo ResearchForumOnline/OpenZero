@@ -50,8 +50,10 @@ Moltbot does not control the user's existing Brave tabs. This extension uses
 model discovery plus the strict planner route and keeps all tab authority inside
 Brave. The browser-planner token cannot call general chat completions.
 
-The default model name is `openzerogemma:latest`. It must be installed and returned by
-`/v1/models`; otherwise select any installed OpenZero model in the options page.
+The default model name is
+`hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M`. It must be
+installed and returned by `/v1/models`; otherwise select an installed OpenZero
+model in the options page. `openzerogemma:latest` remains a compatibility fallback.
 
 ## Install in Brave
 

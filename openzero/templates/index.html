@@ -95,20 +95,15 @@
         .featured-model-grid { display:grid; grid-template-columns:1fr; gap:12px; margin:16px 0; }
         .featured-model-card { position:relative; overflow:hidden; border:1px solid #29442f; border-left:4px solid var(--neon); background:linear-gradient(145deg, rgba(0,255,65,0.10), rgba(0,0,0,0.96) 58%); padding:15px; isolation:isolate; }
         .featured-model-card::before { content:""; position:absolute; inset:-50%; z-index:-1; background:conic-gradient(from 0deg, transparent, rgba(0,255,65,0.18), transparent 28%); animation:modelOrbit 8s linear infinite; }
-        .featured-model-card.qwen { border-left-color:var(--cyan); background:linear-gradient(145deg, rgba(0,255,255,0.09), rgba(0,0,0,0.96) 58%); }
-        .featured-model-card.qwen::before { background:conic-gradient(from 0deg, transparent, rgba(0,255,255,0.15), transparent 28%); animation-duration:11s; }
         .featured-model-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
         .featured-model-card h4 { color:#fff; margin:0 0 6px 0; font-size:0.94em; }
         .featured-model-card p { color:#9daaa0; font-size:0.75em; line-height:1.45; margin:7px 0; text-transform:none; }
         .featured-model-badge { display:inline-flex; border:1px solid var(--neon); color:var(--neon); padding:4px 7px; font-size:0.64em; font-weight:bold; letter-spacing:.08em; white-space:nowrap; animation:modelGlow 2.4s ease-in-out infinite; }
-        .featured-model-card.qwen .featured-model-badge { border-color:var(--cyan); color:var(--cyan); animation-delay:.5s; }
         .featured-model-meta { color:#758178; font-size:0.67em; line-height:1.55; overflow-wrap:anywhere; text-transform:none; }
         .featured-model-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:11px; }
         .featured-model-actions a { display:flex; align-items:center; justify-content:center; border:1px solid #39523f; color:#c7f8d1; padding:9px; text-decoration:none; font-size:0.7em; font-weight:bold; text-align:center; }
-        .featured-model-card.qwen .featured-model-actions a { border-color:#2d5555; color:#bff8f8; }
         .featured-model-progress { height:5px; margin-top:11px; background:#151a16; overflow:hidden; }
         .featured-model-progress span { display:block; width:0; height:100%; background:linear-gradient(90deg,var(--neon),#fff); transition:width .35s ease; box-shadow:0 0 12px rgba(0,255,65,.65); }
-        .featured-model-card.qwen .featured-model-progress span { background:linear-gradient(90deg,var(--cyan),#fff); box-shadow:0 0 12px rgba(0,255,255,.6); }
         .featured-model-status { min-height:1.5em; color:#89958c; font-size:.7em; margin-top:7px; text-transform:none; }
         .tab-pilot-card { border:1px solid #554723; background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(0,0,0,.96)); padding:15px; margin:14px 0; animation:pilotFloat 5s ease-in-out infinite; }
         .tab-pilot-card strong { color:var(--gold); display:block; margin-bottom:7px; }
@@ -303,56 +298,37 @@
                 <div class="health-note" id="model-health-note"></div>
                 <div class="health-note" id="bitnet-health-note"></div>
                 <div class="featured-model-grid" id="featured-model-grid">
+                    <div class="featured-model-card">
+                        <div class="featured-model-top">
+                            <div>
+                                <h4>OPENZERO MINISTRAL 8B RUNTIME AGENT</h4>
+                                <div class="featured-model-meta"><code>hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M</code> · VERIFIED DEFAULT · 5.64 GiB</div>
+                            </div>
+                            <span class="featured-model-badge">DEFAULT</span>
+                        </div>
+                        <p>The verified OpenZero and Tab Pilot runtime default. The normal installer pulls it through Ollama; upstream weights are unchanged and the OpenZero behavior is supplied by its runtime template.</p>
+                        <div class="featured-model-actions">
+                            <a href="https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF" target="_blank" rel="noopener noreferrer">HUGGING FACE ↗</a>
+                        </div>
+                    </div>
+
                     <div class="featured-model-card" data-featured-model="openzero-gemma">
                         <div class="featured-model-top">
                             <div>
                                 <h4>OPENZERO GEMMA 4 E4B</h4>
                                 <div class="featured-model-meta"><code>openzerogemma:latest</code> · VERIFIED GGUF · 5.5 GiB</div>
                             </div>
-                            <span class="featured-model-badge">DEFAULT</span>
+                            <span class="featured-model-badge">COMPATIBILITY</span>
                         </div>
-                        <p>The recommended OpenZero brain for new installs and Tab Pilot browser work.</p>
+                        <p>A verified compatibility fallback for existing OpenZero Gemma deployments. Installing it never replaces the Ministral default automatically.</p>
                         <div class="featured-model-actions">
-                            <button class="action-btn" onclick="installFeaturedModel('openzero-gemma')">INSTALL / REPAIR DEFAULT</button>
+                            <button class="action-btn" onclick="installFeaturedModel('openzero-gemma')">INSTALL COMPATIBILITY MODEL</button>
                             <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF" target="_blank" rel="noopener noreferrer">HUGGING FACE ↗</a>
                         </div>
                         <div class="featured-model-progress"><span id="featured-progress-openzero-gemma"></span></div>
                         <div class="featured-model-status" id="featured-status-openzero-gemma">Checking this node...</div>
                     </div>
 
-                    <div class="featured-model-card qwen" data-featured-model="openzero-qwen-q5">
-                        <div class="featured-model-top">
-                            <div>
-                                <h4>OPENZERO QWEN3 8B Q5_K_M</h4>
-                                <div class="featured-model-meta"><code>zero-qwen3-q5:latest</code> · OPTIONAL · 5.5 GiB</div>
-                            </div>
-                            <span class="featured-model-badge">OPTIONAL QWEN</span>
-                        </div>
-                        <p>CPU-friendly Qwen3 alternative. Installation never changes the OpenZero Gemma default automatically.</p>
-                        <div class="featured-model-actions">
-                            <button class="action-btn" onclick="installFeaturedModel('openzero-qwen-q5')">INSTALL OPTIONAL Q5</button>
-                            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf" target="_blank" rel="noopener noreferrer">HUGGING FACE ↗</a>
-                        </div>
-                        <div class="featured-model-progress"><span id="featured-progress-openzero-qwen-q5"></span></div>
-                        <div class="featured-model-status" id="featured-status-openzero-qwen-q5">Optional model. Not installed automatically.</div>
-                    </div>
-
-                    <div class="featured-model-card qwen" data-featured-model="openzero-qwen-f16">
-                        <div class="featured-model-top">
-                            <div>
-                                <h4>OPENZERO QWEN3 8B F16</h4>
-                                <div class="featured-model-meta"><code>zero-qwen3-f16:latest</code> · OPTIONAL · 13.8 GiB</div>
-                            </div>
-                            <span class="featured-model-badge">HIGH PRECISION</span>
-                        </div>
-                        <p>Large high-precision Qwen3 alternative for machines with more storage and memory. Never selected by default.</p>
-                        <div class="featured-model-actions">
-                            <button class="action-btn" onclick="installFeaturedModel('openzero-qwen-f16')">INSTALL OPTIONAL F16</button>
-                            <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf" target="_blank" rel="noopener noreferrer">HUGGING FACE ↗</a>
-                        </div>
-                        <div class="featured-model-progress"><span id="featured-progress-openzero-qwen-f16"></span></div>
-                        <div class="featured-model-status" id="featured-status-openzero-qwen-f16">Optional 13.8 GiB download. Not installed automatically.</div>
-                    </div>
                 </div>
 
                 <div class="tab-pilot-card">
@@ -367,7 +343,7 @@
                     <button class="action-btn" style="border-color:var(--neon); color:var(--neon);" onclick="repairLocalBrain()">REPAIR LOCAL BRAIN</button>
                     <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="refreshModelInventory()">REFRESH MODELS</button>
                 </div>
-                <div class="hint">The local model selector is intentionally limited to your three current OpenZero releases: OpenZero Gemma plus the Qwen3 Q5 and F16 variants.</div>
+                <div class="hint">The local model selector promotes the verified Ministral runtime default and the explicit Gemma E4B compatibility fallback. Existing operator-installed models remain on disk but are not promoted as OpenZero defaults.</div>
 
                 <label>CPU Performance Profile</label>
                 <select id="cfg_cpu_profile">
@@ -870,15 +846,15 @@
                     : `BitNet runtime selected but not ready yet. Install or repair the optional 1-bit add-on before expecting local BitNet replies.`;
                 setHealthNote('ollama-health-note', bitnetText, bitnet.ready ? '' : 'warn');
                 const ollamaFallback = ollama.available === false
-                    ? 'Ollama CLI is missing, so Gemma fallback is unavailable on this node right now.'
+                    ? 'Ollama CLI is missing, so the verified local fallback lane is unavailable on this node right now.'
                     : `Ollama fallback remains ${ollama.reachable ? 'reachable' : 'not reachable yet'} // version <code>${versionLabel}</code>.`;
                 setHealthNote('bitnet-health-note', ollamaFallback, ollama.reachable ? '' : 'warn');
             } else if (ollama.available === false) {
-                setHealthNote('ollama-health-note', 'Ollama CLI is missing on this node. Install or repair the local runtime before expecting Gemma models to work.', 'error');
+                setHealthNote('ollama-health-note', 'Ollama CLI is missing on this node. Install or repair the local runtime before expecting local models to work.', 'error');
                 setHealthNote('bitnet-health-note', bitnet.ready ? `BitNet add-on is installed separately at <code>${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}</code> if you want the 1-bit lane.` : 'BitNet is optional and currently not installed.');
             } else {
                 const reachability = ollama.reachable ? 'API reachable' : 'API not reachable yet';
-                setHealthNote('ollama-health-note', `Ollama runtime: <code>${versionLabel}</code> // ${reachability}. If Gemma 4 pulls fail with a newer-version warning, use <b>Update Ollama</b>.`, ollama.reachable ? '' : 'warn');
+                setHealthNote('ollama-health-note', `Ollama runtime: <code>${versionLabel}</code> // ${reachability}. If a verified model pull reports a newer-version requirement, use <b>Update Ollama</b>.`, ollama.reachable ? '' : 'warn');
                 setHealthNote('bitnet-health-note', bitnet.ready ? `BitNet add-on also looks ready at <code>${bitnet.model_alias || 'bitnet-b1.58-2b-4t'}</code>. Select it from the Active Model list when you want the Microsoft 1-bit CPU lane.` : 'BitNet is optional and currently not installed on this node.');
             }
 
@@ -913,9 +889,7 @@
         }
 
         const featuredModelSizes = {
-            'openzero-gemma': '5.5 GiB',
-            'openzero-qwen-q5': '5.5 GiB',
-            'openzero-qwen-f16': '13.8 GiB'
+            'openzero-gemma': '5.5 GiB'
         };
 
         function renderFeaturedModels(models) {
@@ -936,9 +910,9 @@
                     if (running) {
                         button.textContent = job.status === 'injecting' ? 'CREATING LOCAL ALIAS...' : `DOWNLOADING ${percent}%`;
                     } else {
-                        button.textContent = model.role === 'default'
-                            ? 'INSTALL / REPAIR DEFAULT'
-                            : (model.id === 'openzero-qwen-f16' ? 'INSTALL OPTIONAL F16' : 'INSTALL OPTIONAL Q5');
+                        button.textContent = model.role === 'compatibility'
+                            ? 'INSTALL COMPATIBILITY MODEL'
+                            : 'INSTALL OPTIONAL MODEL';
                     }
                 }
                 if (!status) return;
@@ -956,9 +930,9 @@
                     status.textContent = 'INSTALLED · AVAILABLE IN ACTIVE MODEL SELECTOR';
                     status.style.color = 'var(--cyan)';
                 } else {
-                    status.textContent = model.role === 'default'
-                        ? 'Recommended default. Select Install / Repair to prepare it automatically.'
-                        : 'Optional model. It will not replace the OpenZero Gemma default.';
+                    status.textContent = model.role === 'compatibility'
+                        ? 'Compatibility fallback. Installing it will not replace the verified Ministral default.'
+                        : 'Optional model. It will not replace the verified Ministral default.';
                     status.style.color = '';
                 }
             });
@@ -972,10 +946,9 @@
 
         function installFeaturedModel(presetId) {
             const size = featuredModelSizes[presetId] || 'several GiB';
-            const isDefault = presetId === 'openzero-gemma';
-            const purpose = isDefault
-                ? 'install and activate the verified OpenZero Gemma default'
-                : 'install this optional Qwen model without changing the default';
+            const purpose = presetId === 'openzero-gemma'
+                ? 'install the verified Gemma compatibility model without changing the Ministral default'
+                : 'install this optional model without changing the default';
             if (!confirm(`Download ${size} and ${purpose}? The package is verified by exact size, SHA-256, and GGUF header before Ollama can use it.`)) return;
 
             fetch('/api/featured_models/install', {
@@ -1007,7 +980,7 @@
         }
 
         function repairLocalBrain() {
-            appendMessage('system', 'LATTICE', 'Repairing the local brain. OpenZero will refresh Ollama, then try the best Gemma track for this machine.');
+            appendMessage('system', 'LATTICE', 'Repairing the local brain. OpenZero will verify Ollama, then restore the best verified OpenZero model for this machine.');
             fetch('/api/repair_local_brain', { method: 'POST' }).then(r => r.json()).then(data => {
                 const attempts = (data.attempts || []).map(item => `- ${item.model}: ${item.ok ? 'OK' : 'FAILED'}`).join('\n');
                 appendMessage(

@@ -27,7 +27,7 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H "Authorization: Bearer oz_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openzerogemma:latest",
+    "model": "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}
     ],

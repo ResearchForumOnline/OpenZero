@@ -5,7 +5,7 @@ INSTALL_DIR="${HOME}/openzero"
 EXTENSION_ID="bjjhckhjkjodankbndllgloanjnfmlmo"
 UPDATE_MANIFEST_URL="https://openzero.talktoai.org/downloads/tab-pilot-updates.xml"
 CRX_URL="https://openzero.talktoai.org/downloads/OpenZero-Tab-Pilot-Brave-v0.2.0.crx"
-MODEL="openzerogemma:latest"
+MODEL="hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
 POLICY_DIR="/etc/brave/policies/managed"
 POLICY_PATH="${POLICY_DIR}/openzero-tab-pilot.json"
 

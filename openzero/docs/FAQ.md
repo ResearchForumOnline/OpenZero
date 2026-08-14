@@ -10,7 +10,8 @@ No. OpenZero is CPU-first by default. GPU acceleration can help, but the project
 
 ## What model should I start with?
 
-Start with the default Gemma local lane installed by the script. Use smaller models on small machines.
+Start with the verified OpenZero Ministral Q5 local lane installed by the script.
+Use the Gemma E4B path only when compatibility with an existing deployment is required.
 
 ## What changed in the July 2026 update?
 

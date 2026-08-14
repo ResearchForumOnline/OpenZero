@@ -48,7 +48,7 @@ This video is the broad overview for the TalkToAI stack: ZeroThink as the web wo
 | Area | What OpenZero Provides |
 | --- | --- |
 | Super Panel | Browser UI for models, Hive controls, voice, API key management, local runtime status, and settings. |
-| Local LLM lane | Ollama-backed Gemma defaults with model repair, install buttons, custom GGUF URL support, and CPU profile tuning. |
+| Local LLM lane | Ollama-backed Ministral Q5 default with a Gemma E4B compatibility fallback, model repair, custom GGUF URL support, and CPU profile tuning. |
 | CPU profiles | Compact, balanced, and max CPU modes with thread, batch, and keep-warm controls. |
 | Z-Spark | Optional OpenZero draft-verify layer inspired by DSpark: a small local drafter proposes a candidate, then the active target model verifies and writes the final answer. |
 | OpenAI-compatible API | `/v1/chat/completions` for local Ollama model calls with an OpenZero API key. |
@@ -165,7 +165,7 @@ curl http://YOUR-OPENZERO-HOST:1024/v1/chat/completions \
   -H "Authorization: Bearer ztapi_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openzerogemma:latest",
+    "model": "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
     "messages": [
       {"role": "user", "content": "Say OpenZero API OK"}
     ]

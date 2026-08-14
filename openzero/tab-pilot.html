@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>OpenZero Tab Pilot for Brave | Local AI Browser Work</title>
-  <meta name="description" content="Connect OpenZero to one explicitly approved Brave tab for visible, policy-controlled browsing with local Gemma planning.">
+  <meta name="description" content="Connect OpenZero to one explicitly approved Brave tab for visible, policy-controlled browsing with the verified Ministral Q5 default.">
   <link rel="canonical" href="https://openzero.talktoai.org/tab-pilot">
   <meta name="theme-color" content="#030303">
   <style>
@@ -19,7 +19,7 @@
     .card{border:1px solid var(--line);background:var(--panel);padding:24px}.card p,.muted{color:var(--muted)}
     pre{overflow:auto;padding:18px;border:1px solid #31513b;background:#000;color:#d9ffe4;white-space:pre-wrap;text-transform:none}
     .notice{border-left:4px solid var(--gold);background:#171506;padding:18px 20px;margin:24px 0;color:#f6eabb}
-    .models{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.model{position:relative;overflow:hidden;min-height:220px;border:1px solid var(--line);background:linear-gradient(150deg,#0c1610,#050705);padding:22px;transition:transform .25s,border-color .25s}.model:hover{transform:translateY(-5px);border-color:var(--green)}.model::after{content:"";position:absolute;width:130px;height:130px;border:1px solid rgba(0,255,106,.26);border-radius:50%;right:-60px;top:-60px;animation:orbit 8s linear infinite}.model.qwen{--accent:#72a7ff}.model.qwen::after{border-color:rgba(114,167,255,.35)}.model strong{color:var(--green);font-size:1.05rem}.model.qwen strong{color:var(--accent)}.model a{position:relative;z-index:1}.pill{display:inline-block;margin-bottom:12px;padding:4px 8px;border:1px solid currentColor;font-size:.73rem;letter-spacing:.08em}.default{color:var(--green)}.optional{color:#72a7ff}@keyframes orbit{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.model::after{animation:none}.model{transition:none}}
+    .models{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}.model{position:relative;overflow:hidden;min-height:220px;border:1px solid var(--line);background:linear-gradient(150deg,#0c1610,#050705);padding:22px;transition:transform .25s,border-color .25s}.model:hover{transform:translateY(-5px);border-color:var(--green)}.model::after{content:"";position:absolute;width:130px;height:130px;border:1px solid rgba(0,255,106,.26);border-radius:50%;right:-60px;top:-60px;animation:orbit 8s linear infinite}.model strong{color:var(--green);font-size:1.05rem}.model a{position:relative;z-index:1}.pill{display:inline-block;margin-bottom:12px;padding:4px 8px;border:1px solid currentColor;font-size:.73rem;letter-spacing:.08em}.default{color:var(--green)}.optional{color:#72a7ff}@keyframes orbit{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.model::after{animation:none}.model{transition:none}}
     ol li,ul li{margin:.55em 0} footer{margin-top:46px;color:var(--muted);font-size:.9rem}
     @media(max-width:820px){.models{grid-template-columns:1fr}}@media(max-width:720px){.hero{padding:25px}.grid{grid-template-columns:1fr}main{width:min(100% - 20px,1080px);padding-top:20px}}
   </style>
@@ -93,26 +93,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\install-openzero-
   </section>
 
   <section class="card" style="margin-top:16px">
-    <h2>One default. Two optional Qwen builds.</h2>
-    <p>Tab Pilot starts with the verified OpenZero Gemma model. The Qwen variants are visible choices for operators who want to experiment, but neither is downloaded or made default automatically.</p>
+    <h2>One verified default. One compatibility fallback.</h2>
+    <p>Tab Pilot starts with the same verified Ministral Q5 runtime as OpenZero. Gemma E4B remains available only for compatibility with existing nodes.</p>
     <div class="models">
       <article class="model">
-        <span class="pill default">DEFAULT · 5.46 GiB</span>
-        <h3>OpenZero Gemma</h3>
-        <p><code>openzerogemma:latest</code><br>Verified Q5_K_M/F16 merged release for the standard OpenZero lane.</p>
-        <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/blob/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf">Open on Hugging Face →</a>
+        <span class="pill default">DEFAULT · 5.64 GiB</span>
+        <h3>OpenZero Ministral 8B Runtime Agent</h3>
+        <p><code>hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M</code><br>Verified OpenZero and browser-planning runtime. Upstream weights are unchanged.</p>
+        <a href="https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF">Open on Hugging Face →</a>
       </article>
-      <article class="model qwen">
-        <span class="pill optional">OPTIONAL · 5.45 GiB</span>
-        <h3>Qwen3 8B Q5</h3>
-        <p><code>zero-qwen3-q5:latest</code><br>Smaller quantized Qwen experiment. Install from the Super Panel only when wanted.</p>
-        <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf">Open on Hugging Face →</a>
-      </article>
-      <article class="model qwen">
-        <span class="pill optional">OPTIONAL · 13.82 GiB</span>
-        <h3>Qwen3 8B F16</h3>
-        <p><code>zero-qwen3-f16:latest</code><br>Full fused F16 Qwen experiment for machines with the storage and memory headroom.</p>
-        <a href="https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/blob/main/Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf">Open on Hugging Face →</a>
+      <article class="model">
+        <span class="pill optional">COMPATIBILITY · 5.46 GiB</span>
+        <h3>OpenZero Gemma 4 E4B</h3>
+        <p><code>openzerogemma:latest</code><br>Retained for existing deployments; it is never selected over the verified Ministral default automatically.</p>
+        <a href="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF">Open on Hugging Face →</a>
       </article>
     </div>
   </section>

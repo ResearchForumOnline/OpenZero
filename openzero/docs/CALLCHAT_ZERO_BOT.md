@@ -34,7 +34,7 @@ Use the local API:
 
 ```env
 OPENZERO_LLM_URL=http://127.0.0.1:1024/v1/chat/completions
-OPENZERO_MODEL=openzerogemma:latest
+OPENZERO_MODEL=hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M
 OPENZERO_API_KEY=your-local-openzero-api-key-if-required
 ```
 

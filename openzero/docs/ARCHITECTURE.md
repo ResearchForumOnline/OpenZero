@@ -37,7 +37,9 @@ flowchart TD
 
 ## Local Model Lane
 
-OpenZero's normal local lane uses Ollama. The current default target is the Gemma 4 edge track, with fallback to compatible Gemma 3 models when needed.
+OpenZero's normal local lane uses Ollama. The verified default is the OpenZero
+Ministral 8B Runtime Agent Q5_K_M model; OpenZero Gemma E4B is retained only as
+an explicit compatibility fallback.
 
 The local model lane is used by:
 
