@@ -47,8 +47,10 @@ class ModelCatalogContractTests(unittest.TestCase):
             '"zero-qwen3-q5"',
             '"hf.co/shafire/openzero-fusion-qwen3-4b-agentic-gguf"',
             '"hf.co/shafire/openzero-qwen3-1.7b-agentic-gguf"',
+            '"openzero-ouroboros-3"',
         ):
             self.assertIn(rejected, APP_SOURCE)
+        self.assertIn('"OpenZero-Ouroboros-3.8B-Q4_K_M.gguf"', APP_SOURCE)
 
     def test_model_roles_and_api_recommendation_are_coherent(self):
         self.assertIn('"role": "compatibility"', APP_SOURCE)

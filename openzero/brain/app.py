@@ -102,12 +102,14 @@ OPENZERO_BLOCKED_CUSTOM_MODEL_ALIASES = frozenset(
         "zero-qwen3-q5",
         "hf.co/shafire/openzero-fusion-qwen3-4b-agentic-gguf",
         "hf.co/shafire/openzero-qwen3-1.7b-agentic-gguf",
+        "openzero-ouroboros-3",
     }
 )
 OPENZERO_BLOCKED_CUSTOM_MODEL_FILES = frozenset(
     {
         "Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf",
         "Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
+        "OpenZero-Ouroboros-3.8B-Q4_K_M.gguf",
     }
 )
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
