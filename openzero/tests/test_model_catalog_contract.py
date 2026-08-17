@@ -36,6 +36,22 @@ class ModelCatalogContractTests(unittest.TestCase):
         self.assertNotIn("installLocalModel('gemma3:12b')", PANEL_SOURCE)
         self.assertNotIn("Resolved Local:", PANEL_SOURCE)
 
+    def test_verified_custom_imports_are_visible_without_restoring_rejected_models(self):
+        self.assertIn("def registered_custom_model_aliases()", APP_SOURCE)
+        self.assertIn("candidates.extend(sorted(registered_custom_model_aliases()", APP_SOURCE)
+        self.assertIn("visible_files.update(registered_custom_model_files())", APP_SOURCE)
+        self.assertIn("registry = registered_custom_models()", APP_SOURCE)
+        self.assertIn("installed_alias = custom_model_alias(alias)", APP_SOURCE)
+        for rejected in (
+            '"zero-qwen3-f16"',
+            '"zero-qwen3-q5"',
+            '"hf.co/shafire/openzero-fusion-qwen3-4b-agentic-gguf"',
+            '"hf.co/shafire/openzero-qwen3-1.7b-agentic-gguf"',
+            '"openzero-ouroboros-3"',
+        ):
+            self.assertIn(rejected, APP_SOURCE)
+        self.assertIn('"OpenZero-Ouroboros-3.8B-Q4_K_M.gguf"', APP_SOURCE)
+
     def test_model_roles_and_api_recommendation_are_coherent(self):
         self.assertIn('"role": "compatibility"', APP_SOURCE)
         self.assertNotIn('"role": "default"', APP_SOURCE[: APP_SOURCE.index("os.makedirs(UPLOAD_FOLDER")])

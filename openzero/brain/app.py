@@ -96,6 +96,22 @@ OPENZERO_PERSONAL_MODEL_ALIASES = (OPENZERO_MINISTRAL_RUNTIME_MODEL,) + tuple(
 OPENZERO_PERSONAL_MODEL_FILES = frozenset(
     preset["filename"] for preset in OPENZERO_FEATURED_MODELS.values()
 )
+OPENZERO_BLOCKED_CUSTOM_MODEL_ALIASES = frozenset(
+    {
+        "zero-qwen3-f16",
+        "zero-qwen3-q5",
+        "hf.co/shafire/openzero-fusion-qwen3-4b-agentic-gguf",
+        "hf.co/shafire/openzero-qwen3-1.7b-agentic-gguf",
+        "openzero-ouroboros-3",
+    }
+)
+OPENZERO_BLOCKED_CUSTOM_MODEL_FILES = frozenset(
+    {
+        "Zero-Qwen3-8B-OpenZero-FUSED-F16.gguf",
+        "Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
+        "OpenZero-Ouroboros-3.8B-Q4_K_M.gguf",
+    }
+)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(MODELS_FOLDER, exist_ok=True)
 os.makedirs(SECURITY_FOLDER, exist_ok=True)
@@ -509,6 +525,44 @@ def prune_custom_model_registry(model_names: Optional[List[str]] = None, gguf_fi
     return removed
 
 
+def custom_model_alias(model_name: str) -> str:
+    alias = str(model_name or "").strip()
+    return alias if ":" in alias else f"{alias}:latest"
+
+
+def custom_model_record_is_blocked(model_name: str, meta: Optional[Dict[str, object]] = None) -> bool:
+    alias = custom_model_alias(model_name).lower().removesuffix(":latest")
+    gguf_file = str((meta or {}).get("gguf_file") or "").strip()
+    blocked_alias = alias in OPENZERO_BLOCKED_CUSTOM_MODEL_ALIASES or any(
+        blocked.startswith("hf.co/") and alias.startswith(f"{blocked}:")
+        for blocked in OPENZERO_BLOCKED_CUSTOM_MODEL_ALIASES
+    )
+    return blocked_alias or gguf_file in OPENZERO_BLOCKED_CUSTOM_MODEL_FILES
+
+
+def registered_custom_models() -> Dict[str, Dict[str, object]]:
+    models = load_custom_model_registry().get("models", {})
+    if not isinstance(models, dict):
+        return {}
+    return {
+        str(alias): meta
+        for alias, meta in models.items()
+        if isinstance(meta, dict) and not custom_model_record_is_blocked(str(alias), meta)
+    }
+
+
+def registered_custom_model_aliases() -> list[str]:
+    return [custom_model_alias(alias) for alias in registered_custom_models()]
+
+
+def registered_custom_model_files() -> set[str]:
+    return {
+        str(meta.get("gguf_file") or "").strip()
+        for meta in registered_custom_models().values()
+        if str(meta.get("gguf_file") or "").strip()
+    }
+
+
 def is_cloud_model(model_name: str) -> bool:
     normalized = (model_name or "").strip().lower()
     return normalized in CLOUD_MODEL_NAMES
@@ -775,7 +829,9 @@ def list_ollama_models() -> list[str]:
 
 def visible_openzero_models(ollama_models: Optional[List[str]] = None) -> list[str]:
     installed = set(list_ollama_models() if ollama_models is None else ollama_models)
-    return [alias for alias in OPENZERO_PERSONAL_MODEL_ALIASES if alias in installed]
+    candidates = list(OPENZERO_PERSONAL_MODEL_ALIASES)
+    candidates.extend(sorted(registered_custom_model_aliases(), key=str.lower))
+    return list(dict.fromkeys(alias for alias in candidates if alias in installed))
 
 
 def list_local_gguf_files() -> list[str]:
@@ -789,7 +845,9 @@ def list_local_gguf_files() -> list[str]:
 
 
 def list_openzero_personal_gguf_files() -> list[str]:
-    return [name for name in list_local_gguf_files() if name in OPENZERO_PERSONAL_MODEL_FILES]
+    visible_files = set(OPENZERO_PERSONAL_MODEL_FILES)
+    visible_files.update(registered_custom_model_files())
+    return [name for name in list_local_gguf_files() if name in visible_files]
 
 
 def ollama_modelfile(model_name: str) -> str:
@@ -833,12 +891,7 @@ def infer_custom_model_aliases(ollama_models: Optional[List[str]] = None) -> Dic
 def custom_model_inventory(ollama_models: Optional[List[str]] = None) -> List[Dict[str, object]]:
     installed_models = visible_openzero_models(ollama_models)
     gguf_files = list_openzero_personal_gguf_files()
-    registry = {
-        alias: meta
-        for alias, meta in load_custom_model_registry().get("models", {}).items()
-        if f"{alias.removesuffix(':latest')}:latest" in OPENZERO_PERSONAL_MODEL_ALIASES
-        or str(meta.get("gguf_file") or "") in OPENZERO_PERSONAL_MODEL_FILES
-    }
+    registry = registered_custom_models()
     alias_map = infer_custom_model_aliases(installed_models)
     items: Dict[str, Dict[str, object]] = {}
 
@@ -878,8 +931,9 @@ def custom_model_inventory(ollama_models: Optional[List[str]] = None) -> List[Di
                 item["file_exists"] = True
                 item["size_bytes"] = size_bytes
                 item["size_label"] = format_bytes(size_bytes)
-        if alias not in item["aliases"]:
-            item["aliases"].append(alias)
+        installed_alias = custom_model_alias(alias)
+        if installed_alias not in item["aliases"]:
+            item["aliases"].append(installed_alias)
         if meta.get("source_url") and not item.get("source_url"):
             item["source_url"] = meta.get("source_url", "")
         if meta.get("updated_at"):
