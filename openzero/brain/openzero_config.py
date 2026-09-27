@@ -6,7 +6,7 @@ RETIRED_PLAINTEXT_KEYS = {"SUDO_PASS"}
 
 
 DEFAULTS: Dict[str, str] = {
-    "OPENZERO_VERSION": "7.1.0",
+    "OPENZERO_VERSION": "7.2.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
     "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
     "OPENZERO_HIVE_MODE": "standalone",

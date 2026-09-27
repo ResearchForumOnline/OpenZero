@@ -24,6 +24,22 @@ ZeroThink bridge: [zerothink.talktoai.org](https://zerothink.talktoai.org/)
 
 ## New default: OpenZero Ministral 8B Runtime Agent + Brave Tab Pilot
 
+## OpenZero 7.2: improvement workspace
+
+- Responsive conversation workspace with clear run state and collapsible controls.
+- Separate source candidates: local model proposals, editable files, diffs,
+  recorded checks, digest-bound apply and rollback.
+- Real small CPU adapter-training fixture with held-out evaluation and export.
+- Optional local Hugging Face / PEFT LoRA runner for compatible small models;
+  requires the optional training environment and reviewed local data.
+- Read-only integrity verification that does not silently reseal changed policies.
+
+See the [workbench guide](openzero/docs/WORKBENCH.md) for controls, limits and
+training requirements. The synthetic fixture is not an LLM. No training job
+automatically replaces the selected inference model.
+
+### Default model and browser tools
+
 Fresh OpenZero nodes now use
 [`shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF`](https://huggingface.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF)
 through Ollama as `hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M`.

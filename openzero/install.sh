@@ -59,7 +59,7 @@ echo "  ███   █████   ██████  ██  ██"
 echo " ███    ██      ██   ██ ██  ██"
 echo "███████ ███████ ██   ██ ██████"
 echo -e "${NC}"
-echo -e "${CYAN}>>> OPENZERO 7.1 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^} // SKIP_MODEL=${SKIP_MODEL^^}${NC}"
+echo -e "${CYAN}>>> OPENZERO 7.2 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^} // SKIP_MODEL=${SKIP_MODEL^^}${NC}"
 
 ensure_linux_packages() {
     if [ -f /etc/debian_version ]; then
@@ -300,7 +300,7 @@ write_env_defaults() {
 from pathlib import Path
 
 defaults = {
-    "OPENZERO_VERSION": "7.1.0",
+    "OPENZERO_VERSION": "7.2.0",
     "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
     "OPENZERO_TAB_PILOT_URL": "${TAB_PILOT_URL}",
     "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
@@ -397,7 +397,7 @@ if current.get("NODE_RECOMMENDED_MODEL", "") in managed_previous_defaults:
     current["NODE_RECOMMENDED_MODEL"] = "${OPENZERO_DEFAULT_MODEL}"
 
 # Version is release metadata, not a private user preference. Always migrate it.
-current["OPENZERO_VERSION"] = "7.1.0"
+current["OPENZERO_VERSION"] = "7.2.0"
 
 env_path.write_text("\n".join(f"{key}={value}" for key, value in sorted(current.items())) + "\n", encoding="utf-8")
 PY
@@ -458,7 +458,7 @@ if [[ "${ENABLE_TAB_PILOT}" != "false" ]] && \
     fi
 fi
 
-echo -e "${GREEN}>>> OPENZERO 7.1 ONLINE${NC}"
+echo -e "${GREEN}>>> OPENZERO 7.2 ONLINE${NC}"
 echo -e "${CYAN}Super Panel: http://localhost:1024${NC}"
 echo -e "${CYAN}Manual: https://openzero.talktoai.org/manual${NC}"
 echo -e "${CYAN}Brave Tab Pilot guided setup: ${TAB_PILOT_URL}${NC}"

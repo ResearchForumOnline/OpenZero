@@ -1,12 +1,17 @@
 OPENZERO RELEASE
-Version: 7.1.0
+Version: 7.2.0
 Channel: stable
-Release date: 2026-07-31
+Release date: 2026-09-27
 
 Highlights:
+- Responsive workspace with source improvement and training panels.
+- Candidate source edits, local model proposals, recorded checks, reviewed apply and rollback.
+- Real synthetic adapter training, held-out metrics, export and reload verification.
+- Optional bounded local PEFT LoRA backend; no automatic model replacement.
+- Integrity status no longer refreshes its own trusted baseline.
 - Bounded Ultra autonomy supports up to 16 concurrent root-run workers.
 - Local model inference remains serialized to prevent duplicate model loads.
-- Fresh installs and upgrades report the canonical 7.1.0 version.
+- Fresh installs and upgrades report the canonical 7.2.0 version.
 - Desktop Linux installs can install Brave from Brave's official installer.
 - Brave Tab Pilot is configured through managed policy with automatic updates.
 

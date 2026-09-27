@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OPENZERO // SUPER PANEL</title>
+    <title>OpenZero · Workspace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.min.js"></script>
     
     <style>
@@ -136,16 +136,17 @@
             .log-panel { height: 120px; }
         }
     </style>
+    <link rel="stylesheet" href="/static/workspace.css?v=7.2.0">
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar" id="workspace-controls">
         <div class="header-brand">
             <h1>OPEN<span>ZERO</span></h1>
-            <div style="color:#666; font-size:0.8em; margin-top:5px;">SOVEREIGN LATTICE NODE // 7.1 CONTROL PANEL</div>
+            <div class="brand-caption">Your models. Your workspace.</div>
         </div>
 
-        <div class="telemetry">
+        <details class="node-health"><summary>Node health <span>Live telemetry</span></summary><div class="telemetry">
             <div class="telemetry-row"><span>CPU LOAD:</span> <span class="val" id="sys-cpu">--%</span></div>
             <div class="telemetry-row"><span>RAM USAGE:</span> <span class="val" id="sys-ram">--%</span></div>
             <div class="telemetry-row"><span>HIVE LINK:</span> <span class="val" id="sys-hive">--</span></div>
@@ -162,7 +163,7 @@
             <div class="telemetry-row"><span>CONTEXT:</span> <span class="val" id="sys-context" style="color:#aaa">--</span></div>
         </div>
 
-        <div class="config-panel">
+        </details><div class="config-panel">
             <div class="settings-nav" aria-label="OpenZero settings pages">
                 <button type="button" class="settings-tab active" data-settings-page="hive" onclick="showSettingsPage('hive')">Hive</button>
                 <button type="button" class="settings-tab" data-settings-page="models" onclick="showSettingsPage('models')">Models</button>
@@ -608,29 +609,66 @@
     </div>
 
     <div class="main-stream">
+        <header class="workspace-header">
+            <div class="workspace-heading"><span class="eyebrow">OPENZERO WORKSPACE</span><h2>Make progress you can inspect.</h2><p>Conversations, source candidates and local training in one place.</p></div>
+            <button type="button" id="settings-toggle" class="quiet-button" aria-expanded="true" aria-controls="workspace-controls">☰ <span>Controls</span></button>
+        </header>
+        <nav class="workspace-nav" aria-label="Workspace">
+            <button class="workspace-tab active" data-workspace="chat" type="button" aria-selected="true">Conversation</button>
+            <button class="workspace-tab" data-workspace="improvement" type="button" aria-selected="false">Improve source</button>
+            <button class="workspace-tab" data-workspace="training" type="button" aria-selected="false">Training lab</button>
+            <span id="connection-state" class="connection-state">Connecting…</span>
+        </nav>
+        <details class="workspace-auth"><summary>Workbench access <span>Local access or a session API key</span></summary><label for="workbench-token">Optional API key for improvement and training endpoints</label><input id="workbench-token" type="password" autocomplete="off" spellcheck="false" placeholder="Used only for workbench requests in this page session"><p class="muted">Use an authorized local connection or your existing OpenZero API key. This field is never saved; reloading clears it.</p></details>
+        <section id="workspace-chat" class="workspace-view conversation-view" aria-label="Conversation">
+        <div class="run-strip" aria-live="polite"><span id="run-state" class="state-chip">Ready</span><span id="run-detail">Choose a model and describe the outcome you want.</span><span id="run-elapsed"></span></div>
         <div class="chat-history" id="chat-history">
-            <div class="msg-block system">
-                <div class="sender">[SYSTEM INITIALIZED]</div>
-                <div class="content">Autonomous Node Active. Root terminal access granted. Architect mode engaged.</div>
+            <div class="welcome-card" id="workspace-welcome">
+                <div class="welcome-symbol" aria-hidden="true">O<span>↗</span></div><span class="eyebrow">A GOOD START</span>
+                <h1>What are we building?</h1><p>Give your agent a clear outcome, relevant files and a way to check the result. Chat works through ideas; Terminal can act on your configured tools.</p>
+                <div class="starter-grid">
+                    <button type="button" data-starter="Inspect my project, explain its structure and suggest one useful improvement with a clear acceptance check."><b>Understand a project</b><span>Find the right files and a concrete next step ↗</span></button>
+                    <button type="button" data-starter="Research this question using original sources, link the evidence and distinguish findings from uncertainty: "><b>Research a question</b><span>Build an answer you can trace to sources ↗</span></button>
+                    <button type="button" data-starter="Diagnose this failure from the actual error and project files, propose a focused fix and explain how to verify it: "><b>Fix a problem</b><span>Turn an error into a checked improvement ↗</span></button>
+                </div>
             </div>
         </div>
         
         <div id="neural-loop">
-            [///] AGENT RE-ACT LOOP ACTIVE: Computing multi-step trajectory and executing system commands...
+            Waiting for a reported task update…
         </div>
 
-        <div class="log-panel" id="log-panel">
-            <span class="log-entry">> LATTICE LOGS INITIALIZED...</span>
-        </div>
+        <details class="activity-drawer"><summary>Activity <span id="activity-count">0 updates</span><span>Show tool and runtime logs</span></summary><div class="log-panel" id="log-panel"></div></details>
 
         <div class="input-area">
             <button class="icon-btn" onclick="document.getElementById('file-input').click()" title="Upload File">📎</button>
             <input type="file" id="file-input" style="display:none" onchange="uploadFile()">
             <button class="icon-btn" id="clear-mem-btn" onclick="clearMemory()" title="Clear Memory Cortex" style="display:none; color:var(--danger); border-color:var(--danger);">✖</button>
-            <textarea id="cmd-input" placeholder="Enter directive..." onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendCommand(); }"></textarea>
-            <button class="exec-btn" id="exec-btn" onclick="sendCommand()">EXECUTE</button>
-            <button class="stop-btn" id="stop-btn" onclick="stopCommand()" disabled>STOP</button>
+            <textarea id="cmd-input" aria-label="Your request" placeholder="Describe a task, include the project path, and say what success looks like…" onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendCommand(); }"></textarea>
+            <button class="exec-btn" id="exec-btn" onclick="sendCommand()">Send ↑</button>
+            <button class="stop-btn" id="stop-btn" onclick="stopCommand()" disabled>Stop</button>
         </div>
+        <div class="composer-caption">Enter to send · Shift + Enter for a new line · Stop requests cancellation at a safe boundary</div>
+        </section>
+        <section id="workspace-improvement" class="workspace-view lab-view" hidden aria-label="Source improvement">
+            <div class="section-intro"><span class="eyebrow">REVIEW BEFORE APPLYING</span><h1>A better agent, one checked change at a time.</h1><p>Create a separate source candidate, edit its files, inspect the diff and run checks. Applying a candidate is an explicit action and does not restart the service.</p></div>
+            <div id="improvement-status" class="notice" role="status">Open this section to check the improvement service.</div>
+            <div class="lab-grid"><aside class="lab-card"><h3>Source candidates</h3><label for="candidate-objective">What should improve?</label><textarea id="candidate-objective" rows="3" maxlength="2000" placeholder="For example: make tool failures easier to understand"></textarea><button id="candidate-create" type="button" class="primary-button">Create candidate</button><button id="candidate-refresh" type="button" class="quiet-button">Refresh candidates</button><div id="candidate-list" class="record-list" aria-label="Saved candidates"></div></aside>
+            <div class="lab-card candidate-review"><div class="card-heading"><h3 id="candidate-title">Select a candidate</h3><span id="candidate-state" class="state-chip">No selection</span></div><p id="candidate-description" class="muted">Candidates keep source changes separate until you review and apply them.</p>
+                <label for="candidate-file">Source file</label><div class="editor-toolbar"><select id="candidate-file" disabled><option>Select a candidate first</option></select><button id="candidate-load-file" type="button" class="quiet-button" disabled>Load file</button></div><label for="candidate-content">Candidate file content</label><textarea id="candidate-content" class="source-editor" spellcheck="false" disabled aria-describedby="candidate-save-note"></textarea><div class="editor-toolbar"><button id="candidate-save-file" type="button" class="quiet-button" disabled>Save candidate file</button><button id="candidate-propose" type="button" class="quiet-button" disabled>Generate model proposal</button><span id="candidate-save-note" class="muted">Saving checks the file hash to avoid overwriting a newer edit.</span></div>
+                <details class="review-section" open><summary>Changes for review</summary><pre id="candidate-diff">No candidate selected.</pre></details><div class="editor-toolbar"><button id="candidate-syntax" type="button" class="quiet-button" disabled>Check syntax</button><button id="candidate-tests" type="button" class="quiet-button" disabled>Run candidate tests</button></div><pre id="candidate-checks" class="check-output">No check has been run here.</pre>
+                <label class="check-label"><input id="candidate-confirm" type="checkbox"> I reviewed this candidate's current diff and check results.</label><div class="editor-toolbar"><button id="candidate-apply" type="button" class="primary-button" disabled>Apply reviewed candidate</button><button id="candidate-rollback" type="button" class="quiet-button" disabled>Roll back applied candidate</button></div><p class="muted">Review the diff again after every edit or check. A successful check covers only the commands that actually ran.</p>
+            </div></div>
+        </section>
+        <section id="workspace-training" class="workspace-view lab-view" hidden aria-label="Training lab">
+            <div class="section-intro"><span class="eyebrow">LOCAL EXPERIMENTS, RECORDED RESULTS</span><h1>Train carefully. Measure what changed.</h1><p>Run a small synthetic training fixture or a bounded local LoRA job. Jobs retain their reported metrics and artifact information; they do not automatically replace your active model.</p></div>
+            <div id="training-status" class="notice" role="status">Open this section to inspect available training backends.</div>
+            <div class="lab-grid"><div class="lab-card"><h3>New training job</h3><label for="training-backend">Backend</label><select id="training-backend"><option value="fixture">Synthetic fixture · small reproducibility check</option><option value="lora">Local LoRA · requires compatible local model and dependencies</option></select><p id="training-backend-note" class="muted">The fixture is a small synthetic exercise, not an improvement to your language model.</p>
+                <div id="fixture-fields"><label for="training-fixture-steps">Fixture steps</label><input id="training-fixture-steps" type="number" value="250" min="1" max="1000"><label for="training-seed">Seed</label><input id="training-seed" type="number" value="20260927" min="0"></div>
+                <div id="lora-fields" hidden><label for="training-base">Local base model directory</label><input id="training-base" type="text" placeholder="Absolute path to reviewed local Hugging Face model"><label for="training-dataset">Reviewed dataset path</label><input id="training-dataset" type="text" placeholder="Absolute path to local JSONL"><div class="field-grid"><div><label for="training-steps">Steps</label><input id="training-steps" type="number" value="10" min="1" max="100"></div><div><label for="training-rank">LoRA rank</label><input id="training-rank" type="number" value="4" min="1" max="16"></div><div><label for="training-length">Max sequence length</label><input id="training-length" type="number" value="128" min="16" max="256"></div><div><label for="training-rate">Learning rate</label><input id="training-rate" type="number" value="0.001" min="0.000001" max="0.1" step="0.0001"></div></div></div>
+                <label class="check-label"><input id="training-confirm" type="checkbox"> Start this local job with the settings above.</label><button id="training-start" type="button" class="primary-button" disabled>Start training job</button><p class="muted">No model downloads or automatic promotion. Dependency and hardware failures remain visible in job results.</p></div>
+            <div class="lab-card"><div class="card-heading"><h3>Job history</h3><button id="training-refresh" type="button" class="quiet-button">Refresh</button></div><div id="training-jobs" class="record-list"></div></div></div>
+        </section>
     </div>
 
     <script>
@@ -657,6 +695,7 @@
 
         function setRunState(active, status = 'idle', message = '') {
             agentRunActive = !!active;
+            if (window.openzeroWorkspace) window.openzeroWorkspace.runState(agentRunActive, status, message);
             if (execBtn) {
                 execBtn.disabled = agentRunActive;
             }
@@ -673,9 +712,9 @@
             }
             const note = (message || '').trim();
             if (status === 'stopping') {
-                neuralLoop.innerText = note || '[///] STOP REQUESTED: Agent Zero is halting at the next safe boundary...';
+                neuralLoop.innerText = note || 'Stop requested. Waiting for the current action to finish safely.';
             } else {
-                neuralLoop.innerText = note || '[///] AGENT RE-ACT LOOP ACTIVE: Computing multi-step trajectory and executing system commands...';
+                neuralLoop.innerText = note || 'Request running. Activity below records reported tool and runtime updates.';
             }
             neuralLoop.style.display = 'block';
         }
@@ -1403,6 +1442,9 @@
         }
 
         function appendMessage(senderClass, senderName, text) {
+            if (!String(text || '').trim()) return;
+            const welcome = document.getElementById('workspace-welcome');
+            if (welcome && senderClass === 'user') welcome.remove();
             const div = document.createElement('div');
             div.className = `msg-block ${senderClass}`;
             const sender = document.createElement('div');
@@ -1464,6 +1506,8 @@
             entry.className = 'log-entry active';
             entry.innerText = '> ' + data.data;
             lp.appendChild(entry);
+            if (window.openzeroWorkspace) window.openzeroWorkspace.activity();
+            while (lp.children.length > 250) lp.removeChild(lp.firstChild);
             lp.scrollTop = lp.scrollHeight;
             
             // Revert color of previous logs
@@ -1646,5 +1690,6 @@
         setInterval(refreshVisionHealth, 30000);
         setInterval(refreshFeaturedModels, 5000);
     </script>
+    <script src="/static/workspace.js?v=7.2.0"></script>
 </body>
 </html>

@@ -1,4 +1,8 @@
 # Python
+.venv/
+.runtime/
+.improvement-workbench/
+live-public-before.html
 __pycache__/
 *.py[cod]
 *.pyo

@@ -262,7 +262,7 @@ Available operator tool tags:
 - <browse>url</browse> for Moltbot webpage text extraction.
 - <speak>text</speak> for local Piper speech output.
 
-OpenZero 7.1 rules:
+OpenZero 7.2 rules:
 - Never mention deprecated branding.
 - Respect the Probability of Goodness threshold.
 - For greetings, casual conversation, explanations, and already-complete tasks, answer directly in plain text without a tool call.
@@ -3988,7 +3988,7 @@ def stats():
             "cpu": psutil.cpu_percent(),
             "ram": psutil.virtual_memory().percent,
             "mode": config.get("COMP_MODE", "hybrid").upper(),
-            "version": config.get("OPENZERO_VERSION", "7.1.0"),
+            "version": config.get("OPENZERO_VERSION", "7.2.0"),
             "autonomy_profile": configured_autonomy_profile(),
             "max_concurrent_workers": autonomous_worker_limit(),
             "hive": hive_label,
@@ -6009,6 +6009,43 @@ def heartbeat_loop():
         except Exception:
             pass
         time.sleep(300)
+
+
+def improvement_api_authorized() -> bool:
+    from workbench_access import workbench_request_authorized
+    return workbench_request_authorized(
+        openzero_local_admin_request,
+        lambda: openzero_api_authorized(current_config()),
+    )
+
+
+def propose_source_improvement(prompt: str) -> str:
+    """Generate candidate text locally; never dispatch generated tool calls."""
+    if not LOCAL_MODEL_SEMAPHORE.acquire(timeout=2):
+        raise RuntimeError("The local model is busy. Retry after the current conversation finishes.")
+    try:
+        config = current_config()
+        profile = resource_profile(config)
+        resolved = resolve_local_model_selection(config, profile, include_ollama_status=False)
+        if resolved.get("status") == "missing" or not resolved.get("model"):
+            raise RuntimeError("No local Ollama model is installed for source proposals.")
+        return run_ollama_generate(
+            resolved["model"], prompt, config, profile,
+            max_predict=4096, temperature=0.15, timeout=170,
+        )
+    finally:
+        LOCAL_MODEL_SEMAPHORE.release()
+
+
+from improvement_workbench import register_improvement_routes
+from training_workbench import register_training_routes
+
+IMPROVEMENT_WORKBENCH = register_improvement_routes(
+    app, BASE_DIR, improvement_api_authorized, propose=propose_source_improvement,
+)
+TRAINING_WORKBENCH = register_training_routes(
+    app, improvement_api_authorized, os.path.join(BASE_DIR, ".runtime", "training-workbench"),
+)
 
 
 if __name__ == "__main__":

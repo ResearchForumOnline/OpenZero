@@ -4,6 +4,7 @@ import hmac
 import json
 import os
 import stat
+from pathlib import Path
 from typing import Dict, List
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -71,7 +72,7 @@ def _chmod_private(path: str) -> None:
 def load_or_create_master_key(base_dir: str) -> bytes:
     path = master_key_path(base_dir)
     if os.path.exists(path):
-        key = open(path, "rb").read().strip()
+        key = Path(path).read_bytes().strip()
     else:
         key = Fernet.generate_key()
         with open(path, "wb") as handle:
@@ -99,60 +100,85 @@ def _write_json(path: str, data: Dict) -> None:
         json.dump(data, handle, indent=2, sort_keys=True)
 
 
-def ensure_ethics_lock(base_dir: str, policy: Dict = None) -> Dict[str, object]:
-    policy = policy or DEFAULT_ETHICS_POLICY
-    policy_path = ethics_policy_path(base_dir)
-    lock_path = ethics_lock_path(base_dir)
-    sig_path = ethics_sig_path(base_dir)
+def ensure_ethics_lock(base_dir: str, policy: Dict = None, reviewed_sha256: str = None) -> Dict[str, object]:
+    """Initialize only a known reviewed policy; never bless unknown existing text.
 
-    if not os.path.exists(policy_path):
-        _write_json(policy_path, policy)
-
-    with open(policy_path, "r", encoding="utf-8") as handle:
-        current_policy = json.load(handle)
-
-    payload = _canonical_json(current_policy)
+    The shipped default is a known migration baseline. Custom policy migration
+    requires an owner to supply that exact reviewed policy explicitly.
+    """
+    # A previously reviewed custom/legacy policy remains valid across restarts.
+    # Verification is read-only and checks the separate signed review baseline.
+    existing = verify_or_restore_ethics_lock(base_dir)
+    if existing.get("status") == "ok":
+        return existing
+    trusted = policy if policy is not None else DEFAULT_ETHICS_POLICY
+    folder = os.path.join(base_dir, SECURITY_DIR_NAME)
+    policy_path = os.path.join(folder, ETHICS_POLICY_NAME)
+    expected = hashlib.sha256(_canonical_json(trusted)).hexdigest()
+    fresh = not os.path.exists(policy_path)
+    if os.path.exists(policy_path):
+        try:
+            current = json.loads(Path(policy_path).read_text(encoding="utf-8"))
+            if hashlib.sha256(_canonical_json(current)).hexdigest() != expected:
+                return {"status": "review_required", "tampered": True,
+                        "message": "Existing policy differs from the reviewed baseline; nothing was resealed."}
+        except (OSError, ValueError, TypeError):
+            return {"status": "review_required", "tampered": True}
+    else:
+        # Partial legacy state is not a fresh installation.
+        if any(os.path.exists(os.path.join(folder, name)) for name in (ETHICS_LOCK_NAME, ETHICS_SIG_NAME)):
+            return {"status": "review_required", "tampered": True}
+        os.makedirs(folder, exist_ok=True)
+        _write_json(policy_path, trusted)
+    result = verify_or_restore_ethics_lock(base_dir)
+    if result.get("status") == "ok":
+        return result
+    if not fresh and reviewed_sha256 != expected:
+        return {"status": "review_required", "tampered": result.get("tampered", True),
+                "message": "Existing seals were not rewritten. Explicit reviewed_sha256 is required to migrate or repair."}
+    # The bytes were matched to the caller's reviewed baseline before sealing.
+    payload = _canonical_json(trusted)
     signature = _sign_bytes(base_dir, payload)
-    encrypted = _fernet(base_dir).encrypt(payload)
-
-    with open(sig_path, "w", encoding="utf-8") as handle:
-        handle.write(signature)
-    with open(lock_path, "wb") as handle:
-        handle.write(encrypted)
-
+    for name, raw in ((ETHICS_SIG_NAME, signature.encode()), (ETHICS_LOCK_NAME, _fernet(base_dir).encrypt(payload))):
+        path = os.path.join(folder, name)
+        with open(path, "wb") as handle:handle.write(raw)
+        _chmod_private(path)
     _chmod_private(policy_path)
-    _chmod_private(sig_path)
-    _chmod_private(lock_path)
-    return {"status": "sealed", "signature": signature}
+    baseline_payload = expected.encode("ascii")
+    _write_json(os.path.join(folder, "ethics_reviewed_baseline.json"), {"sha256": expected, "signature": hmac.new(load_or_create_master_key(base_dir), baseline_payload, hashlib.sha256).hexdigest()})
+    return {"status": "initialized_reviewed_policy", "tampered": False,
+            "policy_sha256": expected}
 
 
 def verify_or_restore_ethics_lock(base_dir: str) -> Dict[str, object]:
-    ensure_ethics_lock(base_dir, DEFAULT_ETHICS_POLICY)
-    policy_path = ethics_policy_path(base_dir)
-    lock_path = ethics_lock_path(base_dir)
-    sig_path = ethics_sig_path(base_dir)
-
+    """Read-only verification. Historical name retained; no restore or reseal."""
+    folder = os.path.join(base_dir, SECURITY_DIR_NAME)
     try:
-        payload = open(policy_path, "rb").read()
-        saved_signature = open(sig_path, "r", encoding="utf-8").read().strip()
-        current_signature = _sign_bytes(base_dir, payload)
-        if saved_signature == current_signature:
-            return {"status": "ok", "tampered": False}
-    except OSError:
-        pass
-
-    try:
-        encrypted = open(lock_path, "rb").read()
-        restored = _fernet(base_dir).decrypt(encrypted)
-        with open(policy_path, "wb") as handle:
-            handle.write(restored)
-        with open(sig_path, "w", encoding="utf-8") as handle:
-            handle.write(_sign_bytes(base_dir, restored))
-        _chmod_private(policy_path)
-        _chmod_private(sig_path)
-        return {"status": "restored", "tampered": True}
-    except (OSError, InvalidToken):
-        return {"status": "error", "tampered": True}
+        payload = _canonical_json(json.loads(Path(folder, ETHICS_POLICY_NAME).read_text(encoding="utf-8")))
+        saved_signature = Path(folder, ETHICS_SIG_NAME).read_text(encoding="utf-8").strip()
+        key = Path(folder, MASTER_KEY_NAME).read_bytes().strip()
+        current_signature = hmac.new(key, payload, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(saved_signature, current_signature):
+            return {"status": "tampered", "tampered": True}
+        locked = Fernet(key).decrypt(Path(folder, ETHICS_LOCK_NAME).read_bytes())
+        if locked != payload:return {"status": "tampered", "tampered": True}
+        # Legacy versions resealed on reads: matching signatures alone cannot
+        # establish a reviewed custom policy baseline.
+        expected = hashlib.sha256(_canonical_json(DEFAULT_ETHICS_POLICY)).hexdigest()
+        baseline_path = os.path.join(folder, "ethics_reviewed_baseline.json")
+        if os.path.exists(baseline_path):
+            baseline = json.loads(Path(baseline_path).read_text(encoding="utf-8"))
+            expected = str(baseline.get("sha256", ""))
+            if not hmac.compare_digest(str(baseline.get("signature", "")), hmac.new(key, expected.encode("ascii"), hashlib.sha256).hexdigest()):
+                return {"status": "tampered", "tampered": True}
+        if hashlib.sha256(payload).hexdigest() != expected:
+            return {"status": "review_required", "tampered": False,
+                    "message": "Custom/legacy policy requires explicit owner baseline review."}
+        return {"status": "ok", "tampered": False, "policy_sha256": expected}
+    except FileNotFoundError:
+        return {"status": "missing", "tampered": True}
+    except (OSError, ValueError, TypeError, AttributeError, InvalidToken):
+        return {"status": "tampered", "tampered": True}
 
 
 def seal_json(base_dir: str, name: str, data: Dict) -> str:
@@ -167,7 +193,7 @@ def seal_json(base_dir: str, name: str, data: Dict) -> str:
 
 def unseal_json(base_dir: str, name: str) -> Dict:
     path = os.path.join(security_dir(base_dir), f"{name}.enc")
-    token = open(path, "rb").read()
+    token = Path(path).read_bytes()
     payload = _fernet(base_dir).decrypt(token)
     return json.loads(payload.decode("utf-8"))
 
@@ -193,10 +219,13 @@ def build_integrity_manifest(base_dir: str, paths: List[str]) -> Dict[str, str]:
 
 
 def verify_integrity_manifest(base_dir: str, paths: List[str]) -> Dict[str, object]:
-    manifest_path = integrity_manifest_path(base_dir)
+    manifest_path = os.path.join(base_dir, SECURITY_DIR_NAME, INTEGRITY_MANIFEST_NAME)
     if not os.path.exists(manifest_path):
         return {"status": "missing", "tampered": []}
-    recorded = json.load(open(manifest_path, "r", encoding="utf-8"))
+    try:
+        recorded = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+        if not isinstance(recorded, dict):raise ValueError("Invalid manifest")
+    except (OSError, ValueError):return {"status": "tampered", "tampered": ["manifest"]}
     tampered = []
     for path in paths:
         rel = os.path.relpath(path, base_dir)
@@ -216,14 +245,14 @@ def protected_paths(base_dir: str) -> List[str]:
         os.path.join(base_dir, "brain", "integrity.py"),
         os.path.join(base_dir, "hivemind", "bridge.py"),
         os.path.join(base_dir, "zero_core.py"),
-        ethics_policy_path(base_dir),
+        os.path.join(base_dir, SECURITY_DIR_NAME, ETHICS_POLICY_NAME),
     ]
 
 
 def ensure_integrity_state(base_dir: str) -> Dict[str, object]:
-    ethics = verify_or_restore_ethics_lock(base_dir)
-    manifest = build_integrity_manifest(base_dir, protected_paths(base_dir))
-    return {"ethics": ethics, "manifest_entries": len(manifest)}
+    ethics = ensure_ethics_lock(base_dir)
+    manifest = verify_integrity_manifest(base_dir, protected_paths(base_dir))
+    return {"ethics": ethics, "manifest": manifest, "migration_review_required": manifest["status"] != "ok"}
 
 
 def integrity_status(base_dir: str) -> Dict[str, object]:
@@ -232,7 +261,7 @@ def integrity_status(base_dir: str) -> Dict[str, object]:
     return {
         "ethics": ethics,
         "manifest": manifest,
-        "security_dir": security_dir(base_dir),
+        "security_dir": os.path.join(base_dir, SECURITY_DIR_NAME),
         "tamper_evident": True,
         "absolute_immutability": False,
     }
