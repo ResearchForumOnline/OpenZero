@@ -1,4 +1,8 @@
-# OpenZero 7.3 â€” independent, self-hosted AI nodes
+# OpenZero 7.3 — independent, self-hosted AI nodes
+
+[Static project home](https://researchforumonline.github.io/OpenZero/) · [Download 7.3](https://github.com/ResearchForumOnline/OpenZero/releases/tag/v7.3.0) · [Preserved ZMath app](https://researchforumonline.github.io/ZMath/)
+
+The project home is free static hosting. It is not an inference server or a required node; your runtime operates independently after setup.
 
 OpenZero combines local model chat, a browser workspace, an OpenAI-compatible
 API, durable automation runs, local knowledge and learning, source-improvement
@@ -6,10 +10,10 @@ candidates, and optional adapter training. Your node runs on your own Linux
 machine or server. **There is no required TalkToAI server, central registration,
 main node, or company-hosted database.**
 
-[Source](https://github.com/ResearchForumOnline/OpenZero) Â·
-[Releases](https://github.com/ResearchForumOnline/OpenZero/releases) Â·
-[Install guide](openzero/docs/INSTALL.md) Â·
-[Workbench](openzero/docs/WORKBENCH.md) Â·
+[Source](https://github.com/ResearchForumOnline/OpenZero) ·
+[Releases](https://github.com/ResearchForumOnline/OpenZero/releases) ·
+[Install guide](openzero/docs/INSTALL.md) ·
+[Workbench](openzero/docs/WORKBENCH.md) ·
 [Node independence](openzero/docs/DECENTRALISED.md)
 
 ## What changes in 7.3
@@ -88,10 +92,10 @@ environment, install `openzero/requirements.txt`, and run `openzero/run_brain.sh
 
 ## Browser extension
 
-[Tab Pilot source and setup](browser-extension/README.md) Â·
-[Verified ZIP](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/OpenZero-Tab-Pilot-v0.3.1.zip) Â·
-[ZIP checksum](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/OpenZero-Tab-Pilot-v0.3.1.zip.sha256) Â·
-[Windows helper](openzero/install-tab-pilot.ps1) Â·
+[Tab Pilot source and setup](browser-extension/README.md) ·
+[Verified ZIP](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/OpenZero-Tab-Pilot-v0.3.1.zip) ·
+[ZIP checksum](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/OpenZero-Tab-Pilot-v0.3.1.zip.sha256) ·
+[Windows helper](openzero/install-tab-pilot.ps1) ·
 [Linux helper](openzero/install-tab-pilot.sh)
 
 The extension plans through your own loopback node; a remote node needs your
