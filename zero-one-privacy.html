@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#081016">
+  <title>ZERO ONE Desktop privacy notice | TalkToAI</title>
+  <meta name="description" content="Privacy information for ZERO ONE Desktop and its local ZNotes workspace.">
+  <link rel="canonical" href="https://researchforumonline.github.io/OpenZero/zero-one-privacy.html">
+  <style>
+    :root{color-scheme:dark;--bg:#081016;--text:#eefaf5;--muted:#c7d5d8;--mint:#8ff0c4;--line:#2b454e}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#163d34,transparent 34rem),var(--bg);color:var(--text);font:17px/1.7 system-ui,sans-serif}
+    .wrap{max-width:850px;margin:auto;padding:32px 22px 80px}a{color:var(--mint)}header,footer{border-bottom:1px solid var(--line);padding-bottom:18px}
+    footer{border-top:1px solid var(--line);border-bottom:0;margin-top:50px;padding-top:20px}h1{font-size:clamp(32px,6vw,54px);line-height:1.08}h2{margin-top:34px;font-size:23px}.muted{color:var(--muted)}
+    .note{border-left:3px solid var(--mint);padding:12px 16px;background:#ffffff09}
+  </style>
+</head>
+<body><main class="wrap">
+  <header><a href="/">TALKTOAI</a> · <span>ZERO ONE Desktop</span></header>
+  <p class="muted">DESKTOP APP · PRIVACY</p><h1>ZERO ONE Desktop privacy notice</h1>
+  <p>Effective 30 September 2026. This notice describes the ZERO ONE 8.0.0 update. Earlier installed or Microsoft Store releases may have different features and legacy connected services; update availability and certification are separate from this notice.</p>
+  <p class="note"><strong>Your notes stay on this device.</strong> ZNotes requires no website account or automatic cloud sync. Optional AI and browser features use the runtime or API you configure.</p>
+  <h2>ZNotes and private credentials</h2>
+  <p>ZNote titles and text are encrypted with operating-system-backed Electron safeStorage before being saved in the app's user-data folder. If secure storage is unavailable, the app refuses plaintext storage; insecure Linux basic_text fallback is rejected. Notes are not automatically uploaded, synced or included in diagnostics. OpenZero tokens and optional Assistant API keys are also stored only when secure credential storage is available. Notes and encrypted credentials are protected at rest; this does not make an unlocked computer or a selected remote service private.</p>
+  <h2>Optional AI: local, self-hosted or API</h2>
+  <p>You can configure a local Ollama model, your own OpenZero runtime on this computer or a remote server, or an optional OpenAI/Groq API for Assistant chat. Model prompts and conversation context are sent to the chosen endpoint. A remote runtime or API therefore receives that content and network request metadata under its own privacy, retention and billing terms. Local model chat does not provide the full OpenZero orchestration or Browser Pilot planner. The app checks reachability of your configured OpenZero address; the server can receive your network address and request metadata from these probes. The isolated OpenZero workspace retains its cookies, cache and site storage on this computer.</p>
+  <h2>ZeroThink local research workspace</h2>
+  <p>ZeroThink is included locally in ZERO ONE. It requires no hosted account, company server, subscription or database. You explicitly select UTF-8 text files or individual ZNotes as sources. Questions, source text, progress and reports remain in session memory until the app closes, unless you save a report to encrypted ZNotes or export a readable Markdown/JSON file. Imports currently support TXT, Markdown, CSV and JSON, up to eight sources, one MiB each and two MiB total.</p>
+  <p>Offline evidence maps use local deterministic retrieval without a model or network request. Optional model mode sends the question, retrieved excerpts and bounded draft/review context only to your selected OpenZero server, OpenAI or Groq provider. Direct editions also support existing local Ollama. There is no automatic cloud fallback. A remote provider can process and retain those excerpts under its own terms. Stop or Escape aborts the active request and future stages; it cannot retract content already received by the provider. The research engine does not automatically browse, execute generated commands or change model weights.</p>
+  <p>Exports are plaintext and should be kept in a protected location if private. Saving a report to ZNotes uses operating-system encryption. Diagnostics exclude ZeroThink source titles/text, questions and reports. Source-ID checks show that referenced excerpts are present; they do not establish scientific truth.</p>
+  <h2>Browser Pilot</h2>
+  <p>Browser Pilot controls only the isolated tab you explicitly grant for one bounded task, with a 12-step limit and a stop-and-revoke control. Visible page text, headings and interactive-control metadata are sent as a compact structural snapshot to your configured OpenZero planner. The snapshot omits form values, passwords, payment details, secret fields, file selections and CAPTCHA values, strips URL queries/fragments and redacts long token-like path segments. The task request and proposed actions may also contain information you deliberately supply. A remote runtime receives that task and page context. Cross-site navigation, personal-data typing and consequential actions pause for approval. Ordinary page visits send normal web requests to the sites you open.</p>
+  <p>Pilot snapshots and task history are not written to disk. Current run state and up to eight short step results remain in memory until the run ends. Pilot browser cookies and site storage persist until you clear desktop data. Camera and microphone access are denied in embedded workspaces.</p>
+  <h2>Local ZSEC scans</h2>
+  <p>ZSEC Shield scans a folder only after you choose it and request a scan. There is no automatic background scan, sample upload, deletion or quarantine. Local scan reports can contain paths, file hashes, rule matches and errors. They remain on your computer unless you share them.</p>
+  <h2>Diagnostics and updates</h2>
+  <p>Diagnostics export runs only when you request it and choose a location. It includes app/platform version, machine-health totals, configured OpenZero origin and reachability, preferences and whether credentials are configured. It excludes credential values, note contents, prompts, conversation text, cookies and URL credentials, paths, queries and fragments. Review an export before sharing it. Update checks contact the official GitHub repository. Microsoft Store editions use Store update delivery; direct desktop editions have their own verified-update flow.</p>
+  <h2>Retention and removal</h2>
+  <p>Delete notes individually in ZNotes. Clear desktop data removes settings, encrypted tokens and saved browser/runtime sessions after confirmation, while retaining the encrypted notebook and diagnostics files you exported. Uninstalling may also retain app data. Remote accounts and copies held by providers are governed by those providers; clearing desktop data does not delete them. Maintain your own backups.</p>
+  <h2>Retired integrations</h2>
+  <p>The 7.9.6 update removes hosted mail, video-call and research-account routes, sign-in controls and their background probes. It provides on-device ZNotes and user-configured AI. Earlier releases may still show retired service controls.</p>
+  <h2>Contact</h2>
+  <p>For a privacy question, email <a href="mailto:shaf@talktoai.org?subject=ZERO%20ONE%20privacy">shaf@talktoai.org</a>. See the <a href="/privacy/">TalkToAI website privacy notice</a> and <a href="/terms/">terms</a>.</p>
+  <footer>© TalkToAI · <a href="/">Home</a> · <a href="/privacy/">Website privacy</a></footer>
+</main></body></html>
