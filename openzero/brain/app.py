@@ -262,7 +262,7 @@ Available operator tool tags:
 - <browse>url</browse> for Moltbot webpage text extraction.
 - <speak>text</speak> for local Piper speech output.
 
-OpenZero 7.2 rules:
+OpenZero 7.3 rules:
 - Never mention deprecated branding.
 - Respect the Probability of Goodness threshold.
 - For greetings, casual conversation, explanations, and already-complete tasks, answer directly in plain text without a tool call.
@@ -3988,7 +3988,7 @@ def stats():
             "cpu": psutil.cpu_percent(),
             "ram": psutil.virtual_memory().percent,
             "mode": config.get("COMP_MODE", "hybrid").upper(),
-            "version": config.get("OPENZERO_VERSION", "7.2.0"),
+            "version": "7.3.0",
             "autonomy_profile": configured_autonomy_profile(),
             "max_concurrent_workers": autonomous_worker_limit(),
             "hive": hive_label,
@@ -6039,12 +6039,25 @@ def propose_source_improvement(prompt: str) -> str:
 
 from improvement_workbench import register_improvement_routes
 from training_workbench import register_training_routes
+from peer_mesh import register_peer_routes
 
 IMPROVEMENT_WORKBENCH = register_improvement_routes(
     app, BASE_DIR, improvement_api_authorized, propose=propose_source_improvement,
 )
 TRAINING_WORKBENCH = register_training_routes(
     app, improvement_api_authorized, os.path.join(BASE_DIR, ".runtime", "training-workbench"),
+)
+
+
+def filter_peer_note(title, text):
+    return hive._prepare_public_hive_payload(
+        title, text, current_config(), metadata={"manual_share": True, "source": "peer_note"},
+    )
+
+
+PEER_MESH = register_peer_routes(
+    app, os.path.join(BASE_DIR, ".runtime", "peer-mesh"),
+    improvement_api_authorized, filter_note=filter_peer_note,
 )
 
 

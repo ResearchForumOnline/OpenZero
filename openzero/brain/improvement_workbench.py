@@ -17,7 +17,8 @@ import uuid
 MAX_FILES=600
 MAX_FILE_BYTES=700_000
 MAX_TOTAL_BYTES=16_000_000
-PROTECTED={'brain/integrity.py','brain/improvement_workbench.py','brain/workbench_access.py','brain/openzero_config.py'}
+# Generated candidates cannot replace authentication or peer-receive boundaries.
+PROTECTED={'brain/integrity.py','brain/improvement_workbench.py','brain/workbench_access.py','brain/openzero_config.py','brain/peer_mesh.py'}
 ROOTS={'brain','templates','static','tests'}
 SUFFIXES={'.py','.html','.css','.js','.md','.txt'}
 LOCK=threading.RLock()

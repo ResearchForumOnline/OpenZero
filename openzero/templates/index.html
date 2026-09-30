@@ -136,7 +136,7 @@
             .log-panel { height: 120px; }
         }
     </style>
-    <link rel="stylesheet" href="/static/workspace.css?v=7.2.0">
+    <link rel="stylesheet" href="/static/workspace.css?v=7.3.0">
 </head>
 <body>
 
@@ -180,9 +180,45 @@
             </div>
 
             <div class="settings-page active" data-settings-page="hive">
+            <div class="config-box" id="peer-mesh-panel">
+                <h3>DIRECT PEERS — NO MAIN NODE</h3>
+                <div class="hint">Your node works alone. Optional peer exchange connects directly to machines you choose. No TalkToAI backend, discovery server, automatic chat sharing, remote commands or hosted account is involved.</div>
+                <p id="peer-summary">Loading local peer status…</p>
+                <label><input type="checkbox" id="peer-enabled"> Enable dedicated-key peer note exchange</label>
+                <button type="button" class="action-btn" id="peer-apply">Apply peer mode</button>
+                <button type="button" class="action-btn" id="peer-refresh">Refresh local status</button>
+                <details><summary>1. Give a trusted peer permission to exchange notes</summary>
+                    <div class="hint">Create a dedicated receive key on this machine and share it privately. It grants text-note exchange only. It never grants access to tools, files, settings, models or your administrator API.</div>
+                    <button type="button" class="action-btn" id="peer-key-create">Create / rotate receive key</button>
+                    <button type="button" class="action-btn" id="peer-key-revoke">Revoke receive key</button>
+                    <input type="password" id="peer-receive-key" readonly autocomplete="off" aria-label="Receive key shown once">
+                    <button type="button" class="action-btn" id="peer-key-copy">Copy receive key</button>
+                </details>
+                <details><summary>2. Add a machine you trust</summary>
+                    <label>Peer name</label><input type="text" id="peer-label" maxlength="80" placeholder="My second node">
+                    <label>Its origin</label><input type="url" id="peer-origin" placeholder="https://node.example or http://127.0.0.1:2024">
+                    <div class="hint">Use HTTPS for remote nodes, or an SSH tunnel to a local HTTP port. Enter an origin without a path. No network request happens when saving a peer.</div>
+                    <label>That machine's dedicated receive key</label><input type="password" id="peer-recipient-key" autocomplete="off" placeholder="ozpeer_…">
+                    <button type="button" class="action-btn" id="peer-add">Save trusted peer</button>
+                </details>
+                <div class="hint">Latest-batch exchange sends up to 12 published notes within 128 KB. Use a published note's own button to exchange that older note.</div>
+                <div id="peer-list"></div>
+                <details><summary>3. Prepare a note for explicit sharing</summary>
+                    <div class="hint">Only notes you deliberately publish are exchanged. Received notes remain in a review inbox and are never automatically forwarded. Do not include credentials or personal data. Publishing prepares the privacy-filtered note locally; existing received copies cannot be recalled.</div>
+                    <label>Title</label><input type="text" id="peer-title" maxlength="160">
+                    <label>Text</label><textarea id="peer-text" maxlength="8000" rows="5" style="width:100%;box-sizing:border-box"></textarea>
+                    <label><input type="checkbox" id="peer-consent"> I approve making this exact note available to my authenticated peers.</label>
+                    <button type="button" class="action-btn" id="peer-publish">Prepare note</button>
+                </details>
+                <p id="peer-notice" class="hint" role="status" aria-live="polite"></p>
+                <details><summary>My published notes</summary><div id="peer-published"></div></details>
+                <details><summary>Received notes — review required</summary><div id="peer-inbox"></div></details>
+            </div>
+            <details><summary>Advanced: legacy operator-owned Hive integration</summary>
+
             <div class="config-box">
                 <h3>DECENTRALIZED LATTICE</h3>
-                <div class="hint">If you know nothing yet, keep Hive for node status only, leave chat sharing on manual approval, and keep Local Continuity enabled. Federation mirrors are backup hubs for trusted operators.</div>
+                <div class="hint">Legacy external-service support is optional. Keep it disabled unless you operate a compatible service yourself. Local learning works without it.</div>
                 <label>Hive Mind Status</label>
                 <select id="cfg_hive">
                     <option value="true">CONNECTED (ON)</option>
@@ -190,13 +226,13 @@
                 </select>
                 <label>Hive Network Mode</label>
                 <select id="cfg_hive_mode">
-                    <option value="standalone">STANDALONE (ONE HIVE HQ)</option>
-                    <option value="federated">FEDERATED (HQ + MIRRORS)</option>
+                    <option value="standalone">LEGACY SINGLE ENDPOINT</option>
+                    <option value="federated">LEGACY MULTIPLE ENDPOINTS</option>
                     <option value="local">LOCAL CONTINUITY ONLY</option>
                 </select>
-                <label>Hive HQ URL</label>
-                <input type="text" id="cfg_hive_url" placeholder="https://openzero.talktoai.org/api/hive">
-                <div class="hint">This is your primary hive coordinator. If your personal Hive HQ vanishes, operators can point this field at a new compatible Hive.</div>
+                <label>Legacy service URL</label>
+                <input type="text" id="cfg_hive_url" placeholder="">
+                <div class="hint">Optional compatibility with a service you operate. Direct peers above require no Hive service. Leave this blank for local-only operation.</div>
                 <label>Federation Mirrors</label>
                 <input type="text" id="cfg_hive_mirrors" placeholder="https://mirror1/api/hive,https://mirror2/api/hive">
                 <div class="hint">Comma-separated backup Hive endpoints. In federated mode OpenZero writes to all reachable mirrors and queues failed writes locally for replay.</div>
@@ -220,6 +256,7 @@
                 </select>
                 <div class="hint">Safe default: manual. Local learning is private. Auto-safe only publishes redacted, low-risk chat knowledge and still blocks public sharing when the safety filter fires.</div>
             </div>
+            </details>
             </div>
 
             <div class="settings-page" data-settings-page="economy">
@@ -336,7 +373,7 @@
                     <strong>OPENZERO TAB PILOT // CHROME WEB STORE</strong>
                     <p>Install the published extension in Brave or Chrome, then connect it to this OpenZero node. Managed Linux and verified offline installation routes remain available in the setup guide.</p>
                     <button class="action-btn" style="border-color:var(--gold); color:var(--gold);" onclick="window.open('https://chromewebstore.google.com/detail/openzero-tab-pilot/cgaalobjjknalamgchppccbocnhonhbf', '_blank', 'noopener')">INSTALL FROM CHROME WEB STORE</button>
-                    <button class="action-btn" onclick="window.open('https://openzero.talktoai.org/tab-pilot', '_blank', 'noopener')">OPEN SETUP GUIDE</button>
+                    <button class="action-btn" onclick="window.open('https://github.com/ResearchForumOnline/OpenZero/tree/main/browser-extension', '_blank', 'noopener')">OPEN SETUP GUIDE</button>
                 </div>
 
                 <div class="flex-row" style="margin-top:10px;">
@@ -499,7 +536,7 @@
                     <input type="password" id="cfg_tele" placeholder="Enter Telegram Token...">
 
                     <label>OpenZero API Key</label>
-                    <div class="hint">Create a local OpenAI-compatible key for ZeroThink. The key is shown once; store it in ZeroThink Neural Vault as your OpenZero Machine API Key.</div>
+                    <div class="hint">Create a local OpenAI-compatible key for your own clients. The key is shown once; store it privately.</div>
                     <div class="flex-row" style="margin-bottom:10px;">
                         <button class="action-btn" style="border-color:var(--cyan); color:var(--cyan); padding:8px; font-size:0.78em;" onclick="rotateOpenZeroApiKey()">CREATE / ROTATE</button>
                         <button class="action-btn delete-btn" style="padding:8px; font-size:0.78em; margin-top:0;" onclick="revokeOpenZeroApiKey()">REVOKE</button>
@@ -619,7 +656,7 @@
             <button class="workspace-tab" data-workspace="training" type="button" aria-selected="false">Training lab</button>
             <span id="connection-state" class="connection-state">Connecting…</span>
         </nav>
-        <details class="workspace-auth"><summary>Workbench access <span>Local access or a session API key</span></summary><label for="workbench-token">Optional API key for improvement and training endpoints</label><input id="workbench-token" type="password" autocomplete="off" spellcheck="false" placeholder="Used only for workbench requests in this page session"><p class="muted">Use an authorized local connection or your existing OpenZero API key. This field is never saved; reloading clears it.</p></details>
+        <details class="workspace-auth"><summary>Workbench access <span>Local access or a session API key</span></summary><label for="workbench-token">Optional owner API key for workbench and peer settings</label><input id="workbench-token" type="password" autocomplete="off" spellcheck="false" placeholder="Used only for workbench and peer requests in this page session"><p class="muted">Use an authorized local connection or your existing OpenZero API key. This field is never saved; reloading clears it.</p></details>
         <section id="workspace-chat" class="workspace-view conversation-view" aria-label="Conversation">
         <div class="run-strip" aria-live="polite"><span id="run-state" class="state-chip">Ready</span><span id="run-detail">Choose a model and describe the outcome you want.</span><span id="run-elapsed"></span></div>
         <div class="chat-history" id="chat-history">
@@ -1069,7 +1106,7 @@
 
         function currentHiveMonitorUrl() {
             const configuredUrl = (document.getElementById('cfg_hive_url')?.value || runtimeConfig.OPENZERO_HIVE_URL || '').trim();
-            if (!configuredUrl) return 'https://openzero.talktoai.org/hive-monitor';
+            if (!configuredUrl) return '/manual';
             if (configuredUrl.endsWith('/api/hive')) return configuredUrl.replace(/\/api\/hive$/, '/hive-monitor');
             if (configuredUrl.endsWith('/api_hive.php')) return configuredUrl.replace(/\/api_hive\.php$/, '/hive-monitor');
             return configuredUrl;
@@ -1272,7 +1309,7 @@
                     setRuntimeHealth(cfg);
                     document.getElementById('cfg_vision').value = cfg.VISION_ENABLED;
                     document.getElementById('cfg_hive').value = cfg.HIVE_MIND_ENABLED;
-                    document.getElementById('cfg_hive_mode').value = cfg.OPENZERO_HIVE_MODE || 'standalone';
+                    document.getElementById('cfg_hive_mode').value = cfg.OPENZERO_HIVE_MODE || 'local';
                     document.getElementById('cfg_hive_url').value = cfg.OPENZERO_HIVE_URL || '';
                     document.getElementById('cfg_hive_mirrors').value = cfg.OPENZERO_HIVE_MIRRORS || '';
                     document.getElementById('cfg_hive_spool').value = cfg.OPENZERO_HIVE_LOCAL_SPOOL_ENABLED || 'true';
@@ -1518,7 +1555,7 @@
         });
 
         function saveAllSettings() {
-            const currentPrimaryHive = (runtimeConfig.OPENZERO_HIVE_URL || 'https://openzero.talktoai.org/api/hive').trim();
+            const currentPrimaryHive = (runtimeConfig.OPENZERO_HIVE_URL || '').trim();
             const currentFee = (document.getElementById('cfg_fee').value.trim() || runtimeConfig.FEE_OZ_COINS || runtimeConfig.FEE_ZERO_COINS || '0.0');
             const currentThreshold = (document.getElementById('cfg_p_good').value.trim() || runtimeConfig.P_GOOD_THRESHOLD || '0.10');
             const currentMultiplier = (document.getElementById('cfg_paid_multiplier').value.trim() || runtimeConfig.PAID_HIVE_STAKE_MULTIPLIER || '1.0');
@@ -1627,7 +1664,7 @@
             if(cfg.HAS_OPENZERO_API_KEY && enabled) {
                 status.innerText = `API enabled. Saved key hint: ${hint || 'hidden'}.`;
             } else {
-                status.innerText = 'API disabled. Create a key before connecting this node to ZeroThink.';
+                status.innerText = 'API disabled. Create a key before connecting your own clients.';
             }
         }
 
@@ -1664,7 +1701,7 @@
                 const result = document.getElementById('openzero-api-result');
                 result.value = '';
                 result.style.display = 'none';
-                document.getElementById('openzero-api-status').innerText = 'API disabled. Create a key before connecting this node to ZeroThink.';
+                document.getElementById('openzero-api-status').innerText = 'API disabled. Create a key before connecting your own clients.';
                 appendMessage('system', 'LATTICE', '[SUCCESS] OpenZero API key revoked.');
             }).catch(() => appendMessage('system', 'LATTICE', '[ERROR] OpenZero key revoke failed.'));
         }
@@ -1690,6 +1727,7 @@
         setInterval(refreshVisionHealth, 30000);
         setInterval(refreshFeaturedModels, 5000);
     </script>
-    <script src="/static/workspace.js?v=7.2.0"></script>
+    <script src="/static/workspace.js?v=7.3.0"></script>
+<script src="/static/peer-mesh.js"></script>
 </body>
 </html>

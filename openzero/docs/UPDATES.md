@@ -1,5 +1,16 @@
 # OpenZero Updates
 
+## OpenZero 7.3 — independent nodes
+
+- No required owner main node; empty remote Hive default and loopback panel.
+- Exact retired owner defaults migrate without replacing custom endpoints.
+- GitHub release assets and checksums replace retired hosted downloads.
+- Tab Pilot 0.3.1 ZIP helpers preserve explicit browser approval; no owner CRX updater.
+- Existing improvement and training workbenches remain available locally.
+
+See [DECENTRALISED.md](DECENTRALISED.md) and [INSTALL.md](INSTALL.md).
+
+
 ## OpenZero 7.1
 
 - Reports one canonical `7.1.0` runtime version after both fresh installs and

@@ -8,8 +8,8 @@ Never commit real `.env` files.
 
 | Key | Default | Purpose |
 | --- | --- | --- |
-| `OPENZERO_VERSION` | `7.1.0` | Version label. |
-| `OPENZERO_DOMAIN` | `https://openzero.talktoai.org` | Public download/domain reference. |
+| `OPENZERO_VERSION` | `7.3.0` | Version label. |
+| `OPENZERO_DOMAIN` | `http://127.0.0.1:1024` | Local panel reference; no remote service dependency. |
 | `SERVER_PORT` | `1024` | Panel/API port when configured. |
 | `ACTIVE_MODEL` | `hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M` | Verified local runtime default. |
 | `LOCAL_ENGINE` | `ollama` | Local engine selector. |
@@ -94,8 +94,8 @@ latency; values are clamped from 2048 to 32768.
 | Key | Default |
 | --- | --- |
 | `HIVE_MIND_ENABLED` | `false` |
-| `OPENZERO_HIVE_URL` | `https://openzero.talktoai.org/api/hive` |
-| `OPENZERO_HIVE_MODE` | `standalone` |
+| `OPENZERO_HIVE_URL` | blank |
+| `OPENZERO_HIVE_MODE` | `local` |
 | `OPENZERO_HIVE_SHARE_MODE` | `manual` |
 | `OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED` | `false` |
 | `OPENZERO_HIVE_BLOCK_RISKY_CONTENT` | `true` |

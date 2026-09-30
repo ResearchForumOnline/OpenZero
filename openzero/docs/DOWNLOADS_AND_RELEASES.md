@@ -11,39 +11,38 @@ This page explains the public download paths for OpenZero.
 | Source ZIP for current main branch | <https://github.com/ResearchForumOnline/OpenZero/archive/refs/heads/main.zip> |
 | GitHub releases | <https://github.com/ResearchForumOnline/OpenZero/releases> |
 | ZeroMint OS GitHub release | <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0> |
-| Hosted installer | <https://openzero.talktoai.org/install.sh> |
-| Hosted update script | <https://openzero.talktoai.org/update.sh> |
-| ZeroMint OS v1.0 ISO | <https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso> |
-| ZeroMint OS torrent | <https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent> |
+| Hosted installer | <https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh> |
+| Hosted update script | <https://github.com/ResearchForumOnline/OpenZero/releases/latest/download/update.sh> |
+| ZeroMint OS v1.0 ISO | <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0> |
+| ZeroMint OS torrent | <https://raw.githubusercontent.com/ResearchForumOnline/OpenZero/main/docs/downloads/ZeroMint_OS_v1.0.torrent> |
 | ZeroMint OS guide | [ZEROMINT_OS.md](ZEROMINT_OS.md) |
-| Online manual | <https://docs.talktoai.org/openzero-user-manual/> |
+| Online manual | <https://github.com/ResearchForumOnline/OpenZero/tree/main/openzero/docs> |
 
 ## Standard Install
 
-Review first:
+Review and verify the pinned installer:
 
 ```bash
-curl -fsSL https://openzero.talktoai.org/install.sh -o openzero-install.sh
-less openzero-install.sh
-bash openzero-install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+sha256sum -c install.sh.sha256
+less install.sh
+bash install.sh
 ```
 
-Fast install on a machine you control:
-
-```bash
-curl -fsSL https://openzero.talktoai.org/install.sh | bash
-```
-
-GitHub raw fallback:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/ResearchForumOnline/OpenZero/main/openzero/install.sh | bash
-```
+The installer separately verifies the runtime ZIP. GitHub is a distribution
+host, not a model or Hive main node. You may mirror matching release assets via
+`OPENZERO_RELEASE_BASE_URL`; see [DECENTRALISED.md](DECENTRALISED.md).
 
 ## Updates
 
+For pre-7.3 nodes, first use the verified installer above with `--dir` set to
+your existing installation. Its new updater uses GitHub rather than the retired
+owner host. Then use the local updater:
+
 ```bash
-curl -fsSL https://openzero.talktoai.org/update.sh | bash
+cd ~/openzero
+bash update.sh
 ```
 
 or from a cloned repository:
@@ -69,11 +68,11 @@ Read the full guide: [OFFLINE_RELEASE.md](OFFLINE_RELEASE.md).
 
 ZeroMint OS v1.0 is the OpenZero-focused ISO route for users who want a bootable operating-system-style download for testing, labs, or a local AI workstation.
 
-The ISO is too large for a normal GitHub repository commit. It is hosted on the OpenZero server, with a torrent and SHA256 checksums tracked here for verification:
+The ISO is too large for a normal GitHub repository commit. It is archived as split GitHub release assets, with historical torrent metadata and SHA256 checksums tracked here:
 
 - GitHub split release: <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0>
-- ISO: <https://openzero.talktoai.org/ZeroMint_OS_v1.0.iso>
-- Torrent: <https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent>
+- ISO: <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0>
+- Torrent: <https://raw.githubusercontent.com/ResearchForumOnline/OpenZero/main/docs/downloads/ZeroMint_OS_v1.0.torrent>
 - Guide: [ZEROMINT_OS.md](ZEROMINT_OS.md)
 - Checksums: [../../docs/downloads/SHA256SUMS.txt](../../docs/downloads/SHA256SUMS.txt)
 - Split asset checksums: [../../docs/downloads/SHA256SUMS.parts.txt](../../docs/downloads/SHA256SUMS.parts.txt)

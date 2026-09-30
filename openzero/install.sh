@@ -16,10 +16,11 @@ ENABLE_BITNET="false"
 ENABLE_TAB_PILOT="auto"
 SKIP_MODEL="false"
 INSTALL_DIR="${HOME}/openzero"
-RELEASE_URL="https://openzero.talktoai.org/openzero_release.zip"
-RELEASE_CHECKSUM_URL="https://openzero.talktoai.org/openzero_release.zip.sha256"
-TORRENT_URL="https://openzero.talktoai.org/ZeroMint_OS_v1.0.torrent"
-TAB_PILOT_URL="https://openzero.talktoai.org/tab-pilot"
+RELEASE_BASE_URL="${OPENZERO_RELEASE_BASE_URL:-https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0}"
+RELEASE_URL="${RELEASE_BASE_URL}/openzero_release.zip"
+RELEASE_CHECKSUM_URL="${RELEASE_BASE_URL}/openzero_release.zip.sha256"
+TORRENT_URL="https://raw.githubusercontent.com/ResearchForumOnline/OpenZero/main/docs/downloads/ZeroMint_OS_v1.0.torrent"
+TAB_PILOT_URL="https://github.com/ResearchForumOnline/OpenZero/tree/main/browser-extension"
 OPENZERO_DEFAULT_MODEL="hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
 OPENZERO_GEMMA_URL="https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/resolve/main/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf?download=true"
 OPENZERO_GEMMA_FILE="Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf"
@@ -53,13 +54,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo -e "${GREEN}"
-echo "███████ ███████ ██████  ██████"
-echo "   ███  ██      ██   ██ ██  ██"
-echo "  ███   █████   ██████  ██  ██"
-echo " ███    ██      ██   ██ ██  ██"
-echo "███████ ███████ ██   ██ ██████"
+echo "â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ"
+echo "   â–ˆâ–ˆâ–ˆ  â–ˆâ–ˆ      â–ˆâ–ˆ   â–ˆâ–ˆ â–ˆâ–ˆ  â–ˆâ–ˆ"
+echo "  â–ˆâ–ˆâ–ˆ   â–ˆâ–ˆâ–ˆâ–ˆâ–ˆ   â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ  â–ˆâ–ˆ  â–ˆâ–ˆ"
+echo " â–ˆâ–ˆâ–ˆ    â–ˆâ–ˆ      â–ˆâ–ˆ   â–ˆâ–ˆ â–ˆâ–ˆ  â–ˆâ–ˆ"
+echo "â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ â–ˆâ–ˆ   â–ˆâ–ˆ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ"
 echo -e "${NC}"
-echo -e "${CYAN}>>> OPENZERO 7.2 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^} // SKIP_MODEL=${SKIP_MODEL^^}${NC}"
+echo -e "${CYAN}>>> OPENZERO 7.3 INSTALLER // MODE=${MODE^^} // KALI=${ENABLE_KALI^^} // ISO=${ENABLE_ISO^^} // BITNET=${ENABLE_BITNET^^} // SKIP_MODEL=${SKIP_MODEL^^}${NC}"
 
 ensure_linux_packages() {
     if [ -f /etc/debian_version ]; then
@@ -221,11 +222,29 @@ prepare_release() {
 
     curl -fsSL -o "${stage}/openzero_release.zip" "${RELEASE_URL}"
     curl -fsSL -o "${stage}/openzero_release.zip.sha256" "${RELEASE_CHECKSUM_URL}"
-    (
-        cd "${stage}"
-        sha256sum -c openzero_release.zip.sha256
-    )
-    unzip -q "${stage}/openzero_release.zip" -d "${payload}"
+    python3 - "${stage}" "${payload}" <<'PY'
+from pathlib import Path, PurePosixPath
+import hashlib
+import zipfile
+import sys
+
+stage, payload = map(Path, sys.argv[1:])
+fields = (stage / "openzero_release.zip.sha256").read_text(encoding="ascii").split()
+if len(fields) != 2 or fields[1] != "openzero_release.zip" or len(fields[0]) != 64:
+    raise SystemExit("Invalid runtime checksum file.")
+if hashlib.sha256((stage / "openzero_release.zip").read_bytes()).hexdigest() != fields[0].lower():
+    raise SystemExit("Runtime checksum mismatch.")
+with zipfile.ZipFile(stage / "openzero_release.zip") as package:
+    for entry in package.infolist():
+        name = PurePosixPath(entry.filename)
+        if name.is_absolute() or ".." in name.parts or "\\" in entry.filename or ":" in entry.filename:
+            raise SystemExit("Unsafe runtime archive path.")
+        if (entry.external_attr >> 16) & 0o170000 == 0o120000:
+            raise SystemExit("Runtime archive must not contain symlinks.")
+        if name.name == ".env" or name.name.startswith(".env."):
+            raise SystemExit("Runtime archive must not overwrite private configuration.")
+    package.extractall(payload)
+PY
 
     python3 - "${payload}" "${INSTALL_DIR}" "${backup}" <<'PY'
 from pathlib import Path
@@ -300,11 +319,11 @@ write_env_defaults() {
 from pathlib import Path
 
 defaults = {
-    "OPENZERO_VERSION": "7.2.0",
-    "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
+    "OPENZERO_VERSION": "7.3.0",
+    "OPENZERO_DOMAIN": "http://127.0.0.1:1024",
     "OPENZERO_TAB_PILOT_URL": "${TAB_PILOT_URL}",
-    "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
-    "OPENZERO_HIVE_MODE": "standalone",
+    "OPENZERO_HIVE_URL": "",
+    "OPENZERO_HIVE_MODE": "local",
     "OPENZERO_HIVE_MIRRORS": "",
     "OPENZERO_HIVE_LOCAL_SPOOL_ENABLED": "true",
     "OPENZERO_HIVE_LOCAL_SPOOL_PATH": "security/hive_spool.json",
@@ -378,6 +397,18 @@ for key, value in defaults.items():
 # It is no longer consumed, and upgrades remove it from managed configuration.
 current.pop("SUDO_PASS", None)
 
+# Remove only retired owner defaults. Explicit user-owned endpoints survive.
+retired_hive = {"https://openzero.talktoai.org/api/hive", "https://openzero.talktoai.org/api/hive/"}
+if current.get("OPENZERO_HIVE_URL", "") in retired_hive:
+    current["OPENZERO_HIVE_URL"] = ""
+    current["OPENZERO_HIVE_MODE"] = "local"
+    current["HIVE_MIND_ENABLED"] = "false"
+    current["OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED"] = "false"
+if current.get("OPENZERO_DOMAIN", "").rstrip("/") == "https://openzero.talktoai.org":
+    current["OPENZERO_DOMAIN"] = defaults["OPENZERO_DOMAIN"]
+if current.get("OPENZERO_TAB_PILOT_URL", "").rstrip("/") == "https://openzero.talktoai.org/tab-pilot":
+    current["OPENZERO_TAB_PILOT_URL"] = defaults["OPENZERO_TAB_PILOT_URL"]
+
 legacy_defaults = {
     "gemma2",
     "gemma2:2b",
@@ -397,7 +428,7 @@ if current.get("NODE_RECOMMENDED_MODEL", "") in managed_previous_defaults:
     current["NODE_RECOMMENDED_MODEL"] = "${OPENZERO_DEFAULT_MODEL}"
 
 # Version is release metadata, not a private user preference. Always migrate it.
-current["OPENZERO_VERSION"] = "7.2.0"
+current["OPENZERO_VERSION"] = "7.3.0"
 
 env_path.write_text("\n".join(f"{key}={value}" for key, value in sorted(current.items())) + "\n", encoding="utf-8")
 PY
@@ -458,9 +489,9 @@ if [[ "${ENABLE_TAB_PILOT}" != "false" ]] && \
     fi
 fi
 
-echo -e "${GREEN}>>> OPENZERO 7.2 ONLINE${NC}"
+echo -e "${GREEN}>>> OPENZERO 7.3 ONLINE${NC}"
 echo -e "${CYAN}Super Panel: http://localhost:1024${NC}"
-echo -e "${CYAN}Manual: https://openzero.talktoai.org/manual${NC}"
+echo -e "${CYAN}Manual: http://localhost:1024/manual${NC}"
 echo -e "${CYAN}Brave Tab Pilot guided setup: ${TAB_PILOT_URL}${NC}"
 echo -e "${CYAN}Offline builder: ${INSTALL_DIR}/build_offline_release.sh${NC}"
 

@@ -32,29 +32,33 @@ class TabPilotIntegrationContractTests(unittest.TestCase):
         self.assertIn('"OPENZERO_ALLOW_PUBLIC_BIND": "false"', CONFIG_SOURCE)
         self.assertIn('bind_host = "127.0.0.1"', APP_SOURCE)
 
-    def test_installer_auto_configures_brave_with_an_opt_out(self):
+    def test_installer_prepares_verified_tab_pilot_with_an_opt_out(self):
         self.assertIn("--no-tab-pilot", INSTALLER_SOURCE)
         self.assertIn("install-tab-pilot.sh", INSTALLER_SOURCE)
-        self.assertIn("ExtensionInstallForcelist", TAB_INSTALLER_SOURCE)
+        self.assertNotIn("ExtensionInstallForcelist", TAB_INSTALLER_SOURCE)
+        self.assertIn("Extension checksum mismatch.", TAB_INSTALLER_SOURCE)
+        self.assertIn("Load unpacked", TAB_INSTALLER_SOURCE)
         self.assertIn("OPENZERO_TAB_PILOT_KEY_HASH", APP_SOURCE)
         self.assertIn("OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M", TAB_INSTALLER_SOURCE)
         self.assertIn('"default_model": default_model', APP_SOURCE)
 
 
-    def test_published_chrome_web_store_listing_is_canonical_interactive_install(self):
+    def test_public_setup_separates_verified_github_release_and_store_listing(self):
         self.assertIn(STORE_URL, TAB_PAGE_SOURCE)
         self.assertIn(STORE_URL, LANDING_PAGE_SOURCE)
         self.assertNotIn("not yet published in the Chrome Web Store", TAB_PAGE_SOURCE)
-        self.assertIn("The Chrome Web Store is the preferred public install", TAB_PAGE_SOURCE)
-        self.assertIn("the verified OpenZero runtime plans", TAB_PAGE_SOURCE)
-        self.assertIn("Managed/offline self-hosted package 0.2.0", TAB_PAGE_SOURCE)
+        self.assertIn("separate public distribution channel", TAB_PAGE_SOURCE)
+        self.assertIn("verified OpenZero runtime plans", TAB_PAGE_SOURCE)
+        self.assertIn("OpenZero-Tab-Pilot-v0.3.1.zip.sha256", TAB_PAGE_SOURCE)
+        self.assertIn("Load unpacked", TAB_PAGE_SOURCE)
+        self.assertNotIn("openzero.talktoai.org", TAB_PAGE_SOURCE)
         self.assertNotIn("OpenZero Gemma plans", TAB_PAGE_SOURCE)
         self.assertNotIn("<p class=\"muted\">Version 0.2.0", TAB_PAGE_SOURCE)
 
 
     def test_installer_migrates_version_and_can_install_brave(self):
-        self.assertIn('"OPENZERO_VERSION": "7.2.0"', INSTALLER_SOURCE)
-        self.assertIn('current["OPENZERO_VERSION"] = "7.2.0"', INSTALLER_SOURCE)
+        self.assertIn('"OPENZERO_VERSION": "7.3.0"', INSTALLER_SOURCE)
+        self.assertIn('current["OPENZERO_VERSION"] = "7.3.0"', INSTALLER_SOURCE)
         self.assertIn("https://dl.brave.com/install.sh", INSTALLER_SOURCE)
         self.assertIn("--brave", INSTALLER_SOURCE)
         self.assertIn("--no-brave", INSTALLER_SOURCE)

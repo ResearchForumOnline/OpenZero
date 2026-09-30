@@ -1,13 +1,13 @@
 # OpenZero Tab Pilot for Brave
 
-OpenZero Tab Pilot is a signed Chromium Manifest V3 extension that lets a
+OpenZero Tab Pilot is a Chromium Manifest V3 extension that lets a
 person explicitly grant **one normal Brave tab** to OpenZero for visible,
 step-by-step browser work.
 
-The public extension is published in the Chrome Web Store. Linux OpenZero
-installs and updates can continue to configure the self-hosted signed build
-through Brave managed policy; a verified ZIP and guided Windows setup helper
-remain available for offline and source-verifiable installs.
+Version 0.3.1 is available as a checksum-verified GitHub ZIP. The Linux and
+Windows helpers prepare an unpacked extension; browser approval is required.
+The Chrome Web Store listing remains a separate distribution channel, whose
+published version may differ. No owner-hosted update service is required.
 
 ## What it can do
 
@@ -67,21 +67,20 @@ https://chromewebstore.google.com/detail/openzero-tab-pilot/cgaalobjjknalamgchpp
 The Chrome Web Store extension ID is `cgaalobjjknalamgchppccbocnhonhbf`.
 Open the extension options after installation and connect it to your OpenZero
 node. Remote nodes should remain loopback-bound and be reached through the SSH
-tunnel described on https://openzero.talktoai.org/tab-pilot.
+tunnel described below.
 
-### Linux: automatic managed install
-
-The normal OpenZero installer and updater detect Brave and run:
+### Linux: verified unpacked preparation
 
 ```bash
-./install-tab-pilot.sh
+./install-tab-pilot.sh --dir "$HOME/openzero"
 ```
 
-That helper verifies the hosted update endpoints, rotates a scoped Tab Pilot
-token through loopback, writes `/etc/brave/policies/managed/openzero-tab-pilot.json`,
-and lets Brave install/update extension ID
-`bjjhckhjkjodankbndllgloanjnfmlmo`. Use `--no-tab-pilot` on the main installer
-or updater to opt out.
+The helper downloads the 0.3.1 ZIP and matching checksum from GitHub v7.3.0,
+verifies both the archive and manifest version, and extracts it into your node's
+`extensions` directory. Follow the printed Load unpacked steps, then generate a
+scoped token in the local panel. It does not write browser-wide policies or
+rotate existing tokens. Existing older managed policies are left for the local
+administrator to review/remove. Use `--no-tab-pilot` to skip preparation.
 
 ### Windows: verified unpacked install
 
@@ -89,14 +88,14 @@ or updater to opt out.
 2. Open `brave://extensions`.
 3. Turn on **Developer mode**.
 4. Choose **Load unpacked**.
-5. Select this `openzero-brave-extension` folder.
+5. Select the extracted extension folder.
 6. Open the extension's **Details** page and pin it if desired.
 7. Open **Extension options** and configure the OpenZero API.
 
 No build step and no `npm install` are required.
 
 For the deterministic ZIP handoff, extract
-`dist/OpenZero-Tab-Pilot-Brave-v0.2.0.zip` first, then select the extracted
+`dist/OpenZero-Tab-Pilot-v0.3.1.zip` first, then select the extracted
 folder in **Load unpacked**. Brave cannot load the ZIP directly.
 
 ## Connect to OpenZero safely

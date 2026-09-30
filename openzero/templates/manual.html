@@ -363,20 +363,28 @@ footer {
 
 <header>
 <h1>OPENZERO OPS MANUAL</h1>
-<div class="subtitle">FULL SPECTRUM DOMINANCE // SOVEREIGN AI LATTICE // BUILD 5.4</div>
+<div class="subtitle">FULL SPECTRUM DOMINANCE // SOVEREIGN AI LATTICE // BUILD 7.3</div>
 </header>
 
 <h2>00 // INTRODUCTION: WHAT IS OPENZERO?</h2>
-<p>If you are new to Artificial Intelligence, you might be used to websites like ChatGPT or Claude. Those are "Cloud AI" systems. They live on someone else's computer, they read your private data, and they restrict what you can ask them. OpenZero is fundamentally different.</p>
+<p>OpenZero runs on your own machine or server. It provides local-model chat and bounded tools through an operator workspace. A company-hosted website, registration or main node is not required.</p>
 <p><b>OpenZero is a Sovereign AI Agent.</b> An AI Agent is a software system that doesn't just talk to you; it can observe its environment, make plans, and execute tasks autonomously. OpenZero is installed directly onto <i>your</i> hardware. It acts as your digital employee, complete with terminal access to your computer, a web browser (Moltbot) to see the internet, and a direct uplink to your phone via Telegram.</p>
-<div class="note"><strong>OpenZero 5.4 note:</strong> This build adds the OpenZero-only Hive API path, RAM-aware node profiling, federation controls, a configurable P(G) threshold, self-healing watchdog services, optional local voice support using faster-whisper plus Piper-compatible speech output or Voicebox, a true offline release path that can carry the local Ollama model store into an air-gapped machine, an optional Microsoft BitNet 1-bit add-on for lower-power CPU nodes, a compact skills registry for low-CPU agent work, local private learning, Moltbot health checks, and a local OpenAI-compatible API key bridge for ZeroThink.</div>
+<div class="note"><strong>OpenZero 7.3 compatibility note:</strong> This build adds the OpenZero-only Hive API path, RAM-aware node profiling, federation controls, a configurable P(G) threshold, self-healing watchdog services, optional local voice support using faster-whisper plus Piper-compatible speech output or Voicebox, a true offline release path that can carry the local Ollama model store into an air-gapped machine, an optional Microsoft BitNet 1-bit add-on for lower-power CPU nodes, a compact skills registry for low-CPU agent work, local private learning, Moltbot health checks, and a local OpenAI-compatible API key bridge for ZeroThink.</div>
 
 <h2>01 // DEPLOYMENT & UPDATES</h2>
 <p>Deploying the OpenZero Lattice is designed to be fully automated. The installer downloads the Neural Brain (Python), the Vision System (Node.js/Chrome), and the Process Manager (PM2), linking them all together.</p>
 
 <h3>Fresh Installation</h3>
-<p>To install OpenZero on a new Linux server, simply run this command in your terminal:</p>
-<div class="cmd-box" data-cmd="curl -sL https://openzero.talktoai.org/install | bash">curl -sL https://openzero.talktoai.org/install | bash</div>
+<p>On a Linux machine you administer, download the installer and checksum, verify and review the script, then run it:</p>
+<div class="cmd-box" data-cmd="curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+sha256sum -c install.sh.sha256
+less install.sh
+bash install.sh">curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+sha256sum -c install.sh.sha256
+less install.sh
+bash install.sh</div>
 
 <h3>True Offline / Air-Gapped Bundle</h3>
 <p>If you need OpenZero to work on a machine that will not touch the internet after setup, use the offline release path. Build the bundle on one connected Linux OpenZero node, then move the finished archive to the air-gapped target. In practice the archive is usually 15 GB to 25 GB because it carries the OpenZero code, Python wheels, a local Node runtime, PM2, an Ollama runtime, bundled Moltbot dependencies, and the local Ollama model store from the builder node.</p>
@@ -389,32 +397,46 @@ chmod +x build_offline_release.sh
 ./build_offline_release.sh</div>
 <p>The builder writes <code>dist/openzero_offline_release.tar.gz</code> plus a matching SHA-256 file.</p>
 <div class="cmd-box" data-cmd="# On the air-gapped Linux target
+sha256sum -c openzero_offline_release.tar.gz.sha256
 tar -xzf openzero_offline_release.tar.gz
 cd openzero_offline_release
 chmod +x install_offline.sh
 ./install_offline.sh"># On the air-gapped Linux target
+sha256sum -c openzero_offline_release.tar.gz.sha256
 tar -xzf openzero_offline_release.tar.gz
 cd openzero_offline_release
 chmod +x install_offline.sh
 ./install_offline.sh</div>
-<div class="note"><b>Operator download routes:</b> <code>/build-offline</code> serves the builder script, <code>/install-offline</code> serves the offline installer, and <code>/offline-guide</code> serves the beginner written guide. The offline installer now treats the extracted folder as the final install directory by default, so it does not waste disk space duplicating a 15 GB to 25 GB bundle unless you explicitly pass a different <code>--dir</code> path. If you upload a finished bundle to the web root using the exact filename <code>openzero_offline_release.tar.gz</code>, the stable public download URL becomes <code>https://openzero.talktoai.org/openzero_offline_release.tar.gz</code>.</div>
+<div class="note"><b>Operator download routes:</b> <code>/build-offline</code> serves the builder script, <code>/install-offline</code> serves the offline installer, and <code>/offline-guide</code> serves the beginner written guide. The offline installer now treats the extracted folder as the final install directory by default, so it does not waste disk space duplicating a 15 GB to 25 GB bundle unless you explicitly pass a different <code>--dir</code> path. Transfer a finished bundle with its checksum privately or publish it on infrastructure you control. No company-hosted offline archive is required.</div>
 
-<h3>Updating to the Latest Version</h3>
-<p>OpenZero receives constant upgrades. <b>You can safely run the update command at any time.</b> The updater is designed to fetch the newest code, UI patches, Ollama runtime refreshes, and local model repairs without deleting your private <code>.env</code> keys or your chat logs.</p>
+<h3>Updating to the Latest Version</h3><p>For a pre-7.3 installation, use the verified installer above with <code>--dir</code> set to your existing install path. That replaces the older updater which depended on the retired owner host. Then use the local updater below.</p>
+<p>OpenZero receives constant upgrades. Review updates and back up important work before applying them. The updater is designed to fetch the newest code, UI patches, Ollama runtime refreshes, and local model repairs without deleting your private <code>.env</code> keys or your chat logs.</p>
 <div class="cmd-box" data-cmd="# Safe in-place updater:
-curl -sL https://openzero.talktoai.org/update.sh | bash"># Safe in-place updater:
-curl -sL https://openzero.talktoai.org/update.sh | bash</div>
+cd ~/openzero
+bash update.sh"># Safe in-place updater:
+cd ~/openzero
+bash update.sh</div>
 <div class="note"><b>What this now fixes automatically:</b> stale local model selections, outdated Ollama runtimes, broken local brain startup, and missing compatibility fallback lanes on older machines. Re-running the main installer still works too, but the dedicated updater is now the clean operator path.</div>
 <div class="note"><b>New runtime control:</b> the web control panel now has a real <code>STOP</code> control. It does not just hide the spinner; it sends a stop request so Agent Zero halts at the next safe boundary in the operator loop. If Hive backlog is distracting you, use <code>PAUSE HIVE</code> or <code>CLEAR QUEUE</code>; that queue is only unsent lattice events, not your local LLM task list.</div>
 
 <h3>Optional Microsoft BitNet 1-bit Add-On</h3>
 <p>OpenZero uses the verified <b>Ministral Q5 via Ollama</b> as the default local lane and retains Gemma E4B only for compatibility. If you want the optional Microsoft <b>BitNet</b> CPU-efficient path for lower-power or older systems, install it as an add-on instead of replacing the whole runtime stack.</p>
 <div class="cmd-box" data-cmd="# Fresh install with BitNet add-on enabled
-curl -sL https://openzero.talktoai.org/install | bash -s -- --bitnet"># Fresh install with BitNet add-on enabled
-curl -sL https://openzero.talktoai.org/install | bash -s -- --bitnet</div>
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+sha256sum -c install.sh.sha256
+less install.sh
+bash install.sh --bitnet"># Fresh install with BitNet add-on enabled
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+sha256sum -c install.sh.sha256
+less install.sh
+bash install.sh --bitnet</div>
 <div class="cmd-box" data-cmd="# In-place update and BitNet repair/enable
-curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet"># In-place update and BitNet repair/enable
-curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
+cd ~/openzero
+bash update.sh --bitnet"># In-place update and BitNet repair/enable
+cd ~/openzero
+bash update.sh --bitnet</div>
 <div class="note"><b>Important:</b> BitNet is a separate runtime from Ollama. OpenZero uses the official Microsoft <code>bitnet.cpp</code> path and the official GGUF weights, with a maximum context window of <code>4096</code>. If you do nothing, OpenZero stays on the verified Ministral/Ollama lane.</div>
 
 <h3>Optional Voicebox Local Voice Studio</h3>
@@ -427,77 +449,12 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 <p>While OpenZero runs perfectly on AlmaLinux, Ubuntu, or Debian cloud servers, <b>Linux Mint</b> is the absolute best environment for this framework. By installing OpenZero on a physical or RDP-accessible Linux Mint machine, you get a full graphical desktop environment while simultaneously running your Sovereign AI Node silently in the background. It is a desktop PC and an autonomous AI Server built into one seamless machine.</p>
 </div>
 
-<h2>01A // HIVE HQ, FEDERATION, & SURVIVAL MODE</h2>
-<p>If you are brand new, think of OpenZero in three layers: <b>your node</b>, <b>your Hive HQ</b>, and <b>optional federation mirrors</b>. Your node is your own machine. Hive HQ is the main coordination hub you point to. Federation mirrors are backup hubs that can keep the network alive if one operator or one database disappears.</p>
-
-<table>
-<tr><th>Setting</th><th>What it means in plain English</th></tr>
-<tr>
-<td><code>HIVE_MIND_ENABLED=true</code></td>
-<td>Your node participates in the Hive and registers itself instead of staying fully private/local-only.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_MODE=standalone</code></td>
-<td>Use one Hive HQ only. This is the simplest mode and best for a first install.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_MODE=federated</code></td>
-<td>Use one Hive HQ plus one or more backup mirror URLs. OpenZero writes to all reachable mirrors and queues failed writes locally for replay later.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_MODE=local</code></td>
-<td>Stay operational with local continuity data only. This is the emergency mode when all remote Hive endpoints are gone.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_URL</code></td>
-<td>Your primary Hive HQ address. Example: <code>https://openzero.talktoai.org/api/hive</code>.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_MIRRORS</code></td>
-<td>Comma-separated backup Hive endpoints. Example: <code>https://hq2.example.org/api/hive,https://hq3.example.org/api/hive</code>.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_LOCAL_SPOOL_ENABLED=true</code></td>
-<td>Keeps a local queue of node events and knowledge updates so they can be replayed when a Hive endpoint comes back.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_SHARE_MODE=manual</code></td>
-<td>Default privacy mode. Your node can register with Hive, but chats stay local unless you press <b>Send Last Chat To Hive</b>.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_SHARE_MODE=auto_safe</code></td>
-<td>Optional public-learning mode. OpenZero still redacts and safety-checks content before public Hive sharing. Risky or private exchanges remain local-only.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_SHARE_MODE=private</code></td>
-<td>Never publish chat knowledge. Use this if the machine handles secrets, customer chats, private credentials, or private research.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_LOCAL_LEARNING_ENABLED=true</code></td>
-<td>Lets the node learn privately from useful finished chat replies without publishing them to remote Hive. This is separate from public Hive sharing.</td>
-</tr>
-<tr>
-<td><code>OPENZERO_HIVE_BACKGROUND_PUSH=false</code></td>
-<td>Default hotfix setting. OpenZero does not silently push chat replies in the background.</td>
-</tr>
-</table>
-
-<div class="note"><b>If your main server disappears:</b> OpenZero nodes do not die with it. Operators can stand up a compatible Hive API elsewhere, switch the Hive HQ URL in the panel, add federation mirrors, and replay queued events from each node. In other words: the node remains sovereign, and the network can be re-linked without the original operator.</div>
-<div class="warning"><b>Privacy rule:</b> Hive node status is public coordination data; your chats are private by default. Local learning can still improve the node privately. Only click <b>Send Last Chat To Hive</b> when you intentionally want a filtered answer to become public Hive knowledge for other nodes. Terminal-mode runs are blocked from manual sharing because they can include commands, file paths, secrets, or system output.</div>
-<div class="note"><b>Important:</b> the queue you see in the panel is not a list of pending LLM jobs. It is only a local spool of unsent Hive events. If a Hive HQ goes bad, use <b>Pause Hive</b>, <b>Clear Queue</b>, or <b>Clear Local Events</b> and keep working locally. OpenZero 5.4 also exposes <b>Remote Hive Lookup</b> separately now, so you can keep Hive registration/sync on while forcing live chat to stay local-first.</div>
-
-<h3>Beginner Setup Recommendation</h3>
-<ol class="step-list">
-<li>Install OpenZero using the one-line installer.</li>
-<li>Open <code>http://localhost:1024</code> in your browser.</li>
-<li>In the <b>Decentralized Lattice</b> panel, turn Hive on.</li>
-<li>Leave <b>Hive Network Mode</b> on <code>STANDALONE</code> for your first setup.</li>
-<li>Paste your primary Hive HQ URL.</li>
-<li>Leave <b>Local Continuity Spool</b> enabled so queued events survive outages.</li>
-<li>Leave <b>Chat Sharing To Hive</b> on <code>MANUAL APPROVAL ONLY</code> unless you are deliberately building a public knowledge node.</li>
-<li>When you have trusted backup operators, switch to <code>FEDERATED</code> mode and add mirror URLs.</li>
-</ol>
-
+<h2>01A // LOCAL NODES AND OPTIONAL DIRECT PEERS</h2>
+<p>A fresh OpenZero installation works independently. Local models, knowledge, settings and run checkpoints stay on your machine. There is no required Hive HQ, central registration or company database.</p>
+<table><tr><th>Setting</th><th>Default meaning</th></tr><tr><td><code>OPENZERO_HIVE_URL</code></td><td>Blank. No remote owner endpoint is configured.</td></tr><tr><td><code>OPENZERO_HIVE_MODE=local</code></td><td>Local operation with remote sharing disabled.</td></tr><tr><td><code>HIVE_MIND_ENABLED=false</code></td><td>No legacy remote Hive registration.</td></tr><tr><td><code>OPENZERO_HIVE_SHARE_MODE=manual</code></td><td>Private chats do not automatically become shared knowledge.</td></tr><tr><td><code>OPENZERO_LOCAL_LEARNING_ENABLED=true</code></td><td>Useful completed replies can contribute to private local knowledge; this is not an automatic weight update.</td></tr></table>
+<h3>Optional direct peer notes</h3><p>Choose peers yourself and exchange only notes you intentionally send. Incoming notes enter a review inbox; they are not commands, trusted instructions or model weights. Peer access uses separate keys, not your general model API key. Outgoing peer tokens live in private runtime storage and are not encrypted at rest.</p><p>See the <a href="https://github.com/ResearchForumOnline/OpenZero/blob/main/openzero/docs/DIRECT-PEERS.md">direct peer guide</a> for the implemented protocol, setup and limits. This feature does not pool inference or perform distributed model training.</p>
+<h3>Existing legacy Hive configurations</h3><p>Legacy client settings remain available for an operator-owned compatible endpoint. They are optional integration settings, not the default installation path. The upgrade clears exact retired owner defaults while preserving custom addresses. A legacy local spool contains unsent events, not pending LLM jobs.</p>
+<h3>First setup</h3><ol class="step-list"><li>Verify and review the installer, then install on your own machine.</li><li>Open <code>http://localhost:1024</code>, check the local model and try a small request.</li><li>Keep remote sharing off unless you deliberately configure a trusted peer.</li><li>Keep the panel on loopback; use your own SSH tunnel for remote access.</li></ol>
 <h2>02 // MANAGING YOUR AI (PM2 GUIDE)</h2>
 <p>OpenZero runs continuously in the background so it is always ready to receive commands from your web dashboard or Telegram. It uses a professional process manager called <b>PM2</b> to stay alive. If you ever change a setting, or if the AI gets stuck thinking, you do not need to restart your computer. Just use these PM2 commands in your terminal:</p>
 
@@ -534,7 +491,7 @@ curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</div>
 
 <ul>
 <li><b>System Config (Settings):</b> Use the left-side control panel to enter your API keys. Changing models or adding a Telegram token here will automatically reboot the Brain to apply the changes.</li>
-<li><b>Hive HQ & Federation:</b> The panel now lets you choose a Hive network mode, set a primary Hive HQ URL, add backup federation mirrors, and replay queued lattice events after an outage.</li>
+<li><b>Optional peers:</b> Direct peer notes can be manually shared and reviewed. Legacy compatible Hive endpoints remain operator-selected, with no required main node.</li>
 <li><b>File Upload (📁):</b> Click the folder icon next to the chat bar to upload text documents, code files, or logs directly into the AI's memory stream for analysis.</li>
 <li><b>Log Export (TXT):</b> Need to save a conversation? Click the TXT button to instantly download your entire chat history as a clean text file to your local computer.</li>
 <li><b>Hugging Face Injection:</b> OpenZero allows you to download custom, community-trained AI models directly from the internet. Paste a direct GGUF download URL (for example a Hugging Face <code>/resolve/</code> link), choose a model alias, and click "Pull Weights" to inject the new model into your local system. Custom GGUF packages are now tracked in their own inventory so you can delete the stored file and linked Ollama alias cleanly later.</li>
@@ -714,7 +671,8 @@ sudo ufw status</div>
 
 <div class="faq-box">
 <p class="faq-q">Q: Why does the AI say "[ERROR] Local Brain Offline"?</p>
-<div class="faq-a">A: This usually means the selected local runtime is not ready. On the default Ministral lane, restart Ollama with <code>sudo systemctl restart ollama</code>, then wait 30 seconds and verify with <code>curl http://127.0.0.1:11434/api/tags</code>. If you intentionally selected BitNet, use the panel controls for <b>Install BitNet</b> or <b>Repair BitNet</b>, or rerun <code>curl -sL https://openzero.talktoai.org/update.sh | bash -s -- --bitnet</code>.</div>
+<div class="faq-a">A: This usually means the selected local runtime is not ready. On the default Ministral lane, restart Ollama with <code>sudo systemctl restart ollama</code>, then wait 30 seconds and verify with <code>curl http://127.0.0.1:11434/api/tags</code>. If you intentionally selected BitNet, use the panel controls for <b>Install BitNet</b> or <b>Repair BitNet</b>, or rerun <code>cd ~/openzero
+bash update.sh --bitnet</code>.</div>
 </div>
 
 <div class="faq-box">
@@ -728,8 +686,8 @@ sudo ufw status</div>
 </div>
 
 <div class="faq-box">
-<p class="faq-q">Q: Why did ZeroThink stop after 5 OpenZero messages?</p>
-<div class="faq-a">A: When enabled, ZeroThink's shared OpenZero gateway is a small Pro trial, not unlimited shared compute. After 5 shared messages, create an OpenZero API key on your own node from the Super Panel, copy it once, and paste it into ZeroThink Neural Vault as the <b>OpenZero Machine API Key</b> through a server-side registered gateway. This keeps your local CPU bill and privacy on your own machine instead of burning the shared TalkToAI/OpenZero server.</div>
+<p class="faq-q">Q: Is a shared website trial required?</p>
+<div class="faq-a">A: No. OpenZero runs on your own node. An operator-owned client or self-hosted ZeroThink deployment can connect through the local API. Keep machine keys private and use loopback, a VPN or SSH tunnel.</div>
 </div>
 
 <div class="faq-box">
@@ -743,7 +701,7 @@ sudo ufw status</div>
 </div>
 
 <footer>
-        OPENZERO OPS // OPENZERO.TALKTOAI.ORG // 2026 // LOCAL-FIRST SAFETY CONTROLS
+        OPENZERO OPS // INDEPENDENT LOCAL NODES // 2026 // LOCAL-FIRST SAFETY CONTROLS
 </footer>
 </div>
 

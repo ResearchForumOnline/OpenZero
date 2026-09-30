@@ -1,11 +1,13 @@
 # CallChat Zero Bot Bridge
 
-OpenZero can power a Matrix room agent for CallChat ZERO.
+OpenZero can power a Matrix room agent on an operator-owned homeserver.
+The historical public CallChat service is not required; the examples below
+use an illustrative domain that you must replace with your own deployment.
 
-The bridge runs as a Matrix bot account, usually:
+The bridge runs as a Matrix bot account, for example:
 
 ```text
-@zero:callchat.org
+@zero:matrix.example
 ```
 
 CallChat sends approved room prompts to OpenZero through the local OpenAI-compatible API, then posts the answer back into Matrix. Voicebox can optionally turn command-triggered answers into Matrix audio attachments.
@@ -14,7 +16,7 @@ CallChat sends approved room prompts to OpenZero through the local OpenAI-compat
 
 ```text
 CallChat / Matrix room
-  -> @zero:callchat.org
+  -> @zero:matrix.example
   -> OpenZero /v1/chat/completions
   -> optional Voicebox /generate
   -> Matrix text or audio response
@@ -64,11 +66,11 @@ Do not auto-speak every reply in public rooms until spam limits and room rules a
 The CallChat bot bridge should store secrets outside Git:
 
 ```env
-MATRIX_HOMESERVER=https://callchat.org
-MATRIX_USER_ID=@zero:callchat.org
+MATRIX_HOMESERVER=https://matrix.example
+MATRIX_USER_ID=@zero:matrix.example
 MATRIX_USERNAME=zero
 MATRIX_PASSWORD=stored-outside-git
-CALLCHAT_BOT_ALLOWED_ROOMS=#zero-bot-lab:callchat.org
+CALLCHAT_BOT_ALLOWED_ROOMS=#zero-bot-lab:matrix.example
 CALLCHAT_BOT_ALLOW_ALL_ROOMS=false
 ```
 

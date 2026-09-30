@@ -103,10 +103,10 @@ from pathlib import Path
 
 env_path = Path(r"${INSTALL_DIR}") / ".env"
 defaults = {
-    "OPENZERO_VERSION": "7.1.0",
-    "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
-    "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
-    "OPENZERO_HIVE_MODE": "standalone",
+    "OPENZERO_VERSION": "7.3.0",
+    "OPENZERO_DOMAIN": "http://127.0.0.1:1024",
+    "OPENZERO_HIVE_URL": "",
+    "OPENZERO_HIVE_MODE": "local",
     "OPENZERO_HIVE_MIRRORS": "",
     "OPENZERO_HIVE_LOCAL_SPOOL_ENABLED": "true",
     "OPENZERO_HIVE_LOCAL_SPOOL_PATH": "security/hive_spool.json",
@@ -176,6 +176,17 @@ for key, value in defaults.items():
 
 # Remove the retired plaintext privilege credential during offline upgrades.
 current.pop("SUDO_PASS", None)
+
+if current.get("OPENZERO_HIVE_URL", "") in {
+    "https://openzero.talktoai.org/api/hive", "https://openzero.talktoai.org/api/hive/"
+}:
+    current["OPENZERO_HIVE_URL"] = ""
+    current["OPENZERO_HIVE_MODE"] = "local"
+    current["HIVE_MIND_ENABLED"] = "false"
+    current["OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED"] = "false"
+if current.get("OPENZERO_DOMAIN", "").rstrip("/") == "https://openzero.talktoai.org":
+    current["OPENZERO_DOMAIN"] = defaults["OPENZERO_DOMAIN"]
+current["OPENZERO_VERSION"] = "7.3.0"
 
 if "${ENABLE_VOICE}" == "true":
     current["VOICE_ENABLED"] = "true"

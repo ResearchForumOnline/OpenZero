@@ -212,9 +212,8 @@ class PrivilegeBoundaryTests(unittest.TestCase):
         ):
             self.assertNotIn(retired_claim, public_page)
         for required_copy in (
-            "ZERO@OPENZERO:~$",
-            "OPERATOR POLICY / LOCAL AUDIT",
-            "APPROVAL-GATED LOCAL TOOLS",
+            "Operator policy and local audit",
+            "Approval-gated local tools",
             "automatic privilege escalation is blocked in production",
             "self-editing and other writable state remain high risk",
         ):

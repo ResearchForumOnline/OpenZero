@@ -2,12 +2,12 @@
 
 This guide covers the normal OpenZero install path, update path, optional CPU/model features, and where to go after the first boot.
 
-OpenZero 7.1 desktop installs also install Brave when it is missing and Tab
-Pilot is enabled. Headless server installs do not add a desktop browser unless
-you pass `--brave`. Use `--no-brave` to keep an existing browser setup
-untouched, or `--no-tab-pilot` to skip the extension policy entirely. Brave is
-downloaded from its official `https://dl.brave.com/install.sh` endpoint before
-the signed Tab Pilot policy is configured.
+OpenZero 7.3 runs without an owner backend or main node. Desktop installs can
+install Brave from its official installer and prepare a verified Tab Pilot ZIP.
+The browser still requires explicit Load unpacked approval. Headless server
+installs do not add a desktop browser unless you pass `--brave`; use
+`--no-brave` or `--no-tab-pilot` to skip those paths. No new managed browser
+policy is installed. See [node independence](DECENTRALISED.md).
 
 ## Supported Targets
 
@@ -33,7 +33,11 @@ Useful baseline:
 ## Fresh Install
 
 ```bash
-curl -sL https://openzero.talktoai.org/install | bash
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+sha256sum -c install.sh.sha256
+less install.sh
+bash install.sh
 ```
 
 The installer prepares:
@@ -47,10 +51,14 @@ The installer prepares:
 - PM2/system service helpers;
 - `.env` defaults.
 
+The commands below use the installer you already verified above. For an
+existing pre-7.3 node, run that verified installer with `--dir` set to your
+installation path before using the updated local `update.sh`.
+
 ## Desktop Mode
 
 ```bash
-curl -sL https://openzero.talktoai.org/install | bash -s -- --desktop
+bash install.sh --desktop
 ```
 
 Desktop mode is useful when the machine has a GUI and the operator wants to open the panel locally.
@@ -58,13 +66,13 @@ Desktop mode is useful when the machine has a GUI and the operator wants to open
 ## Custom Directory
 
 ```bash
-curl -sL https://openzero.talktoai.org/install | bash -s -- --dir /opt/openzero
+bash install.sh --dir /opt/openzero
 ```
 
 ## Optional Voice Dependencies
 
 ```bash
-curl -sL https://openzero.talktoai.org/install | bash -s -- --voice
+bash install.sh --voice
 ```
 
 This enables `VOICE_ENABLED=true` and `VOICE_TTS_ENABLED=true` and attempts to install local voice dependencies. Voicebox itself is a separate optional app. See [VOICEBOX.md](VOICEBOX.md).
@@ -72,7 +80,7 @@ This enables `VOICE_ENABLED=true` and `VOICE_TTS_ENABLED=true` and attempts to i
 ## Optional BitNet
 
 ```bash
-curl -sL https://openzero.talktoai.org/install | bash -s -- --bitnet
+bash install.sh --bitnet
 ```
 
 BitNet is a separate optional CPU-efficient lane. OpenZero stays on Ollama/Gemma unless BitNet is installed and activated.
@@ -80,7 +88,8 @@ BitNet is a separate optional CPU-efficient lane. OpenZero stays on Ollama/Gemma
 ## Update
 
 ```bash
-curl -sL https://openzero.talktoai.org/update.sh | bash
+cd ~/openzero
+bash update.sh
 ```
 
 The update path is intended to refresh OpenZero code and runtime helpers without deleting private `.env` values.

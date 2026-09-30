@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import stat
 import zipfile
 from pathlib import Path, PurePosixPath
@@ -71,11 +72,12 @@ def is_excluded(path: Path) -> bool:
 
 
 def release_files() -> list[Path]:
-    files = [
-        path
-        for path in SOURCE.rglob("*")
-        if path.is_file() and not is_excluded(path)
-    ]
+    files = []
+    for path in SOURCE.rglob("*"):
+        if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
+            raise SystemExit("Release source cannot contain symlinks or junctions.")
+        if path.is_file() and not is_excluded(path):
+            files.append(path)
     return sorted(files, key=lambda path: path.relative_to(SOURCE).as_posix())
 
 
@@ -95,8 +97,30 @@ def packaged_bytes(path: Path) -> bytes:
     return content
 
 
+def build_tab_pilot() -> None:
+    extension = ROOT / "browser-extension"
+    manifest = json.loads((extension / "manifest.json").read_text(encoding="utf-8"))
+    version = manifest["version"]
+    archive_path = DIST / f"OpenZero-Tab-Pilot-v{version}.zip"
+    extension_files = [extension / name for name in ("manifest.json", "README.md", "PRIVACY.md", "SECURITY.md")]
+    for directory in ("assets", "src", "docs"):
+        extension_files.extend(path for path in (extension / directory).rglob("*") if path.is_file())
+    with zipfile.ZipFile(archive_path, "w", compresslevel=9) as package:
+        for path in sorted(extension_files, key=lambda item: item.relative_to(extension).as_posix()):
+            if path.is_symlink():
+                raise SystemExit("Tab Pilot release cannot contain symlinks.")
+            package.writestr(entry_info(path.relative_to(extension).as_posix()), path.read_bytes())
+        for name in ("LICENSE", "THIRD_PARTY.md"):
+            package.writestr(entry_info(name), (ROOT / name).read_bytes())
+    digest = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+    archive_path.with_suffix(".zip.sha256").write_text(
+        f"{digest}  {archive_path.name}\n", encoding="ascii", newline="\n"
+    )
+    print(f"Built {archive_path} SHA-256 {digest}")
+
+
 def main() -> None:
-    required = [SOURCE / "brain" / "app.py", SOURCE / "install.sh"]
+    required = [SOURCE / "brain" / "app.py", SOURCE / "install.sh", ROOT / "LICENSE", ROOT / "THIRD_PARTY.md"]
     if not all(path.is_file() for path in required):
         raise SystemExit("OpenZero release source is incomplete.")
 
@@ -106,6 +130,9 @@ def main() -> None:
         relative = PurePosixPath(path.relative_to(SOURCE))
         digest = hashlib.sha256(packaged_bytes(path)).hexdigest()
         manifest_lines.append(f"{digest}  {relative.as_posix()}")
+    for name in ("LICENSE", "THIRD_PARTY.md"):
+        digest = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+        manifest_lines.append(f"{digest}  {name}")
 
     manifest = (
         "# OpenZero deterministic release manifest\n"
@@ -125,6 +152,8 @@ def main() -> None:
                 "update.sh",
             }
             package.writestr(entry_info(relative, executable), packaged_bytes(path))
+        for name in ("LICENSE", "THIRD_PARTY.md"):
+            package.writestr(entry_info(name), (ROOT / name).read_bytes())
         package.writestr(entry_info("RELEASE_MANIFEST.txt"), manifest)
 
     digest = hashlib.sha256(ARCHIVE.read_bytes()).hexdigest()
@@ -142,6 +171,7 @@ def main() -> None:
     print(f"Built {ARCHIVE} ({ARCHIVE.stat().st_size} bytes)")
     print(f"SHA-256 {digest}")
     print(f"Installer SHA-256 {installer_digest}")
+    build_tab_pilot()
 
 
 if __name__ == "__main__":

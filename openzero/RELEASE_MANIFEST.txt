@@ -1,20 +1,18 @@
 OPENZERO RELEASE
-Version: 7.2.0
+Version: 7.3.0
 Channel: stable
-Release date: 2026-09-27
+Release date: 2026-09-30
 
 Highlights:
-- Responsive workspace with source improvement and training panels.
-- Candidate source edits, local model proposals, recorded checks, reviewed apply and rollback.
-- Real synthetic adapter training, held-out metrics, export and reload verification.
-- Optional bounded local PEFT LoRA backend; no automatic model replacement.
-- Integrity status no longer refreshes its own trusted baseline.
-- Bounded Ultra autonomy supports up to 16 concurrent root-run workers.
-- Local model inference remains serialized to prevent duplicate model loads.
-- Fresh installs and upgrades report the canonical 7.2.0 version.
-- Desktop Linux installs can install Brave from Brave's official installer.
-- Brave Tab Pilot is configured through managed policy with automatic updates.
+- Independent local nodes; no required owner main node or company database.
+- Local default mode, blank remote Hive address, explicit sharing.
+- Optional direct peer notes with separate peer keys and review inbox.
+- Runtime and installers distributed through GitHub release assets and checksums.
+- Tab Pilot 0.3.1 verified ZIP preparation with explicit browser approval.
+- Existing source improvement, rollback and adapter-training workbenches preserved.
+- Local inference stays local; peer notes do not distribute inference or training.
 
-Install: https://openzero.talktoai.org/install.sh
-Update: https://openzero.talktoai.org/update.sh
-Tab Pilot: https://openzero.talktoai.org/tab-pilot
+Release: https://github.com/ResearchForumOnline/OpenZero/releases/tag/v7.3.0
+Install and verify: https://github.com/ResearchForumOnline/OpenZero/blob/main/openzero/docs/INSTALL.md
+Updates: https://github.com/ResearchForumOnline/OpenZero/blob/main/openzero/docs/DOWNLOADS_AND_RELEASES.md
+Tab Pilot: https://github.com/ResearchForumOnline/OpenZero/tree/main/browser-extension

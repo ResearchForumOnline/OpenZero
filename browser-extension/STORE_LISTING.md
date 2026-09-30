@@ -6,9 +6,9 @@
 - Summary: Grant one browser tab to your self-hosted OpenZero node for visible, consent-controlled browser work.
 - Category: Productivity
 - Language: English (United Kingdom)
-- Homepage: https://openzero.talktoai.org/tab-pilot
+- Homepage: https://github.com/ResearchForumOnline/OpenZero/tree/main/browser-extension
 - Support: https://github.com/ResearchForumOnline/OpenZero/issues
-- Privacy policy: https://openzero.talktoai.org/tab-pilot-privacy
+- Privacy policy: https://github.com/ResearchForumOnline/OpenZero/blob/main/browser-extension/PRIVACY.md
 
 ## Detailed description
 

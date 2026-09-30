@@ -1,6 +1,6 @@
 # Architecture
 
-OpenZero is an open-core local AI node. It is built from small cooperating parts rather than one giant service.
+OpenZero is a self-hosted, source-available local AI node. No required main node or TalkToAI backend coordinates it. It is built from small cooperating parts rather than one giant service.
 
 ## High-Level Map
 
@@ -103,3 +103,11 @@ The public repo should contain:
 - no premium/private module source.
 
 Premium or private modules should live outside this public repository. See [PREMIUM_EXTENSIONS.md](PREMIUM_EXTENSIONS.md).
+
+## Independent distribution
+
+Runtime and browser-extension archives come from checksum-verified GitHub
+release assets or an operator mirror. They are installation resources, not
+inference coordinators. Local models and knowledge stay on the operator node.
+Optional remote Hive endpoints must be selected by the operator; see
+[DECENTRALISED.md](DECENTRALISED.md).

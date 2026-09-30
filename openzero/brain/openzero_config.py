@@ -6,10 +6,10 @@ RETIRED_PLAINTEXT_KEYS = {"SUDO_PASS"}
 
 
 DEFAULTS: Dict[str, str] = {
-    "OPENZERO_VERSION": "7.2.0",
-    "OPENZERO_DOMAIN": "https://openzero.talktoai.org",
-    "OPENZERO_HIVE_URL": "https://openzero.talktoai.org/api/hive",
-    "OPENZERO_HIVE_MODE": "standalone",
+    "OPENZERO_VERSION": "7.3.0",
+    "OPENZERO_DOMAIN": "",
+    "OPENZERO_HIVE_URL": "",
+    "OPENZERO_HIVE_MODE": "local",
     "OPENZERO_HIVE_MIRRORS": "",
     "OPENZERO_HIVE_LOCAL_SPOOL_ENABLED": "true",
     "OPENZERO_HIVE_LOCAL_SPOOL_PATH": "security/hive_spool.json",
@@ -125,6 +125,18 @@ def load_env(base_dir: str) -> Dict[str, str]:
                 if key in RETIRED_PLAINTEXT_KEYS:
                     continue
                 env[key] = value.strip()
+    # Retire the vendor coordinator without replacing operator-owned endpoints.
+    retired = {"https://openzero.talktoai.org/api/hive", "http://openzero.talktoai.org/api/hive"}
+    if env.get("OPENZERO_HIVE_URL", "").rstrip("/") in retired:
+        env["OPENZERO_HIVE_URL"] = ""
+    mirrors = [item.strip() for item in env.get("OPENZERO_HIVE_MIRRORS", "").replace(";", ",").replace("\n", ",").split(",")]
+    env["OPENZERO_HIVE_MIRRORS"] = ",".join(item for item in mirrors if item and item.rstrip("/") not in retired)
+    if not env.get("OPENZERO_HIVE_URL") and not env.get("OPENZERO_HIVE_MIRRORS"):
+        env["OPENZERO_HIVE_MODE"] = "local"
+        env["HIVE_MIND_ENABLED"] = "false"
+        env["OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED"] = "false"
+    if env.get("OPENZERO_DOMAIN", "").rstrip("/") in {"https://openzero.talktoai.org", "http://openzero.talktoai.org"}:
+        env["OPENZERO_DOMAIN"] = ""
     profile = resource_profile(env)
     env.setdefault("NODE_RAM_GB", str(profile["ram_gb"]))
     env.setdefault("NODE_CONTEXT_WINDOW", str(profile["context_window"]))

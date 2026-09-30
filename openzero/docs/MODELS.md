@@ -17,14 +17,14 @@ and hashes identify the exact validated files.
 
 ## Normal OpenZero Install
 
-Review and run the hosted installer:
+Review and verify the pinned GitHub installer:
 
 ```bash
-curl -fsSL https://openzero.talktoai.org/install.sh -o openzero-install.sh
-curl -fsSL https://openzero.talktoai.org/install.sh.sha256 -o install.sh.sha256
+curl -fsSL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
+curl -fsSL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
 sha256sum -c install.sh.sha256
-less openzero-install.sh
-bash openzero-install.sh
+less install.sh
+bash install.sh
 ```
 
 The installer pulls the verified Ministral Q5 runtime through Ollama and selects

@@ -16,9 +16,9 @@ from brain.openzero_config import env_bool, env_float, env_int, resource_profile
 
 
 HIVE_ENABLED = False
-HIVE_SERVER_URL = "https://openzero.talktoai.org/api/hive"
-HIVE_SERVER_URLS = [HIVE_SERVER_URL]
-HIVE_MODE = "standalone"
+HIVE_SERVER_URL = ""
+HIVE_SERVER_URLS = []
+HIVE_MODE = "local"
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRIVATE_KEY_PATH = os.path.join(BASE_DIR, "node_private.pem")
 PUBLIC_KEY_PATH = os.path.join(BASE_DIR, "node_public.pem")
@@ -184,9 +184,9 @@ def _set_runtime_network(config: Dict[str, str]) -> None:
     global HIVE_SERVER_URL, HIVE_SERVER_URLS, HIVE_MODE, _runtime_env
 
     _runtime_env = dict(config)
-    HIVE_MODE = (config.get("OPENZERO_HIVE_MODE", "standalone") or "standalone").strip().lower()
+    HIVE_MODE = (config.get("OPENZERO_HIVE_MODE", "local") or "local").strip().lower()
     if HIVE_MODE not in {"standalone", "federated", "local"}:
-        HIVE_MODE = "standalone"
+        HIVE_MODE = "local"
 
     urls = _configured_hive_urls(config)
     if urls:
@@ -465,7 +465,11 @@ def _replay_queue(config: Dict[str, str]) -> Dict[str, object]:
     replayed = 0
     remaining = []
     for item in queued[:batch]:
-        target_urls = item.get("target_urls") or list(HIVE_SERVER_URLS)
+        # Old queued events cannot resurrect retired or removed destinations.
+        target_urls = [url for url in (item.get("target_urls") or list(HIVE_SERVER_URLS)) if url in HIVE_SERVER_URLS]
+        if not target_urls:
+            remaining.append(item)
+            continue
         failed_urls = []
         any_success = False
         for url in target_urls:

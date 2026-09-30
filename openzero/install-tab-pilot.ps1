@@ -9,10 +9,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Version = '0.2.0'
-$ArchiveName = "OpenZero-Tab-Pilot-Brave-v$Version.zip"
-$ArchiveUrl = "https://openzero.talktoai.org/downloads/$ArchiveName"
-$ExpectedSha256 = '732fa09c2cc13fcd285675a1500dc690968f03286e0962b01ff85744670c21d9'
+$Version = '0.3.1'
+$ArchiveName = "OpenZero-Tab-Pilot-v$Version.zip"
+$ReleaseBaseUrl = 'https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0'
+$ArchiveUrl = "$ReleaseBaseUrl/$ArchiveName"
+$ChecksumUrl = "$ArchiveUrl.sha256"
 $Target = Join-Path $InstallRoot $Version
 
 function Find-Brave {
@@ -71,7 +72,7 @@ while (`$true) {
 
     Write-Host "Automatic loopback tunnel configured for Windows sign-in: $SshHost" -ForegroundColor Green
     Write-Host "Startup shortcut: $ShortcutPath"
-    Start-Process -FilePath $PowerShell -ArgumentList @(
+    Start-Process -FilePath $PowerShell -WindowStyle Hidden -ArgumentList @(
         '-NoProfile',
         '-WindowStyle', 'Hidden',
         '-ExecutionPolicy', 'Bypass',
@@ -99,6 +100,13 @@ if (Test-Path -LiteralPath (Join-Path $Target 'manifest.json') -PathType Leaf) {
         Write-Host "Downloading $ArchiveUrl"
         Invoke-WebRequest -Uri $ArchiveUrl -OutFile $ArchivePath -UseBasicParsing
 
+        $ChecksumPath = Join-Path $TempRoot "$ArchiveName.sha256"
+        Invoke-WebRequest -Uri $ChecksumUrl -OutFile $ChecksumPath -UseBasicParsing
+        $ChecksumFields = (Get-Content -LiteralPath $ChecksumPath -Raw).Trim() -split '\s+'
+        if ($ChecksumFields.Count -ne 2 -or $ChecksumFields[0] -notmatch '^[a-fA-F0-9]{64}$' -or $ChecksumFields[1] -ne $ArchiveName) {
+            throw 'Invalid extension checksum file.'
+        }
+        $ExpectedSha256 = $ChecksumFields[0].ToLowerInvariant()
         $ActualSha256 = (Get-FileHash -LiteralPath $ArchivePath -Algorithm SHA256).Hash.ToLowerInvariant()
         if ($ActualSha256 -ne $ExpectedSha256) {
             throw "Checksum mismatch. Expected $ExpectedSha256 but received $ActualSha256."
@@ -109,6 +117,8 @@ if (Test-Path -LiteralPath (Join-Path $Target 'manifest.json') -PathType Leaf) {
             throw 'The verified archive did not contain manifest.json at its root.'
         }
 
+        $Manifest = Get-Content -LiteralPath (Join-Path $Stage 'manifest.json') -Raw | ConvertFrom-Json
+        if ($Manifest.version -ne $Version) { throw 'Extension version does not match the release.' }
         New-Item -ItemType Directory -Path $InstallRoot -Force | Out-Null
         Move-Item -LiteralPath $Stage -Destination $Target
         Write-Host "Verified and extracted to $Target" -ForegroundColor Green

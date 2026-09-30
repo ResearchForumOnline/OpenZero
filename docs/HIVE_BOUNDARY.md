@@ -24,6 +24,7 @@ OpenZero supports optional federation, but the public node is designed to run lo
 OpenZero should be safe to run without any remote Hive:
 
 ```env
+OPENZERO_HIVE_URL=
 HIVE_MIND_ENABLED=false
 OPENZERO_HIVE_MODE=local
 OPENZERO_HIVE_SHARE_MODE=manual
@@ -31,3 +32,9 @@ OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED=false
 ```
 
 When the operator enables Hive, private chats still stay local unless the operator intentionally shares filtered knowledge. The public/federated path should never require committing secrets to GitHub.
+
+## 7.3 independence
+
+No owner Hive endpoint is configured by default. Operator-owned compatible
+endpoints are optional; this client is not a distributed consensus or pooled
+inference implementation. See [node independence](../openzero/docs/DECENTRALISED.md).

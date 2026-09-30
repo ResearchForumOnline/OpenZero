@@ -1148,7 +1148,7 @@ class AppIntegrationContractTests(unittest.TestCase):
         self.assertIn("normalized_model and not is_cloud_model(normalized_model)", self.source)
         self.assertIn('default = 16 if profile == "ultra" else 2', self.source)
         self.assertIn("return max(1, min(requested, 16))", self.source)
-        self.assertIn('"version": config.get("OPENZERO_VERSION", "7.2.0")', self.source)
+        self.assertIn('"version": "7.3.0"', self.source)
         self.assertNotIn("model_is_localish", self.source)
         self.assertIn("OPENZERO_OLLAMA_CONTEXT_WINDOW", self.source)
         self.assertIn("return max(2048, min(configured, 32768))", self.source)

@@ -10,8 +10,9 @@ ENABLE_BITNET="false"
 ENABLE_BRAVE="auto"
 ENABLE_TAB_PILOT="auto"
 SKIP_MODEL="false"
-INSTALLER_URL="https://openzero.talktoai.org/install.sh"
-INSTALLER_CHECKSUM_URL="https://openzero.talktoai.org/install.sh.sha256"
+INSTALLER_BASE_URL="${OPENZERO_INSTALLER_BASE_URL:-https://github.com/ResearchForumOnline/OpenZero/releases/latest/download}"
+INSTALLER_URL="${INSTALLER_BASE_URL}/install.sh"
+INSTALLER_CHECKSUM_URL="${INSTALLER_BASE_URL}/install.sh.sha256"
 
 if [[ -f "./ignite.sh" && -f "./openzero_doctor.py" && -d "./brain" ]]; then
     INSTALL_DIR="$(pwd)"
@@ -90,4 +91,4 @@ if [[ "${SKIP_MODEL}" == "true" ]]; then
     ARGS+=( "--skip-model" )
 fi
 
-exec bash "${TMP_INSTALL_SCRIPT}" "${ARGS[@]}"
+bash "${TMP_INSTALL_SCRIPT}" "${ARGS[@]}"

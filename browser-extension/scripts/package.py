@@ -11,7 +11,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 VERSION = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))["version"]
-OUTPUT = DIST / f"OpenZero-Tab-Pilot-Brave-v{VERSION}.zip"
+OUTPUT = DIST / f"OpenZero-Tab-Pilot-v{VERSION}.zip"
 CHECKSUM = OUTPUT.with_suffix(OUTPUT.suffix + ".sha256")
 FIXED_TIME = (2026, 1, 1, 0, 0, 0)
 FILES = [
