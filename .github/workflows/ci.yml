@@ -19,7 +19,7 @@ jobs:
       - name: Verify public model catalog
         run: python -m unittest openzero.tests.test_model_catalog_contract
       - name: Install bounded test dependencies
-        run: python -m pip install 'Flask>=3.0,<4' 'requests>=2.31,<3'
+        run: python -m pip install 'Flask>=3.0,<4' 'requests>=2.31,<3' 'cryptography>=42'
       - name: Run runtime, peer and distribution regressions
         working-directory: openzero
         run: python -m unittest discover -s tests
