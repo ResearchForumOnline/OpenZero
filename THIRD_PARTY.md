@@ -3,6 +3,15 @@
 OpenZero's own source-available terms are in LICENSE. Those terms do not replace
 the licences of upstream software, models, fonts, browser components or packages.
 
+The required browser Socket.IO client is now bundled locally as unmodified
+`socket.io-client` 4.7.1 distribution bytes in
+`openzero/static/vendor/socket.io-4.7.1/`. Its original MIT license and
+`PROVENANCE.json` record the official npm source, verified SHA-512 distribution
+integrity and individual SHA-256 file hashes. The workspace loads it from the
+local node instead of a CDN. These upstream files retain MIT rights and are not
+relicensed under OpenZero's own source-available terms. No npm package manager
+or CDN is required to load this browser client after installation.
+
 This release ZIP contains project source and static assets. It does not bundle
 Ollama model weights, Python wheels, browser binaries or a Node installation.
 Online installers fetch dependencies separately. Offline-bundle builders must

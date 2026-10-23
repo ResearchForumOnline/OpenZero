@@ -11,7 +11,7 @@ This page explains the public download paths for OpenZero.
 | Source ZIP for current main branch | <https://github.com/ResearchForumOnline/OpenZero/archive/refs/heads/main.zip> |
 | GitHub releases | <https://github.com/ResearchForumOnline/OpenZero/releases> |
 | ZeroMint OS GitHub release | <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0> |
-| Hosted installer | <https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh> |
+| Hosted installer | <https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh> |
 | Hosted update script | <https://github.com/ResearchForumOnline/OpenZero/releases/latest/download/update.sh> |
 | ZeroMint OS v1.0 ISO | <https://github.com/ResearchForumOnline/OpenZero/releases/tag/zeromint-os-v1.0> |
 | ZeroMint OS torrent | <https://raw.githubusercontent.com/ResearchForumOnline/OpenZero/main/docs/downloads/ZeroMint_OS_v1.0.torrent> |
@@ -23,8 +23,8 @@ This page explains the public download paths for OpenZero.
 Review and verify the pinned installer:
 
 ```bash
-curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
-curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh.sha256 -o install.sh.sha256
 sha256sum -c install.sh.sha256
 less install.sh
 bash install.sh

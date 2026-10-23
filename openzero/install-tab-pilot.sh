@@ -3,7 +3,7 @@ set -euo pipefail
 
 INSTALL_DIR="${HOME}/openzero"
 VERSION="0.3.1"
-RELEASE_BASE_URL="${OPENZERO_RELEASE_BASE_URL:-https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0}"
+RELEASE_BASE_URL="${OPENZERO_RELEASE_BASE_URL:-https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1}"
 ARCHIVE_NAME="OpenZero-Tab-Pilot-v${VERSION}.zip"
 MODEL="hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M"
 

@@ -12,6 +12,7 @@ import requests
 from colorama import Fore, Style, init
 
 from brain.openzero_config import env_bool, load_env, resource_profile, save_env_value, save_env_values
+from brain.model_routing import cloud_model_for, select_model_route
 from brain.voice_stack import VoiceStack
 from brain.integrity import ensure_integrity_state, integrity_status, seal_json
 import hivemind.bridge as hive
@@ -129,7 +130,7 @@ def brain_groq(prompt: str) -> str:
         return ""
 
     payload = {
-        "model": config.get("ACTIVE_MODEL", "llama-3.3-70b-versatile"),
+        "model": cloud_model_for(config.get("ACTIVE_MODEL", "")),
         "messages": [{"role": "system", "content": ZERO_SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
     }
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
@@ -165,20 +166,10 @@ def brain_local(prompt: str) -> str:
 
 def route_response(user_prompt: str) -> str:
     config = get_config()
-    comp_mode = config.get("COMP_MODE", "hybrid")
-    active_model = config.get("ACTIVE_MODEL", "").lower()
-
-    if comp_mode == "cloud":
+    route = select_model_route(config.get("COMP_MODE", "local"), config.get("ACTIVE_MODEL", ""))
+    if route == "cloud":
         response = brain_groq(user_prompt)
-        return response or brain_local(user_prompt)
-    if comp_mode == "local":
-        return brain_local(user_prompt)
-
-    use_cloud = any(token in active_model for token in ["groq/", "gpt", "llama", "qwen", "compound"])
-    if use_cloud:
-        response = brain_groq(user_prompt)
-        if response:
-            return response
+        return response or "[ERROR] The selected cloud route is unavailable. Choose local mode and an installed local model to continue."
     return brain_local(user_prompt)
 
 

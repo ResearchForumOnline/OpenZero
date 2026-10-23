@@ -75,7 +75,7 @@ tunnel described below.
 ./install-tab-pilot.sh --dir "$HOME/openzero"
 ```
 
-The helper downloads the 0.3.1 ZIP and matching checksum from GitHub v7.3.0,
+The helper downloads the 0.3.1 ZIP and matching checksum from GitHub v7.3.1,
 verifies both the archive and manifest version, and extracts it into your node's
 `extensions` directory. Follow the printed Load unpacked steps, then generate a
 scoped token in the local panel. It does not write browser-wide policies or

@@ -57,8 +57,8 @@ class TabPilotIntegrationContractTests(unittest.TestCase):
 
 
     def test_installer_migrates_version_and_can_install_brave(self):
-        self.assertIn('"OPENZERO_VERSION": "7.3.0"', INSTALLER_SOURCE)
-        self.assertIn('current["OPENZERO_VERSION"] = "7.3.0"', INSTALLER_SOURCE)
+        self.assertIn('"OPENZERO_VERSION": "7.3.1"', INSTALLER_SOURCE)
+        self.assertIn('current["OPENZERO_VERSION"] = "7.3.1"', INSTALLER_SOURCE)
         self.assertIn("https://dl.brave.com/install.sh", INSTALLER_SOURCE)
         self.assertIn("--brave", INSTALLER_SOURCE)
         self.assertIn("--no-brave", INSTALLER_SOURCE)

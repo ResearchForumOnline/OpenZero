@@ -1,5 +1,19 @@
 # Changelog
 
+## 7.3.1 - 2026-10-23
+
+- Serve the required Socket.IO browser client from the node, retaining pinned
+  upstream bytes, MIT license and verified npm integrity provenance.
+- Choose local computation on fresh nodes and preserve explicit existing modes.
+- Share exact model-route selection between CLI and panel. Local Llama, Qwen,
+  GPT-family and namespaced Ollama aliases no longer imply cloud transmission.
+- Honor disabled automatic runtime repair and report repair/cooldown state
+  accurately instead of always claiming a repair started.
+- Add a read-only node configuration report and owner-authorized API endpoint.
+- Add an isolated actual production-entry boot check with HTTP disabled,
+  local asset serving, owner authorization and Socket.IO handshake checks.
+- Update ZERO ONE's separate hosted privacy notice for 8.5 provider profiles.
+
 ## 7.1.0 - 2026-07-31
 
 - Added canonical 7.1.0 version migration for fresh installs and upgrades.

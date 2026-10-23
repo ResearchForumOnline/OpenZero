@@ -103,7 +103,7 @@ from pathlib import Path
 
 env_path = Path(r"${INSTALL_DIR}") / ".env"
 defaults = {
-    "OPENZERO_VERSION": "7.3.0",
+    "OPENZERO_VERSION": "7.3.1",
     "OPENZERO_DOMAIN": "http://127.0.0.1:1024",
     "OPENZERO_HIVE_URL": "",
     "OPENZERO_HIVE_MODE": "local",
@@ -186,7 +186,7 @@ if current.get("OPENZERO_HIVE_URL", "") in {
     current["OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED"] = "false"
 if current.get("OPENZERO_DOMAIN", "").rstrip("/") == "https://openzero.talktoai.org":
     current["OPENZERO_DOMAIN"] = defaults["OPENZERO_DOMAIN"]
-current["OPENZERO_VERSION"] = "7.3.0"
+current["OPENZERO_VERSION"] = "7.3.1"
 
 if "${ENABLE_VOICE}" == "true":
     current["VOICE_ENABLED"] = "true"

@@ -241,6 +241,7 @@ def protected_paths(base_dir: str) -> List[str]:
     return [
         os.path.join(base_dir, "brain", "app.py"),
         os.path.join(base_dir, "brain", "openzero_config.py"),
+          os.path.join(base_dir, "brain", "model_routing.py"),
         os.path.join(base_dir, "brain", "voice_stack.py"),
         os.path.join(base_dir, "brain", "integrity.py"),
         os.path.join(base_dir, "hivemind", "bridge.py"),

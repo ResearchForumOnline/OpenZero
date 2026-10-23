@@ -1,0 +1,14 @@
+{
+  "package": "socket.io-client",
+  "version": "4.7.1",
+  "source": "https://registry.npmjs.org/socket.io-client/-/socket.io-client-4.7.1.tgz",
+  "npm_integrity": "sha512-Qk3Xj8ekbnzKu3faejo4wk2MzXA029XppiXtTF/PkbTg+fcwaTw1PlDrTrrrU4mKoYC4dvlApOnSeyLCKwek2w==",
+  "distribution_tarball_sha256": "8996ba5fc732af973275920e2a822d3c591a1d4c5098df5cbbee80bb61942154",
+  "license": "MIT",
+  "files": {
+    "LICENSE": "62e2032a1e1458b1d92a62f5fc51be48e08b95062295c91a9f3bd3686809d37e",
+    "socket.io.min.js": "706642baf73b0848440da39dc0d45a438b31c8965f04ba93a42ef3889f0fa772"
+  },
+  "unmodified_upstream_bytes": true,
+  "scope": "Browser runtime and original license only; no executable installer or runtime dependency download."
+}

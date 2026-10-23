@@ -44,13 +44,14 @@ class DecentralisedDistributionTests(unittest.TestCase):
         self.assertEqual(env["OPENZERO_HIVE_MODE"], "local")
         self.assertEqual(env["HIVE_MIND_ENABLED"], "false")
         self.assertEqual(env["OPENZERO_HIVE_REMOTE_LOOKUP_ENABLED"], "false")
-        self.assertEqual(env["OPENZERO_VERSION"], "7.3.0")
+        self.assertEqual(env["COMP_MODE"], "local")
+        self.assertEqual(env["OPENZERO_VERSION"], "7.3.1")
 
     def test_fresh_offline_node_has_no_central_route(self):
         env = self.migrate(offline=True)
         self.assertEqual(env["OPENZERO_DOMAIN"], "http://127.0.0.1:1024")
         self.assertEqual(env["OPENZERO_HIVE_URL"], "")
-        self.assertEqual(env["OPENZERO_VERSION"], "7.3.0")
+        self.assertEqual(env["OPENZERO_VERSION"], "7.3.1")
 
     def test_offline_retired_hive_migration(self):
         env = self.migrate("OPENZERO_HIVE_URL=https://openzero.talktoai.org/api/hive\nHIVE_MIND_ENABLED=true\n", offline=True)
@@ -82,7 +83,7 @@ class DecentralisedDistributionTests(unittest.TestCase):
         self.assertEqual(env["OPENZERO_HIVE_MIRRORS"], "https://my-peer.example")
 
     def test_distribution_endpoints_are_versioned_and_mirrorable(self):
-        self.assertIn("releases/download/v7.3.0", INSTALLER)
+        self.assertIn("releases/download/v7.3.1", INSTALLER)
         self.assertIn("OPENZERO_RELEASE_BASE_URL", INSTALLER)
         updater = (ROOT / "update.sh").read_text()
         self.assertIn("releases/latest/download", updater)

@@ -33,8 +33,8 @@ Useful baseline:
 ## Fresh Install
 
 ```bash
-curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
-curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh.sha256 -o install.sh.sha256
 sha256sum -c install.sh.sha256
 less install.sh
 bash install.sh

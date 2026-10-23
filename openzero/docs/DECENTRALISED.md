@@ -4,6 +4,32 @@ Each installation owns its panel, models, private configuration, local knowledge
 tool authority and run checkpoints. No owner registration, company database or
 TalkToAI backend is required for local operation.
 
+## Local routing and disconnected checks, 23 October 2026
+
+The workspace's required Socket.IO browser client is served by the node itself.
+It no longer needs the former third-party CDN script to open a functional local
+panel. The pinned upstream distribution, MIT license and integrity provenance
+are included in `static/vendor/socket.io-4.7.1/`.
+
+Fresh installations choose `COMP_MODE=local`. Upgrades preserve the operator's
+explicit computation choice. The CLI and panel share an exact cloud-model
+catalogue; a local Llama/Qwen/GPT-family alias, Hugging Face Ollama reference or
+custom namespaced model does not authorize a cloud request. Missing or invalid
+mode values choose local routing. A failed cloud selection reports its failure
+without silently substituting a different local model.
+
+Run `python node_status.py` in the runtime directory to inspect the node's
+configured independence without contacting a service or writing runtime state.
+The owner-authorized `/api/node/independence` endpoint returns the same safe
+summary. It does not export API keys, endpoints, private peer state or prompts.
+
+For disconnected operation with prerequisites already installed, set
+`OLLAMA_AUTO_REPAIR_ENABLED=false`. Model errors then respect that choice and
+report that repair is disabled. Automatic repair remains available for online
+nodes and reports when it may download missing components or models. Optional
+web tools and manually selected peers remain separate network operations;
+this setting is not an operating-system firewall.
+
 ## Fresh node defaults
 
 ```env
@@ -25,7 +51,7 @@ node, and private chats are not automatically shared.
 ## Upgrade existing installations
 
 The 7.3 installer preserves `.env` values and backs up replaced managed source
-files. Version metadata moves to 7.3.0. Only exact retired owner defaults are
+files. Version metadata moves to 7.3.1. Only exact retired owner defaults are
 cleared: the old owner Hive URL disables that obsolete route, the old domain
 becomes loopback, and the old Tab Pilot setup URL becomes its GitHub guide.
 Custom node addresses, model selections outside known former defaults, provider
@@ -37,7 +63,7 @@ delete user-owned endpoints just because an owner service was retired.
 
 ## Distribution and mirrors
 
-The v7.3.0 installer downloads its runtime and Tab Pilot assets from a pinned
+The v7.3.1 installer downloads its runtime and Tab Pilot assets from a pinned
 GitHub release and verifies SHA-256 checksums. The updater downloads the latest
 installer/checksum pair. GitHub hosts release files; it does not coordinate
 model calls or local knowledge.

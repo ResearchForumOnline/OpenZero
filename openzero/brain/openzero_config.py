@@ -6,7 +6,7 @@ RETIRED_PLAINTEXT_KEYS = {"SUDO_PASS"}
 
 
 DEFAULTS: Dict[str, str] = {
-    "OPENZERO_VERSION": "7.3.0",
+    "OPENZERO_VERSION": "7.3.1",
     "OPENZERO_DOMAIN": "",
     "OPENZERO_HIVE_URL": "",
     "OPENZERO_HIVE_MODE": "local",
@@ -44,7 +44,7 @@ DEFAULTS: Dict[str, str] = {
     "BITNET_THREADS": "0",
     "ACTIVE_MODEL": "hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M",
     "LOCAL_ENGINE": "ollama",
-    "COMP_MODE": "hybrid",
+    "COMP_MODE": "local",
     "VISION_ENABLED": "true",
     "HIVE_MIND_ENABLED": "false",
     "FEE_OZ_COINS": "0.0",

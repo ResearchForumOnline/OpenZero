@@ -1,6 +1,6 @@
-# OpenZero 7.3 — independent, self-hosted AI nodes
+# OpenZero 7.3.1 — independent, self-hosted AI nodes
 
-[Static project home](https://researchforumonline.github.io/OpenZero/) · [Download 7.3](https://github.com/ResearchForumOnline/OpenZero/releases/tag/v7.3.0) · [Preserved ZMath app](https://researchforumonline.github.io/ZMath/)
+[Static project home](https://researchforumonline.github.io/OpenZero/) · [Download 7.3.1](https://github.com/ResearchForumOnline/OpenZero/releases/tag/v7.3.1) · [Preserved ZMath app](https://researchforumonline.github.io/ZMath/)
 
 The project home is free static hosting. It is not an inference server or a required node; your runtime operates independently after setup.
 
@@ -17,6 +17,16 @@ main node, or company-hosted database.**
 [Node independence](openzero/docs/DECENTRALISED.md)
 
 ## What changes in 7.3
+
+The 23 October source update fixes CLI model-family names accidentally choosing
+cloud routing, makes fresh installs choose local computation, and makes
+automatic runtime repair honor its disable setting. A new `node_status.py` and
+owner-authorized `/api/node/independence` report configured model routing and
+optional dependencies without contacting a service or exposing secrets. See
+[node independence](openzero/docs/DECENTRALISED.md) for the exact boundaries.
+The workspace also serves its required Socket.IO browser client locally, with
+the original upstream MIT license and verified npm integrity provenance, so
+loading the local panel no longer depends on a third-party CDN.
 
 - Fresh installations use a local endpoint, an empty remote Hive endpoint,
   local mode, and sharing disabled.
@@ -58,8 +68,8 @@ On a Linux machine you administer, review the script before running:
 
 ```bash
 mkdir -p openzero-bootstrap && cd openzero-bootstrap
-curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
-curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh -o install.sh
+curl -fL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh.sha256 -o install.sh.sha256
 sha256sum -c install.sh.sha256
 less install.sh
 bash install.sh --desktop
@@ -69,7 +79,7 @@ For a headless node use `--server --no-tab-pilot`; `--skip-model` avoids the
 large default-model download. The runtime archive is separately verified before
 unpacking. A checksum detects corrupt/mismatched assets; it is not a detached
 publisher signature. The default runtime and extension assets are pinned to
-v7.3.0 so newer release assets cannot silently change this installer.
+v7.3.1 so newer release assets cannot silently change this installer.
 
 Open the panel at **http://localhost:1024**. Keep it on loopback, or access your
 own remote node through an SSH tunnel/VPN. Never put private tokens into GitHub.
@@ -93,8 +103,8 @@ environment, install `openzero/requirements.txt`, and run `openzero/run_brain.sh
 ## Browser extension
 
 [Tab Pilot source and setup](browser-extension/README.md) ·
-[Verified ZIP](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/OpenZero-Tab-Pilot-v0.3.1.zip) ·
-[ZIP checksum](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/OpenZero-Tab-Pilot-v0.3.1.zip.sha256) ·
+[Verified ZIP](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/OpenZero-Tab-Pilot-v0.3.1.zip) ·
+[ZIP checksum](https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/OpenZero-Tab-Pilot-v0.3.1.zip.sha256) ·
 [Windows helper](openzero/install-tab-pilot.ps1) ·
 [Linux helper](openzero/install-tab-pilot.sh)
 

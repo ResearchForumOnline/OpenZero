@@ -46,6 +46,8 @@ from autonomous_runtime import (  # noqa: E402
 )
 from integrity import ensure_integrity_state, integrity_status, seal_json  # noqa: E402
 from openzero_config import cpu_performance_profile, env_bool, load_env, resource_profile, save_env_value, save_env_values  # noqa: E402
+from model_routing import CLOUD_MODEL_NAMES, automatic_repair_allowed, select_model_route  # noqa: E402
+from node_status import independence_report  # noqa: E402
 from skills.catalog import (  # noqa: E402
     CatalogError,
     compact_catalog_text as catalog_compact_text,
@@ -376,15 +378,6 @@ def model_reply_retry_reason(raw_reply: str) -> str:
     return ""
 
 SKILL_CATALOG = legacy_skill_catalog()
-
-CLOUD_MODEL_NAMES = {
-    "groq/compound",
-    "groq/compound-large",
-    "openai/gpt-oss-120b",
-    "meta-llama/llama-4-maverick-17b-128e-instruct",
-    "llama-3.3-70b-versatile",
-    "qwen/qwen3-32b",
-}
 
 LOCAL_MODEL_PRESETS = [
     {
@@ -1053,12 +1046,14 @@ def current_voice() -> VoiceStack:
         return RUNTIME["voice"]
 
 
-def maybe_trigger_runtime_self_heal(reason: str) -> None:
+def maybe_trigger_runtime_self_heal(reason: str) -> str:
     global LAST_RUNTIME_SELF_HEAL_AT
 
+    if not automatic_repair_allowed(current_config()):
+        return "Automatic runtime repair is disabled. Use an explicit repair after reconnecting or reviewing local prerequisites."
     now = time.time()
     if now - LAST_RUNTIME_SELF_HEAL_AT < RUNTIME_SELF_HEAL_COOLDOWN_SECONDS:
-        return
+        return "A recent runtime repair is already in its cooldown period."
 
     LAST_RUNTIME_SELF_HEAL_AT = now
 
@@ -1076,6 +1071,7 @@ def maybe_trigger_runtime_self_heal(reason: str) -> None:
             pass
 
     threading.Thread(target=worker, daemon=True).start()
+    return "A background runtime repair was started. It may download missing runtime components or models."
 
 
 def apply_config_updates(updates: Dict[str, str]) -> Dict[str, str]:
@@ -1540,13 +1536,13 @@ def ask_ollama_local(
     if resolution["status"] == "missing":
         ollama_state = resolution.get("ollama", {})
         version_label = ollama_state.get("version") or ollama_state.get("raw") or "unknown"
-        maybe_trigger_runtime_self_heal("local brain missing")
+        repair_note = maybe_trigger_runtime_self_heal("local brain missing")
         return (
             "[ERROR] Local brain is not ready yet.\n"
             f"- Saved model: `{resolution.get('saved_model') or 'none'}`\n"
             f"- Preferred model: `{resolution['model']}`\n"
             f"- Ollama: `{version_label}`\n"
-            "- OpenZero has already started a background self-heal pass. You can also use `Update Ollama` or `Repair Local Brain` from the panel."
+            f"- {repair_note} You can also use `Update Ollama` or `Repair Local Brain` from the panel."
         )
     final_prompt = local_prompt_block(prompt, context=context, agent_mode=agent_mode, history=history)
     spark_result = maybe_apply_zspark(
@@ -1578,8 +1574,8 @@ def ask_ollama_local(
             )
         return reply
     except Exception as error:
-        maybe_trigger_runtime_self_heal(str(error))
-        return f"[ERROR] Local brain offline: {error}\n[SELF-HEAL] OpenZero has started an automatic local runtime repair cycle."
+        repair_note = maybe_trigger_runtime_self_heal(str(error))
+        return f"[ERROR] Local brain offline: {error}\n[SELF-HEAL] {repair_note}"
 
 
 def ask_bitnet(
@@ -1591,13 +1587,13 @@ def ask_bitnet(
     config = current_config()
     status = bitnet_status(config)
     if not status["ready"]:
-        maybe_trigger_runtime_self_heal("bitnet runtime missing")
+        repair_note = maybe_trigger_runtime_self_heal("bitnet runtime missing")
         return (
             "[ERROR] BitNet runtime is not ready yet.\n"
             f"- Selected engine: `bitnet`\n"
             f"- Expected model: `{status['model_alias']}`\n"
             f"- Expected model file: `{status['model_path']}`\n"
-            "- OpenZero has started a background self-heal pass. You can also use `Install BitNet`, `Repair BitNet`, or `Update OpenZero`."
+            f"- {repair_note} You can also use `Install BitNet`, `Repair BitNet`, or `Update OpenZero`."
         )
 
     final_prompt = local_prompt_block(prompt, context=context, agent_mode=agent_mode, history=history)
@@ -1626,13 +1622,13 @@ def ask_bitnet(
             check=False,
         )
     except Exception as error:
-        maybe_trigger_runtime_self_heal(str(error))
-        return f"[ERROR] BitNet runtime failed: {error}\n[SELF-HEAL] OpenZero has started an automatic BitNet repair cycle."
+        repair_note = maybe_trigger_runtime_self_heal(str(error))
+        return f"[ERROR] BitNet runtime failed: {error}\n[SELF-HEAL] {repair_note}"
 
     if result.returncode != 0:
         detail = (result.stderr or result.stdout or "BitNet inference failed.").strip()
-        maybe_trigger_runtime_self_heal(detail)
-        return f"[ERROR] BitNet runtime failed: {detail}\n[SELF-HEAL] OpenZero has started an automatic BitNet repair cycle."
+        repair_note = maybe_trigger_runtime_self_heal(detail)
+        return f"[ERROR] BitNet runtime failed: {detail}\n[SELF-HEAL] {repair_note}"
 
     output = (result.stdout or "").strip()
     if output.startswith(final_prompt):
@@ -3988,7 +3984,7 @@ def stats():
             "cpu": psutil.cpu_percent(),
             "ram": psutil.virtual_memory().percent,
             "mode": config.get("COMP_MODE", "hybrid").upper(),
-            "version": "7.3.0",
+            "version": "7.3.1",
             "autonomy_profile": configured_autonomy_profile(),
             "max_concurrent_workers": autonomous_worker_limit(),
             "hive": hive_label,
@@ -4118,6 +4114,14 @@ def get_config():
 @app.route("/api/integrity/status", methods=["GET"])
 def get_integrity_status():
     return jsonify({"status": "success", "integrity": integrity_status(BASE_DIR)})
+
+
+@app.route("/api/node/independence", methods=["GET"])
+def get_node_independence():
+    config = current_config()
+    if not (openzero_local_admin_request() or openzero_api_authorized(config)):
+        return jsonify({"status": "error", "message": "Owner authorization required."}), 403
+    return jsonify({"status": "success", "node": independence_report(config)})
 
 
 @app.route("/update_config", methods=["POST"])
@@ -5106,13 +5110,7 @@ def autonomous_model_reply(
     context: str,
 ) -> str:
     config = current_config()
-    if comp_mode == "cloud":
-        return ask_groq(prompt, context=context, agent_mode=agent_mode, history=history)
-    if comp_mode == "local":
-        with LOCAL_MODEL_SEMAPHORE:
-            return ask_local(prompt, context=context, agent_mode=agent_mode, history=history)
-    active_model = config.get("ACTIVE_MODEL", "")
-    if is_cloud_model(active_model):
+    if select_model_route(comp_mode, config.get("ACTIVE_MODEL", "")) == "cloud":
         return ask_groq(prompt, context=context, agent_mode=agent_mode, history=history)
     with LOCAL_MODEL_SEMAPHORE:
         return ask_local(prompt, context=context, agent_mode=agent_mode, history=history)

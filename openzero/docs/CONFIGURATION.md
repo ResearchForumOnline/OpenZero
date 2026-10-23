@@ -8,12 +8,28 @@ Never commit real `.env` files.
 
 | Key | Default | Purpose |
 | --- | --- | --- |
-| `OPENZERO_VERSION` | `7.3.0` | Version label. |
+| `OPENZERO_VERSION` | `7.3.1` | Version label. |
 | `OPENZERO_DOMAIN` | `http://127.0.0.1:1024` | Local panel reference; no remote service dependency. |
 | `SERVER_PORT` | `1024` | Panel/API port when configured. |
 | `ACTIVE_MODEL` | `hf.co/shafire/OpenZero-Ministral3-8B-Runtime-Agent-GGUF:Q5_K_M` | Verified local runtime default. |
 | `LOCAL_ENGINE` | `ollama` | Local engine selector. |
-| `COMP_MODE` | `hybrid` | Computation mode. |
+| `COMP_MODE` | `local` | Fresh-node computation mode. Explicit existing cloud/hybrid choices are preserved. |
+
+Local mode keeps model requests on the local runtime. Hybrid mode uses a cloud
+route only for an explicitly named supported cloud model; local names such as
+`llama3:8b`, `qwen2.5:7b` and `hf.co/owner/model:quant` remain local. Cloud mode
+is an operator choice. A saved API key alone never selects a cloud route.
+
+`OLLAMA_AUTO_REPAIR_ENABLED=false` prevents automatic model-error repair jobs
+from starting. Explicit administrator repair commands remain available. A repair
+may download software or models, so disconnected installations should disable
+automatic repair after installing their prerequisites.
+
+Run `python node_status.py` from the runtime directory for a read-only,
+network-free configuration report. The owner-authorized endpoint
+`GET /api/node/independence` returns the same summary without keys, prompts or
+endpoint values. It reports configuration; it does not claim that a model is
+installed or prove the absence of all operating-system network traffic.
 
 ## Autonomous Runs
 

@@ -11,7 +11,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 $Version = '0.3.1'
 $ArchiveName = "OpenZero-Tab-Pilot-v$Version.zip"
-$ReleaseBaseUrl = 'https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0'
+$ReleaseBaseUrl = 'https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1'
 $ArchiveUrl = "$ReleaseBaseUrl/$ArchiveName"
 $ChecksumUrl = "$ArchiveUrl.sha256"
 $Target = Join-Path $InstallRoot $Version

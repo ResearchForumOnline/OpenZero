@@ -20,8 +20,8 @@ and hashes identify the exact validated files.
 Review and verify the pinned GitHub installer:
 
 ```bash
-curl -fsSL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh -o install.sh
-curl -fsSL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0/install.sh.sha256 -o install.sh.sha256
+curl -fsSL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh -o install.sh
+curl -fsSL https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1/install.sh.sha256 -o install.sh.sha256
 sha256sum -c install.sh.sha256
 less install.sh
 bash install.sh

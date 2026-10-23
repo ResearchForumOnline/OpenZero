@@ -16,7 +16,7 @@ ENABLE_BITNET="false"
 ENABLE_TAB_PILOT="auto"
 SKIP_MODEL="false"
 INSTALL_DIR="${HOME}/openzero"
-RELEASE_BASE_URL="${OPENZERO_RELEASE_BASE_URL:-https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.0}"
+RELEASE_BASE_URL="${OPENZERO_RELEASE_BASE_URL:-https://github.com/ResearchForumOnline/OpenZero/releases/download/v7.3.1}"
 RELEASE_URL="${RELEASE_BASE_URL}/openzero_release.zip"
 RELEASE_CHECKSUM_URL="${RELEASE_BASE_URL}/openzero_release.zip.sha256"
 TORRENT_URL="https://raw.githubusercontent.com/ResearchForumOnline/OpenZero/main/docs/downloads/ZeroMint_OS_v1.0.torrent"
@@ -319,7 +319,7 @@ write_env_defaults() {
 from pathlib import Path
 
 defaults = {
-    "OPENZERO_VERSION": "7.3.0",
+    "OPENZERO_VERSION": "7.3.1",
     "OPENZERO_DOMAIN": "http://127.0.0.1:1024",
     "OPENZERO_TAB_PILOT_URL": "${TAB_PILOT_URL}",
     "OPENZERO_HIVE_URL": "",
@@ -347,7 +347,7 @@ defaults = {
     "BITNET_THREADS": "0",
     "ACTIVE_MODEL": "${OPENZERO_DEFAULT_MODEL}",
     "LOCAL_ENGINE": "ollama",
-    "COMP_MODE": "hybrid",
+    "COMP_MODE": "local",
     "VISION_ENABLED": "true",
     "HIVE_MIND_ENABLED": "false",
     "FEE_OZ_COINS": "0.0",
@@ -428,7 +428,7 @@ if current.get("NODE_RECOMMENDED_MODEL", "") in managed_previous_defaults:
     current["NODE_RECOMMENDED_MODEL"] = "${OPENZERO_DEFAULT_MODEL}"
 
 # Version is release metadata, not a private user preference. Always migrate it.
-current["OPENZERO_VERSION"] = "7.3.0"
+current["OPENZERO_VERSION"] = "7.3.1"
 
 env_path.write_text("\n".join(f"{key}={value}" for key, value in sorted(current.items())) + "\n", encoding="utf-8")
 PY
