@@ -16,6 +16,8 @@ main node, or company-hosted database.**
 [Workbench](openzero/docs/WORKBENCH.md) ·
 [Node independence](openzero/docs/DECENTRALISED.md)
 
+[Reviewed training-data catalog](https://github.com/ResearchForumOnline/research-datasets) · [23 October dataset release](https://github.com/ResearchForumOnline/research-datasets/releases/tag/datasets-2026.10.23). Original curricula and reviewed licensed mixtures are optional downloads with scoped licenses, provenance and checksums. The [AI dataset notes](https://github.com/ResearchForumOnline/research-datasets/blob/main/AI_DATASETS.md) explain overlapping variants, held-out boundaries and known quality limits. These datasets do not change runtime weights or start a training job; the original October pilot remains preparation from a canceled experiment.
+
 ## What changes in 7.3
 
 The 23 October source update fixes CLI model-family names accidentally choosing
