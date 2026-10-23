@@ -1,0 +1,18 @@
+OpenZero Community Source License v1.0
+
+Copyright (c) 2026 Shaf Brady.
+
+Permission is granted for personal, academic, research, evaluation, and
+non-commercial local deployment, including modification and redistribution
+with attribution and preservation of this notice.
+
+Commercial resale, managed hosting, rebranding, or commercial packaging
+requires a separate written licence from the copyright holder.
+
+Safety, consent, privacy, provenance, and approval controls included with the
+software or model documentation must not be misrepresented as removed,
+bypassed, or unnecessary.
+
+THE MODEL AND RELATED MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND. USERS ARE RESPONSIBLE FOR EVALUATING OUTPUTS AND COMPLYING WITH
+APPLICABLE LAW, THIRD-PARTY RIGHTS, AND DOMAIN-SPECIFIC REQUIREMENTS.

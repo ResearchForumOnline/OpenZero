@@ -1,0 +1,235 @@
+{
+  "schema_version": "openzero-model-archive-provenance-v1",
+  "audit_date": "2026-10-23",
+  "distribution": "Exact historical custom model archives; preserve original license terms. This metadata does not assert unrestricted open-source licensing.",
+  "models": [
+    {
+      "archive_filename": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip",
+      "archive_bytes": 5865235956,
+      "archive_sha256": "3b640f6ef70f4b48f4393f5cae71b3ea6d2b21d3c20e9b1a8e14d91290d77808",
+      "inner_gguf_filename": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf",
+      "inner_gguf_bytes": 5865235584,
+      "inner_gguf_sha256": "84fd62ff6c5f0abe14dd2c6135e56800df4bc4a0b9d4cd8d9f26c36b28aa190b",
+      "archive_members": 1,
+      "zip_method": "stored",
+      "zip_crc32_verified": true,
+      "gguf_version": 3,
+      "architecture": "gemma4",
+      "tensor_count": 720,
+      "parameter_count_from_tensor_shapes": 7518069290,
+      "tensor_type_counts": {
+        "13": 199,
+        "0": 423,
+        "1": 66,
+        "14": 31,
+        "30": 1
+      },
+      "public_model_repository": "https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF",
+      "public_model_revision": "21abebb187ffe703e04294a7bc4747abca65dc63",
+      "public_model_resolve_url": "https://huggingface.co/shafire/Zero-Gemma4-E4B-OpenZero-GGUF/resolve/21abebb187ffe703e04294a7bc4747abca65dc63/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf",
+      "anonymous_public_lfs_metadata_matches_local_inner_gguf": true,
+      "base_model": [
+        "unsloth/gemma-4-E4B-it"
+      ],
+      "base_metadata_repository": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF",
+      "base_metadata_revision_at_audit": "bfc15c382204943c3a8fff0c750b94ae2364d7a3",
+      "base_license": "Apache-2.0",
+      "model_distribution_license": "OpenZero Community Source License v1.0",
+      "weights_executed_during_this_audit": false
+    },
+    {
+      "archive_filename": "Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip",
+      "archive_bytes": 5851112570,
+      "archive_sha256": "43e43812fa0a8377cfd19ea2d1429f3e0c36382818d367394724840bc7a20cc7",
+      "inner_gguf_filename": "Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
+      "inner_gguf_bytes": 5851112224,
+      "inner_gguf_sha256": "390464f750b5cb53da298848adc05839c1fd40404a74cd5f800cad9612d17d59",
+      "archive_members": 1,
+      "zip_method": "stored",
+      "zip_crc32_verified": true,
+      "gguf_version": 3,
+      "architecture": "qwen3",
+      "tensor_count": 399,
+      "parameter_count_from_tensor_shapes": 8190735360,
+      "tensor_type_counts": {
+        "14": 37,
+        "0": 145,
+        "13": 217
+      },
+      "public_model_repository": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF",
+      "public_model_revision": "a124534103bb8174d01f53ca81398bdfeb2bcc49",
+      "public_model_resolve_url": "https://huggingface.co/shafire/Zero-Qwen3-8B-OpenZero-GGUF/resolve/a124534103bb8174d01f53ca81398bdfeb2bcc49/Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
+      "anonymous_public_lfs_metadata_matches_local_inner_gguf": true,
+      "base_model": [
+        "Qwen/Qwen3-8B"
+      ],
+      "base_metadata_repository": "https://huggingface.co/Qwen/Qwen3-8B",
+      "base_metadata_revision_at_audit": "b968826d9c46dd6066d109eabc6255188de91218",
+      "base_license": "Apache-2.0",
+      "model_distribution_license": "OpenZero Community Source License v1.0",
+      "weights_executed_during_this_audit": false
+    }
+  ],
+  "training_family": {
+    "rows": 2033,
+    "files": [
+      {
+        "filename": "train.jsonl",
+        "bytes": 5405924,
+        "sha256": "2f28bcc9774d12ec932eb9a55871ebef76b7b60b1ff4d52803ce6fbf86f09150"
+      },
+      {
+        "filename": "provenance.jsonl",
+        "bytes": 794870,
+        "sha256": "2760e382e942e695949e4a828c2bc90b2f834114c40c6201f10cc49010896bc6"
+      },
+      {
+        "filename": "sources.json",
+        "bytes": 2895,
+        "sha256": "89399078c0f7f3dafcee48e1469f60f38ed1f8ae214d2f7e4152e17c8941ecea"
+      }
+    ],
+    "source_counts": {
+      "nvidia/Nemotron-SFT-OpenCode-v1": 457,
+      "bigcode/commitpackft": 400,
+      "local:openzero-advanced-dataset-v1": 413,
+      "HuggingFaceTB/smoltalk": 598,
+      "local:curated-zero-gemma4-v1": 96,
+      "local:curated-zero-v2": 69
+    },
+    "sources": [
+      {
+        "id": "local:openzero-advanced-dataset-v1",
+        "revision": "07661cf8956f8f8f2047bb162f853d59064aa844d844b23a2fb49bd8c6b02025",
+        "license": "other",
+        "included": 413
+      },
+      {
+        "id": "local:curated-zero-v2",
+        "revision": "7f947ad1a39ae27415eb5dab07ead2136baaf49780abde454e8c26489744f5b7",
+        "license": "other",
+        "included": 69
+      },
+      {
+        "id": "nvidia/Nemotron-SFT-OpenCode-v1",
+        "revision": "556d5237acff203f3e1a0be49428634c3606cda2",
+        "license": "cc-by-4.0",
+        "included": 457
+      },
+      {
+        "id": "bigcode/commitpackft",
+        "revision": "fc56fe33c030c6daa414c2b112c932b8eed085e6",
+        "license": "mit dataset; included rows restricted to permissive row-level licences",
+        "included": 400
+      },
+      {
+        "id": "HuggingFaceTB/smoltalk",
+        "revision": "5feaf2fd3ffca7c237fc38d1861bc30365d48ffa",
+        "license": "apache-2.0 for the four named new subsets only",
+        "included": 598,
+        "subsets": [
+          "smol-constraints",
+          "smol-magpie-ultra",
+          "smol-rewrite",
+          "smol-summarize"
+        ]
+      },
+      {
+        "id": "local:curated-zero-gemma4-v1",
+        "revision": "generated-2026-07-26",
+        "license": "other",
+        "included": 96
+      }
+    ],
+    "run_lineage": "Historical release receipts and build scripts identify this dataset family for both model runs. No separate per-run immutable input digest was located; listed dataset digests describe current preserved source files.",
+    "dataset_release_difference": "The separately published reviewed training dataset is a 1921-row subset. These historical model weights were not retrained on that subset. 112 rows were held from dataset republication for source-license/contact/path review (overlapping reasons).",
+    "source_legal_review_limit": "Some exact CommitPack source license evidence remains unresolved or differs from historical permissive row labels. Dataset omission does not establish a model-weight license violation or remove the uncertainty. No blanket copyright clearance is claimed.",
+    "privacy_context_review": {
+      "email_flagged_training_rows": 7,
+      "email_rows_independently_matched_in_recorded_public_github_code": 7,
+      "email_values_not_included": true,
+      "public_code_evidence": [
+        {
+          "training_line": 413,
+          "repository": "saitamandd/DSA162-A01",
+          "commit": "6b0fa09d8dd5ee74e4b7d1ede99a355df5030152",
+          "public_commit_url": "https://github.com/saitamandd/DSA162-A01/tree/6b0fa09d8dd5ee74e4b7d1ede99a355df5030152",
+          "detected_license": "MIT",
+          "all_contacts_found_in_public_source_files": true
+        },
+        {
+          "training_line": 522,
+          "repository": "Maighdlyn/phase-4-challenge",
+          "commit": "318f212baf04fcd8781abfa7149794dc309a77c5",
+          "public_commit_url": "https://github.com/Maighdlyn/phase-4-challenge/tree/318f212baf04fcd8781abfa7149794dc309a77c5",
+          "detected_license": "MIT",
+          "all_contacts_found_in_public_source_files": true
+        },
+        {
+          "training_line": 531,
+          "repository": "janos/web",
+          "commit": "f547e0213673ade08198e5d7217d558e4c6ca502",
+          "public_commit_url": "https://github.com/janos/web/tree/f547e0213673ade08198e5d7217d558e4c6ca502",
+          "detected_license": "BSD-3-Clause",
+          "all_contacts_found_in_public_source_files": true
+        },
+        {
+          "training_line": 746,
+          "repository": "kuakman/explore-react",
+          "commit": "9dfd8a0e1bef75f0f36d9e220be6f7a2abe9937a",
+          "public_commit_url": "https://github.com/kuakman/explore-react/tree/9dfd8a0e1bef75f0f36d9e220be6f7a2abe9937a",
+          "detected_license": "MIT",
+          "all_contacts_found_in_public_source_files": true
+        },
+        {
+          "training_line": 1042,
+          "repository": "AdrianArroyoCalle/SuperFreeCell",
+          "commit": "7fad1aff19cff758bc7df7ac09cfc45bc382948d",
+          "public_commit_url": "https://github.com/AdrianArroyoCalle/SuperFreeCell/tree/7fad1aff19cff758bc7df7ac09cfc45bc382948d",
+          "detected_license": "MIT",
+          "all_contacts_found_in_public_source_files": true
+        },
+        {
+          "training_line": 1327,
+          "repository": "QuiltOS/libfringe",
+          "commit": "957f11df3f613fa5bfbc0a96f353f8352391e60c",
+          "public_commit_url": "https://github.com/QuiltOS/libfringe/tree/957f11df3f613fa5bfbc0a96f353f8352391e60c",
+          "detected_license": "NOASSERTION",
+          "all_contacts_found_in_public_source_files": true
+        },
+        {
+          "training_line": 1579,
+          "repository": "xDimon/primitive",
+          "commit": "e7dc0ae64144fd3b221de8397308d7e02f5aeff4",
+          "public_commit_url": "https://github.com/xDimon/primitive/tree/e7dc0ae64144fd3b221de8397308d7e02f5aeff4",
+          "detected_license": "Apache-2.0",
+          "all_contacts_found_in_public_source_files": true
+        }
+      ],
+      "path_flagged_training_rows": 1,
+      "path_origin": "Public NVIDIA Nemotron-SFT-OpenCode-v1 according to recorded row provenance; assistant code/command context. Exact source row was not independently re-fetched in this audit.",
+      "path_matches_current_owner_windows_account": false,
+      "source_row_id": "e05a5211-1070-5864-9193-6c5bc3ec0ad2",
+      "path_values_not_included": true,
+      "credential_looking_records_in_other_zero_v2_variant": "The separately identified three records originate in an excluded NVIDIA function-calling source slice; that source slice is absent from this 2033-row training family.",
+      "conclusion": "No evidence of private owner/customer data was identified in these flagged training contexts. Pattern/origin review does not prove absence of model memorization or all private information."
+    }
+  },
+  "validation": {
+    "outer_archive_sha256": true,
+    "inner_gguf_sha256": true,
+    "zip_crc32": true,
+    "anonymous_public_huggingface_lfs_match": true,
+    "gguf_header_and_tensor_shapes": true,
+    "model_inference": false,
+    "memorization_or_extraction_evaluation": false
+  },
+  "excluded_from_this_mirror": [
+    "Raw training rows",
+    "Private owner/customer data",
+    "Credentials or login material",
+    "Optimizer/training state",
+    "Adapters or historical diagnostic adapter GGUFs",
+    "Unrelated datasets and app runtimes"
+  ]
+}

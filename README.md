@@ -18,6 +18,8 @@ main node, or company-hosted database.**
 
 [Reviewed training-data catalog](https://github.com/ResearchForumOnline/research-datasets) · [23 October dataset release](https://github.com/ResearchForumOnline/research-datasets/releases/tag/datasets-2026.10.23). Original curricula and reviewed licensed mixtures are optional downloads with scoped licenses, provenance and checksums. The [AI dataset notes](https://github.com/ResearchForumOnline/research-datasets/blob/main/AI_DATASETS.md) explain overlapping variants, held-out boundaries and known quality limits. These datasets do not change runtime weights or start a training job; the original October pilot remains preparation from a canceled experiment.
 
+[Historical custom model archive mirror](models/archive-mirror-20261023/README.md): the exact Gemma and Qwen ZIPs have pinned source/model hashes, preserved OpenZero Community Source license terms, base-model notices, and a Python helper that reconstructs and verifies archives without extracting or executing them. These historical weights were trained on the earlier 2033-row mixture; they have not been retrained on the separately reviewed 1921-row dataset subset. Read the model card for provenance and privacy-review limits.
+
 ## What changes in 7.3
 
 The 23 October source update fixes CLI model-family names accidentally choosing

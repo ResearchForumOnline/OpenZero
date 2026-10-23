@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "id": "openzero-model-archive-mirror",
+  "date": "2026-10-23",
+  "release_tag": "model-archive-mirror-2026.10.23",
+  "part_bytes": 1600000000,
+  "license": "OpenZero Community Source License v1.0; original base notices retained",
+  "files": [
+    {
+      "name": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip",
+      "bytes": 5865235956,
+      "sha256": "3b640f6ef70f4b48f4393f5cae71b3ea6d2b21d3c20e9b1a8e14d91290d77808",
+      "inner_gguf_name": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged.gguf",
+      "inner_gguf_bytes": 5865235584,
+      "inner_gguf_sha256": "84fd62ff6c5f0abe14dd2c6135e56800df4bc4a0b9d4cd8d9f26c36b28aa190b",
+      "parts": [
+        {
+          "name": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part001of004",
+          "bytes": 1600000000,
+          "sha256": "dfba90cd593284ef9369c6a36a5528adca6c02bc6dfe44f437eb3da02768a31c",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part001of004"
+        },
+        {
+          "name": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part002of004",
+          "bytes": 1600000000,
+          "sha256": "86719b70285b174e89c64389d067d95688bb1c4ed7c9675bd2c6fce7d9ffb795",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part002of004"
+        },
+        {
+          "name": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part003of004",
+          "bytes": 1600000000,
+          "sha256": "3794f5b0349899e22d96f4250924abe3e6847eb38d79391ef472b1bf142a99ac",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part003of004"
+        },
+        {
+          "name": "Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part004of004",
+          "bytes": 1065235956,
+          "sha256": "d6c20646d40986a9ab3604247296c4c1069b20fd01a2ca839347d93d31ba1601",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Gemma4-E4B-OpenZero-Q5_K_M-F16-Merged-kaggle.zip.part004of004"
+        }
+      ]
+    },
+    {
+      "name": "Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip",
+      "bytes": 5851112570,
+      "sha256": "43e43812fa0a8377cfd19ea2d1429f3e0c36382818d367394724840bc7a20cc7",
+      "inner_gguf_name": "Zero-Qwen3-8B-OpenZero-Q5_K_M.gguf",
+      "inner_gguf_bytes": 5851112224,
+      "inner_gguf_sha256": "390464f750b5cb53da298848adc05839c1fd40404a74cd5f800cad9612d17d59",
+      "parts": [
+        {
+          "name": "Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part001of004",
+          "bytes": 1600000000,
+          "sha256": "12ce3e436ccbcbb9eb20c234b8dd0e316c874df0350938fd7c0b72f4cdbc800a",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part001of004"
+        },
+        {
+          "name": "Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part002of004",
+          "bytes": 1600000000,
+          "sha256": "f609ad7c8c674e306e7b4cf785c5593b4a557df95c83ba83603a58276b4ca2fd",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part002of004"
+        },
+        {
+          "name": "Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part003of004",
+          "bytes": 1600000000,
+          "sha256": "70040c097f72887bcfd33244831fc76854d55dc8e48dc6a4cc8fd6c02a4c8089",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part003of004"
+        },
+        {
+          "name": "Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part004of004",
+          "bytes": 1051112570,
+          "sha256": "e9dcb4225539c07726c111ded84599364c46c67d9ff952d6c8a16a623372db55",
+          "url": "https://github.com/ResearchForumOnline/OpenZero/releases/download/model-archive-mirror-2026.10.23/Zero-Qwen3-8B-OpenZero-Q5_K_M-kaggle.zip.part004of004"
+        }
+      ]
+    }
+  ]
+}
