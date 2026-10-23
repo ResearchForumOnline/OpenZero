@@ -126,6 +126,7 @@ def open_release_part(url: str):
     return opener.open(urllib.request.Request(url, headers={
         "User-Agent": "ResearchForumOnline-OpenZero-model-archive-restore/1",
         "Accept-Encoding": "identity",
+        "Cache-Control": "no-cache",
     }), timeout=60)
 
 

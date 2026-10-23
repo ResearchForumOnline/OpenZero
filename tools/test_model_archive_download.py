@@ -343,6 +343,19 @@ class ModelArchiveTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported model archive"):
             tool.read_manifest(path)
 
+    def test_anonymous_transport_bypasses_stale_cache_without_changing_pinned_url(self):
+        url = self.entry["parts"][0]["url"]
+        with mock.patch.object(tool.urllib.request, "build_opener") as factory:
+            tool.open_release_part(url)
+        request = factory.return_value.open.call_args.args[0]
+        headers = {key.lower(): value for key, value in request.header_items()}
+        self.assertEqual(request.full_url, url)
+        self.assertEqual(headers["cache-control"], "no-cache")
+        self.assertEqual(headers["accept-encoding"], "identity")
+        self.assertNotIn("authorization", headers)
+        self.assertNotIn("cookie", headers)
+        self.assertEqual(factory.return_value.open.call_args.kwargs["timeout"], 60)
+
 
 if __name__ == "__main__":
     unittest.main()
